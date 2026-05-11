@@ -1,0 +1,546 @@
+{
+  "id": "b533bfa2-a20f-4731-94a3-ce78649c522e",
+  "player": "ccf9731a-995b-4a45-a501-1ff08cd7afc3",
+  "name": "Aireche",
+  "alignment": "Lawful Good",
+  "experience": 0,
+  "race": {
+    "category": "race",
+    "sourceName": "Aven",
+    "sourceId": "Aven|PSD",
+    "level": null,
+    "description": {
+      "name": "Age",
+      "type": "entries",
+      "entries": [
+        "Like humans, aven reach adulthood in their late teens and can live into their 80s."
+      ]
+    }
+  },
+  "subrace": null,
+  "backgrounds": [
+    {
+      "category": "background",
+      "sourceName": "Acolyte",
+      "sourceId": "Acolyte|XPHB",
+      "level": null,
+      "description": null
+    }
+  ],
+  "charCreationOptions": [],
+  "classes": [
+    {
+      "className": "Barbarian",
+      "classSource": "PHB",
+      "level": 1,
+      "subclassName": null,
+      "subclassSource": null,
+      "features": [
+        {
+          "name": "Rage",
+          "description": "In battle, you fight with primal ferocity. On your turn, you can enter a rage as a bonus action.\nWhile raging, you gain the following benefits if you aren't wearing heavy armor:\n- You have advantage on Strength checks and Strength saving throws.\n- When you make a melee weapon attack using Strength, you gain a +2 bonus to the damage roll. This bonus increases as you level.\n- You have resistance to bludgeoning, piercing, and slashing damage.\nIf you are able to cast spells, you can't cast them or concentrate on them while raging.\nYour rage lasts for 1 minute. It ends early if you are knocked {@condition unconscious} or if your turn ends and you haven't attacked a hostile creature since your last turn or taken damage since then. You can also end your rage on your turn as a bonus action.\nOnce you have raged the maximum number of times for your barbarian level, you must finish a long rest before you can rage again. You may rage 2 times at 1st level, 3 at 3rd, 4 at 6th, 5 at 12th, and 6 at 17th.",
+          "source": {
+            "category": "class",
+            "sourceName": "Rage (Barbarian)",
+            "sourceId": "Rage|Barbarian|PHB",
+            "level": 1,
+            "description": null
+          },
+          "active": true,
+          "selectable": false,
+          "availableOptions": null,
+          "selectedOption": null,
+          "effects": [],
+          "prerequisites": [],
+          "category": "REAL_FEATURE"
+        },
+        {
+          "name": "Unarmored Defense",
+          "description": "While you are not wearing any armor, your Armor Class equals 10 + your Dexterity modifier + your Constitution modifier. You can use a shield and still gain this benefit.",
+          "source": {
+            "category": "class",
+            "sourceName": "Unarmored Defense (Barbarian)",
+            "sourceId": "Unarmored Defense|Barbarian|PHB",
+            "level": 1,
+            "description": null
+          },
+          "active": true,
+          "selectable": false,
+          "availableOptions": null,
+          "selectedOption": null,
+          "effects": [],
+          "prerequisites": [],
+          "category": "REAL_FEATURE"
+        }
+      ]
+    }
+  ],
+  "feats": [
+    {
+      "name": "Ability Score Improvement",
+      "description": "Increase one ability score of your choice by 2, or increase two ability scores of your choice by 1. This feat can't increase an ability score above 20.\nYou can take this feat more than once.",
+      "source": {
+        "category": "feat",
+        "sourceName": "Ability Score Improvement",
+        "sourceId": "Ability Score Improvement|XPHB",
+        "level": null,
+        "description": null
+      },
+      "active": true,
+      "selectable": false,
+      "availableOptions": null,
+      "selectedOption": null,
+      "effects": [],
+      "prerequisites": [],
+      "category": "REAL_FEATURE"
+    }
+  ],
+  "abilityScores": {
+    "scores": {
+      "strength": 10,
+      "dexterity": 10,
+      "constitution": 10,
+      "intelligence": 10,
+      "wisdom": 10,
+      "charisma": 10
+    },
+    "tracedScores": {
+      "strength": {
+        "baseValue": 10,
+        "modifiers": []
+      },
+      "dexterity": {
+        "baseValue": 10,
+        "modifiers": []
+      },
+      "constitution": {
+        "baseValue": 10,
+        "modifiers": []
+      },
+      "intelligence": {
+        "baseValue": 10,
+        "modifiers": []
+      },
+      "wisdom": {
+        "baseValue": 10,
+        "modifiers": []
+      },
+      "charisma": {
+        "baseValue": 10,
+        "modifiers": []
+      }
+    }
+  },
+  "proficiencies": {
+    "savingThrows": {
+      "strength": false,
+      "dexterity": false,
+      "constitution": false,
+      "intelligence": false,
+      "wisdom": false,
+      "charisma": false
+    },
+    "skills": {
+      "insight": {
+        "proficient": true,
+        "expertise": false
+      },
+      "religion": {
+        "proficient": true,
+        "expertise": false
+      }
+    },
+    "armor": [],
+    "weapons": [],
+    "tools": [],
+    "languages": [
+      "any0",
+      "any1"
+    ],
+    "skillSources": {
+      "insight": [
+        {
+          "category": "background",
+          "sourceName": "Acolyte",
+          "sourceId": "Acolyte|XPHB",
+          "level": null,
+          "description": null
+        }
+      ],
+      "religion": [
+        {
+          "category": "background",
+          "sourceName": "Acolyte",
+          "sourceId": "Acolyte|XPHB",
+          "level": null,
+          "description": null
+        }
+      ]
+    },
+    "armorSources": [],
+    "weaponSources": [],
+    "toolSources": [],
+    "languageSources": [
+      {
+        "category": "background",
+        "sourceName": "Acolyte",
+        "sourceId": "Acolyte|XPHB",
+        "level": null,
+        "description": null
+      },
+      {
+        "category": "background",
+        "sourceName": "Acolyte",
+        "sourceId": "Acolyte|XPHB",
+        "level": null,
+        "description": null
+      }
+    ]
+  },
+  "equipment": [
+    {
+      "item": {
+        "name": "Explorer's Pack",
+        "source": "PHB",
+        "page": 151,
+        "srd": true,
+        "basicRules": true,
+        "referenceSources": [
+          "ToA",
+          "GoS",
+          "IDRotF",
+          "QftIS",
+          "BGDIA",
+          "SCC-ARiR"
+        ],
+        "reprintedAs": [
+          "Explorer's Pack|XPHB"
+        ],
+        "type": "G",
+        "rarity": "none",
+        "weight": 59,
+        "value": 1000,
+        "entries": [
+          "Includes:",
+          {
+            "type": "list",
+            "items": [
+              "a {@item backpack|phb}",
+              "a {@item bedroll|phb}",
+              "a {@item mess kit|phb}",
+              "a {@item tinderbox|phb}",
+              "10 {@item torch|phb|torches}",
+              "10 days of {@item Rations (1 day)|phb|rations}",
+              "a {@item waterskin|phb}",
+              "{@item Hempen Rope (50 feet)|phb|50 feet of hempen rope}"
+            ]
+          }
+        ],
+        "packContents": [
+          "backpack|phb",
+          "bedroll|phb",
+          "mess kit|phb",
+          "tinderbox|phb",
+          {
+            "item": "torch|phb",
+            "quantity": 10
+          },
+          {
+            "item": "rations (1 day)|phb",
+            "quantity": 10
+          },
+          "waterskin|phb",
+          "hempen rope (50 feet)|phb"
+        ]
+      },
+      "quantity": 1,
+      "source": {
+        "category": "special",
+        "sourceName": "Starting Equipment",
+        "sourceId": "startingEquipment",
+        "level": null,
+        "description": null
+      },
+      "attuned": false,
+      "equipped": true,
+      "wielded": false
+    }
+  ],
+  "currency": {
+    "cp": 0,
+    "sp": 0,
+    "ep": 0,
+    "gp": 0,
+    "pp": 0
+  },
+  "maxHitPoints": 12,
+  "currentHitPoints": 12,
+  "tempHitPoints": 0,
+  "hitDice": {},
+  "usedHitDice": {},
+  "armorClass": {
+    "baseValue": 10,
+    "modifiers": []
+  },
+  "initiative": {
+    "baseValue": 0,
+    "modifiers": []
+  },
+  "speed": {
+    "baseValue": 25,
+    "modifiers": []
+  },
+  "proficiencyBonus": {
+    "baseValue": 2,
+    "modifiers": []
+  },
+  "passivePerception": 10,
+  "features": [
+    {
+      "name": "Age",
+      "description": "Like humans, aven reach adulthood in their late teens and can live into their 80s.",
+      "source": {
+        "category": "race",
+        "sourceName": "Aven",
+        "sourceId": "Aven|PSD",
+        "level": null,
+        "description": {
+          "name": "Age",
+          "type": "entries",
+          "entries": [
+            "Like humans, aven reach adulthood in their late teens and can live into their 80s."
+          ]
+        }
+      },
+      "active": true,
+      "selectable": false,
+      "availableOptions": null,
+      "selectedOption": null,
+      "effects": [],
+      "prerequisites": [],
+      "category": "INSTRUCTION"
+    },
+    {
+      "name": "Alignment",
+      "description": "Aven are inclined toward the lawful good alignment of the Church of Serra",
+      "source": {
+        "category": "race",
+        "sourceName": "Aven",
+        "sourceId": "Aven|PSD",
+        "level": null,
+        "description": {
+          "name": "Age",
+          "type": "entries",
+          "entries": [
+            "Like humans, aven reach adulthood in their late teens and can live into their 80s."
+          ]
+        }
+      },
+      "active": true,
+      "selectable": false,
+      "availableOptions": null,
+      "selectedOption": null,
+      "effects": [],
+      "prerequisites": [],
+      "category": "INSTRUCTION"
+    },
+    {
+      "name": "Size",
+      "description": "Aven stand from 5 to 6 feet tall, but their bodies are slender and their bones are partially hollow to facilitate their flight. Your size is Medium.",
+      "source": {
+        "category": "race",
+        "sourceName": "Aven",
+        "sourceId": "Aven|PSD",
+        "level": null,
+        "description": {
+          "name": "Age",
+          "type": "entries",
+          "entries": [
+            "Like humans, aven reach adulthood in their late teens and can live into their 80s."
+          ]
+        }
+      },
+      "active": true,
+      "selectable": false,
+      "availableOptions": null,
+      "selectedOption": null,
+      "effects": [],
+      "prerequisites": [],
+      "category": "INSTRUCTION"
+    },
+    {
+      "name": "Flight",
+      "description": "You have a flying speed of 30 feet. You can't use your flying speed while you wear medium or heavy armor. (If your campaign uses the variant rule for {@variantrule encumbrance|PHB}, you can't use your flying speed if you are encumbered.) ",
+      "source": {
+        "category": "race",
+        "sourceName": "Aven",
+        "sourceId": "Aven|PSD",
+        "level": null,
+        "description": {
+          "name": "Age",
+          "type": "entries",
+          "entries": [
+            "Like humans, aven reach adulthood in their late teens and can live into their 80s."
+          ]
+        }
+      },
+      "active": true,
+      "selectable": false,
+      "availableOptions": null,
+      "selectedOption": null,
+      "effects": [],
+      "prerequisites": [],
+      "category": "REAL_FEATURE"
+    },
+    {
+      "name": "Languages",
+      "description": "You can speak, read, and write Common and {@language Aven|PSD}.",
+      "source": {
+        "category": "race",
+        "sourceName": "Aven",
+        "sourceId": "Aven|PSD",
+        "level": null,
+        "description": {
+          "name": "Age",
+          "type": "entries",
+          "entries": [
+            "Like humans, aven reach adulthood in their late teens and can live into their 80s."
+          ]
+        }
+      },
+      "active": true,
+      "selectable": false,
+      "availableOptions": null,
+      "selectedOption": null,
+      "effects": [],
+      "prerequisites": [],
+      "category": "LANGUAGE"
+    },
+    {
+      "name": "Hawkeyed",
+      "description": "You have proficiency in the {@skill Perception} skill. In addition, attacking at long range doesn't impose disadvantage on your ranged weapon attack rolls.",
+      "source": {
+        "category": "race",
+        "sourceName": "Aven",
+        "sourceId": "Aven|PSD",
+        "level": null,
+        "description": {
+          "name": "Age",
+          "type": "entries",
+          "entries": [
+            "Like humans, aven reach adulthood in their late teens and can live into their 80s."
+          ]
+        }
+      },
+      "active": true,
+      "selectable": false,
+      "availableOptions": null,
+      "selectedOption": null,
+      "effects": [],
+      "prerequisites": [],
+      "category": "PROFICIENCY"
+    },
+    {
+      "name": "Feature: Shelter of the Faithful",
+      "description": "As an acolyte, you command the respect of those who share your faith, and you can perform the religious ceremonies of your deity. You and your adventuring companions can expect to receive free healing and care at a temple, shrine, or other established presence of your faith, though you must provide any material components needed for spells. Those who share your religion will support you (but only you) at a modest lifestyle.\nYou might also have ties to a specific temple dedicated to your chosen deity or pantheon, and you have a residence there. This could be the temple where you used to serve, if you remain on good terms with it, or a temple where you have found a new home. While near your temple, you can call upon the priests for assistance, provided the assistance you ask for is not hazardous and you remain in good standing with your temple.",
+      "source": {
+        "category": "background",
+        "sourceName": "Acolyte",
+        "sourceId": "Acolyte|XPHB",
+        "level": null,
+        "description": null
+      },
+      "active": true,
+      "selectable": false,
+      "availableOptions": null,
+      "selectedOption": null,
+      "effects": [],
+      "prerequisites": [],
+      "category": "REAL_FEATURE"
+    },
+    {
+      "name": "Suggested Characteristics",
+      "description": "Acolytes are shaped by their experience in temples or other religious communities. Their study of the history and tenets of their faith and their relationships to temples, shrines, or hierarchies affect their mannerisms and ideals. Their flaws might be some hidden hypocrisy or heretical idea, or an ideal or bond taken to an extreme.\n[object Object]\n[object Object]\n[object Object]\n[object Object]",
+      "source": {
+        "category": "background",
+        "sourceName": "Acolyte",
+        "sourceId": "Acolyte|XPHB",
+        "level": null,
+        "description": null
+      },
+      "active": true,
+      "selectable": false,
+      "availableOptions": null,
+      "selectedOption": null,
+      "effects": [],
+      "prerequisites": [],
+      "category": "SUGGESTED"
+    },
+    {
+      "name": "Rage",
+      "description": "In battle, you fight with primal ferocity. On your turn, you can enter a rage as a bonus action.\nWhile raging, you gain the following benefits if you aren't wearing heavy armor:\n- You have advantage on Strength checks and Strength saving throws.\n- When you make a melee weapon attack using Strength, you gain a +2 bonus to the damage roll. This bonus increases as you level.\n- You have resistance to bludgeoning, piercing, and slashing damage.\nIf you are able to cast spells, you can't cast them or concentrate on them while raging.\nYour rage lasts for 1 minute. It ends early if you are knocked {@condition unconscious} or if your turn ends and you haven't attacked a hostile creature since your last turn or taken damage since then. You can also end your rage on your turn as a bonus action.\nOnce you have raged the maximum number of times for your barbarian level, you must finish a long rest before you can rage again. You may rage 2 times at 1st level, 3 at 3rd, 4 at 6th, 5 at 12th, and 6 at 17th.",
+      "source": {
+        "category": "class",
+        "sourceName": "Rage (Barbarian)",
+        "sourceId": "Rage|Barbarian|PHB",
+        "level": 1,
+        "description": null
+      },
+      "active": true,
+      "selectable": false,
+      "availableOptions": null,
+      "selectedOption": null,
+      "effects": [],
+      "prerequisites": [],
+      "category": "REAL_FEATURE"
+    },
+    {
+      "name": "Unarmored Defense",
+      "description": "While you are not wearing any armor, your Armor Class equals 10 + your Dexterity modifier + your Constitution modifier. You can use a shield and still gain this benefit.",
+      "source": {
+        "category": "class",
+        "sourceName": "Unarmored Defense (Barbarian)",
+        "sourceId": "Unarmored Defense|Barbarian|PHB",
+        "level": 1,
+        "description": null
+      },
+      "active": true,
+      "selectable": false,
+      "availableOptions": null,
+      "selectedOption": null,
+      "effects": [],
+      "prerequisites": [],
+      "category": "REAL_FEATURE"
+    },
+    {
+      "name": "Ability Score Improvement",
+      "description": "Increase one ability score of your choice by 2, or increase two ability scores of your choice by 1. This feat can't increase an ability score above 20.\nYou can take this feat more than once.",
+      "source": {
+        "category": "feat",
+        "sourceName": "Ability Score Improvement",
+        "sourceId": "Ability Score Improvement|XPHB",
+        "level": null,
+        "description": null
+      },
+      "active": true,
+      "selectable": false,
+      "availableOptions": null,
+      "selectedOption": null,
+      "effects": [],
+      "prerequisites": [],
+      "category": "REAL_FEATURE"
+    }
+  ],
+  "spellbooks": {},
+  "resources": {},
+  "inspiration": false,
+  "traits": {
+    "personalityTrait": "",
+    "ideal": "",
+    "bond": "",
+    "flaw": ""
+  },
+  "conditions": [],
+  "exhaustion": 0,
+  "pendingFeatureSelections": []
+}

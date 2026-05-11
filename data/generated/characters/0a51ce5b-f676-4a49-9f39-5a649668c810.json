@@ -1,0 +1,714 @@
+{
+  "id": "0a51ce5b-f676-4a49-9f39-5a649668c810",
+  "name": "Lamar",
+  "alignment": "Lawful Good",
+  "experience": 0,
+  "race": {
+    "category": "race",
+    "sourceName": "Dwarf",
+    "sourceId": "Dwarf|PHB",
+    "level": null,
+    "description": {
+      "name": "Age",
+      "type": "entries",
+      "entries": [
+        "Dwarves mature at the same rate as humans, but they're considered young until they reach the age of 50. On average, they live about 350 years."
+      ]
+    }
+  },
+  "subrace": null,
+  "backgrounds": [
+    {
+      "category": "background",
+      "sourceName": "Baldur's Gate Charlatan",
+      "sourceId": "Baldur's Gate Charlatan|BGDIA",
+      "level": null,
+      "description": null
+    }
+  ],
+  "charCreationOptions": [],
+  "classes": [
+    {
+      "className": "Artificer",
+      "classSource": "EFA",
+      "level": 3,
+      "subclassName": "Armorer",
+      "subclassSource": "EFA",
+      "features": [
+        {
+          "name": "Spellcasting",
+          "description": "You have learned how to channel magical energy through objects. See the {@book Player's Handbook|XPHB} for the rules on spellcasting. The information below details how you use those rules with Artificer spells, which appear in the {@filter Artificer spell list|spells|class=Artificer} later in the class's description.\nYou produce your Artificer spells through tools. You can use {@item Thieves' Tools|XPHB}, {@item Tinker's Tools|XPHB}, or another kind of {@item Artisan's Tools|XPHB} with which you have proficiency as a {@variantrule Spellcasting Focus|XPHB}, and you must have one of those focuses in hand when you cast an Artificer spell (meaning the spell has an {@i M} component when you cast it).\nYou know two {@filter Artificer cantrips|spells|level=0|class=Artificer} of your choice. {@spell Acid Splash|XPHB} and {@spell Prestidigitation|XPHB} are recommended.\nWhenever you finish a {@variantrule Long Rest|XPHB}, you can replace one of your cantrips from this feature with another Artificer cantrip of your choice.\nWhen you reach Artificer levels 10 and 14, you learn another Artificer cantrip of your choice, as shown in the Cantrips column of the Artificer Features table.\nThe Artificer Features table shows how many spell slots you have to cast your level 1+ spells. You regain all expended slots when you finish a {@variantrule Long Rest|XPHB}.\nYou prepare the list of level 1+ spells that are available for you to cast with this feature. To start, choose two {@filter level 1 Artificer spells|spells|level=1|class=Artificer}. {@spell Cure Wounds|XPHB} and {@spell Grease|XPHB} are recommended.\nThe number of spells on your list increases as you gain Artificer levels, as shown in the Prepared Spells column of the Artificer Features table. Whenever that number increases, choose additional {@filter Artificer spells|spells|class=Artificer} until the number of spells on your list matches the number on the table. The chosen spells must be of a level for which you have spell slots. For example, if you're a level 5 Artificer, your list of prepared spells can include six Artificer spells of levels 1 and 2 in any combination.\nIf another Artificer feature gives you spells that you always have prepared, those don't count against the number of spells you can prepare with this feature, but those spells otherwise count as Artificer spells for you.\nWhenever you finish a {@variantrule Long Rest|XPHB}, you can change your list of prepared spells, replacing any of the spells there with other Artificer spells for which you have spell slots.\nIntelligence is your spellcasting ability for your Artificer spells.",
+          "source": {
+            "category": "class",
+            "sourceName": "Spellcasting (Artificer)",
+            "sourceId": "Spellcasting|Artificer|EFA",
+            "level": 1,
+            "description": null
+          },
+          "active": true,
+          "selectable": true,
+          "availableOptions": null,
+          "selectedOption": null,
+          "effects": [],
+          "prerequisites": []
+        },
+        {
+          "name": "Tinker's Magic",
+          "description": "You know the {@spell Mending|XPHB} cantrip.\nAs a {@action Magic|XPHB} action while holding {@item Tinker's Tools|XPHB}, you can create one item in an unoccupied space within 5 feet of yourself, choosing the item from the following list:\n- {@item Ball Bearings|XPHB}\n- {@item Basket|XPHB}\n- {@item Bedroll|XPHB}\n- {@item Bell|XPHB}\n- {@item Blanket|XPHB}\n- {@item Block and Tackle|XPHB}\n- {@item Glass Bottle|XPHB|Bottle, Glass}\n- {@item Bucket|XPHB}\n- {@item Caltrops|XPHB}\n- {@item Candle|XPHB}\n- {@item Crowbar|XPHB}\n- {@item Flask|XPHB}\n- {@item Grappling Hook|XPHB}\n- {@item Hunting Trap|XPHB}\n- {@item Jug|XPHB}\n- {@item Lamp|XPHB}\n- {@item Manacles|XPHB}\n- {@item Net|XPHB}\n- {@item Oil|XPHB}\n- {@item Paper|XPHB}\n- {@item Parchment|XPHB}\n- {@item Pole|XPHB}\n- {@item Pouch|XPHB}\n- {@item Rope|XPHB}\n- {@item Sack|XPHB}\n- {@item Shovel|XPHB}\n- {@item Iron Spikes|XPHB|Spikes, Iron}\n- {@item String|XPHB}\n- {@item Tinderbox|XPHB}\n- {@item Torch|XPHB}\n- {@item Vial|XPHB}\nSee the rules for the item in the {@book Player's Handbook|XPHB}. The item lasts until you finish a {@variantrule Long Rest|XPHB}, at which point it vanishes.\nYou can use this feature a number of times equal to your Intelligence modifier (minimum of once), and you regain all expended uses when you finish a {@variantrule Long Rest|XPHB}.",
+          "source": {
+            "category": "class",
+            "sourceName": "Tinker's Magic (Artificer)",
+            "sourceId": "Tinker's Magic|Artificer|EFA",
+            "level": 1,
+            "description": null
+          },
+          "active": true,
+          "selectable": false,
+          "availableOptions": null,
+          "selectedOption": null,
+          "effects": [],
+          "prerequisites": []
+        },
+        {
+          "name": "Replicate Magic Item",
+          "description": "You have learned arcane plans that you use to make magic items.\nWhen you gain this feature, choose four plans to learn from the Magic Item Plans (Artificer Level 2+) table (see the {@book Dungeon Master's Guide|XDMG} for the items' descriptions). {@item Bag of Holding|XDMG}, {@item Cap of Water Breathing|XDMG}, {@item Sending Stones|XDMG}, and {@item +1 Wand of the War Mage|XDMG|Wand of the War Mage} are recommended. Whenever you gain an Artificer level, you can replace one of the plans you know with a new plan for which you qualify.\nYou learn another plan of your choice when you reach certain Artificer levels, as shown in the Plans Known column of the Artificer Features table. When you choose a plan to learn, you choose it from any Magic Item Plans table for which you qualify; your qualification is based on your Artificer level.\nWhen you finish a {@variantrule Long Rest|XPHB}, you can create one or two different magic items if you have {@item Tinker's Tools|XPHB} in hand. Each item is based on one of the plans you know for this feature.\nIf a created item requires {@variantrule Attunement|XPHB}, you can attune yourself to it the instant you create it. If you decide to attune to the item later, you must do so using the normal process for {@variantrule Attunement|XPHB}.\nWhen you reach certain Artificer levels specified in the Magic Items column of the Artificer Features table, the number of magic items you can create at the end of a {@variantrule Long Rest|XPHB} increases. Each item you create must be based on a different plan you know.\nYou can't have more magic items from this feature than the number shown in the Magic Items column of the Artificer Features table for your level. If you try to exceed your maximum number of magic items for this feature, the oldest item vanishes, and then the new item appears.\nA magic item created by this feature functions as the normal magic item, except its magic isn't permanent; when you die, the magic item vanishes after {@dice 1d4} days. If you replace a plan you know with a new plan, any magic item created with the replaced plan immediately vanishes.\nIf an item that you created with this feature is a container, such as a {@item Bag of Holding|XDMG}, and it vanishes, its contents harmlessly appear in and around its space.\nYou can use any Wand or Weapon created by this feature as a {@variantrule Spellcasting Focus|XPHB} in lieu of using a set of {@item Artisan's Tools|XPHB}.\nThe Replicate Magic Item feature isn't the only way for an Artificer to make magic items. The {@book Dungeon Master's Guide|XDMG|6|Crafting Magic Items} provides rules for characters—not just Artificers—who want to make magic items of all sorts. Though many different characters can make magic items, Artificers can do it faster than others; each Artificer subclass improves a character's speed at making items of a certain category.\nWhen an Artificer crafts a magic item using the normal rules in the {@book Dungeon Master's Guide|XDMG|6|Crafting Magic Items}, the character gains no special connection to that item. Class features that refer to items created by your Replicate Magic Item feature don't apply to items you craft by other means.\n[object Object]\n[object Object]\n[object Object]\n[object Object]",
+          "source": {
+            "category": "class",
+            "sourceName": "Replicate Magic Item (Artificer)",
+            "sourceId": "Replicate Magic Item|Artificer|EFA",
+            "level": 2,
+            "description": null
+          },
+          "active": true,
+          "selectable": true,
+          "availableOptions": null,
+          "selectedOption": null,
+          "effects": [],
+          "prerequisites": []
+        },
+        {
+          "name": "Artificer Subclass",
+          "description": "You gain an Artificer subclass of your choice. The {@subclass Alchemist|Artificer|EFA|EFA}, {@subclass Armorer|Artificer|EFA|EFA}, {@subclass Artillerist|Artificer|EFA|EFA}, and {@subclass Battle Smith|Artificer|EFA|EFA}, and {@subclass Cartographer|Artificer|EFA|EFA} subclasses are detailed after this class's description. A subclass is a specialization that grants you features at certain Artificer levels. For the rest of your career, you gain each of your subclass's features that are of your Artificer level or lower.",
+          "source": {
+            "category": "class",
+            "sourceName": "Artificer Subclass (Artificer)",
+            "sourceId": "Artificer Subclass|Artificer|EFA",
+            "level": 3,
+            "description": null
+          },
+          "active": true,
+          "selectable": true,
+          "availableOptions": null,
+          "selectedOption": null,
+          "effects": [],
+          "prerequisites": []
+        },
+        {
+          "name": "Arcane Armor",
+          "description": "As a {@action Magic|XPHB} action while you have {@item Smith's Tools|XPHB} in hand, you can turn a suit of armor you are wearing into Arcane Armor. The armor continues to be Arcane Armor until you don another suit of armor or you die.\nYou gain the following benefits while wearing your Arcane Armor.\nIf the armor normally has a Strength requirement, the Arcane Armor lacks this requirement for you.\nYou can don or doff the armor as a {@action Utilize|XPHB} action. The armor can't be removed against your will.\nYou can use the Arcane Armor as a {@variantrule Spellcasting Focus|XPHB} for your Artificer spells.",
+          "source": {
+            "category": "subclass",
+            "sourceName": "Arcane Armor (Armorer Artificer)",
+            "sourceId": "Arcane Armor|Artificer|Armorer|EFA",
+            "level": 3,
+            "description": null
+          },
+          "active": true,
+          "selectable": false,
+          "availableOptions": null,
+          "selectedOption": null,
+          "effects": [],
+          "prerequisites": []
+        },
+        {
+          "name": "Armor Model",
+          "description": "You can customize your Arcane Armor. When you do so, choose one of the following armor models: {@subclassFeature Dreadnaught|Artificer|EFA|Armorer|EFA|3|EFA}, {@subclassFeature Guardian|Artificer|EFA|Armorer|EFA|3|EFA}, or {@subclassFeature Infiltrator|Artificer|EFA|Armorer|EFA|3|EFA}. The model you choose gives you special benefits while you wear it.\nEach model includes a special weapon. When you attack with that weapon, you can add your Intelligence modifier, instead of your Strength or Dexterity modifier, to the attack and damage rolls.\nYou can change the armor's model whenever you finish a {@variantrule Short Rest|XPHB|Short} or {@variantrule Long Rest|XPHB} if you have {@item Smith's Tools|XPHB} in hand.\n[object Object]\n[object Object]\n[object Object]",
+          "source": {
+            "category": "subclass",
+            "sourceName": "Armor Model (Armorer Artificer)",
+            "sourceId": "Armor Model|Artificer|Armorer|EFA",
+            "level": 3,
+            "description": null
+          },
+          "active": true,
+          "selectable": true,
+          "availableOptions": null,
+          "selectedOption": null,
+          "effects": [],
+          "prerequisites": []
+        },
+        {
+          "name": "Armorer",
+          "description": "{@i Craft Magic Armor to Enhance Your Abilities}\nAn Armorer modifies armor to function almost like a second skin. The armor is enhanced to hone the Armorer's magic, unleash potent attacks, and generate a formidable defense.\n[object Object]\n[object Object]\n[object Object]\n[object Object]",
+          "source": {
+            "category": "subclass",
+            "sourceName": "Armorer (Armorer Artificer)",
+            "sourceId": "Armorer|Artificer|Armorer|EFA",
+            "level": 3,
+            "description": null
+          },
+          "active": true,
+          "selectable": false,
+          "availableOptions": null,
+          "selectedOption": null,
+          "effects": [],
+          "prerequisites": []
+        },
+        {
+          "name": "Armorer Spells",
+          "description": "When you reach an Artificer level specified in the Armorer Spells table, you thereafter always have the listed spells prepared.\n[object Object]",
+          "source": {
+            "category": "subclass",
+            "sourceName": "Armorer Spells (Armorer Artificer)",
+            "sourceId": "Armorer Spells|Artificer|Armorer|EFA",
+            "level": 3,
+            "description": null
+          },
+          "active": true,
+          "selectable": false,
+          "availableOptions": null,
+          "selectedOption": null,
+          "effects": [],
+          "prerequisites": []
+        },
+        {
+          "name": "Dreadnaught",
+          "description": "You design your armor to become a towering juggernaut in battle. It has the following features:\n\n",
+          "source": {
+            "category": "subclass",
+            "sourceName": "Dreadnaught (Armorer Artificer)",
+            "sourceId": "Dreadnaught|Artificer|Armorer|EFA",
+            "level": 3,
+            "description": null
+          },
+          "active": true,
+          "selectable": false,
+          "availableOptions": null,
+          "selectedOption": null,
+          "effects": [],
+          "prerequisites": []
+        },
+        {
+          "name": "Guardian",
+          "description": "You design your armor to be in the front line of conflict. It has the following features:\nYou can discharge concussive blasts with strikes from your armor. The pulse counts as a Simple Melee weapon and deals {@damage 1d8} Thunder damage on a hit. A creature hit by the pulse has {@variantrule Disadvantage|XPHB} on attack rolls against targets other than you until the start of your next turn.\nWhile {@status Bloodied|XPHB}, you can take a {@variantrule Bonus Action|XPHB} to gain {@variantrule Temporary Hit Points|XPHB} equal to your Artificer level. You lose these {@variantrule Temporary Hit Points|XPHB} if you doff the armor.",
+          "source": {
+            "category": "subclass",
+            "sourceName": "Guardian (Armorer Artificer)",
+            "sourceId": "Guardian|Artificer|Armorer|EFA",
+            "level": 3,
+            "description": null
+          },
+          "active": true,
+          "selectable": false,
+          "availableOptions": null,
+          "selectedOption": null,
+          "effects": [],
+          "prerequisites": []
+        },
+        {
+          "name": "Infiltrator",
+          "description": "You customize your armor for subtler undertakings. It has the following features:\n\n\n",
+          "source": {
+            "category": "subclass",
+            "sourceName": "Infiltrator (Armorer Artificer)",
+            "sourceId": "Infiltrator|Artificer|Armorer|EFA",
+            "level": 3,
+            "description": null
+          },
+          "active": true,
+          "selectable": false,
+          "availableOptions": null,
+          "selectedOption": null,
+          "effects": [],
+          "prerequisites": []
+        },
+        {
+          "name": "Tools of the Trade",
+          "description": "You gain the following benefits.\nYou gain training with Heavy armor.\nYou gain proficiency with {@item Smith's Tools|XPHB}. If you already have this tool proficiency, you gain proficiency with one other type of {@item Artisan's Tools|XPHB} of your choice.\nWhen you craft nonmagical or magic armor, the amount of time required to craft it is halved.",
+          "source": {
+            "category": "subclass",
+            "sourceName": "Tools of the Trade (Armorer Artificer)",
+            "sourceId": "Tools of the Trade|Artificer|Armorer|EFA",
+            "level": 3,
+            "description": null
+          },
+          "active": true,
+          "selectable": false,
+          "availableOptions": null,
+          "selectedOption": null,
+          "effects": [],
+          "prerequisites": []
+        }
+      ]
+    }
+  ],
+  "feats": [
+    {
+      "name": "Actor",
+      "description": "Skilled at mimicry and dramatics, you gain the following benefits:\n- You have advantage on Charisma ({@skill Deception}) and Charisma ({@skill Performance}) checks when trying to pass yourself off as a different person.\n- You can mimic the speech of another person or the sounds made by other creatures. You must have heard the person speaking, or heard the creature make the sound, for at least 1 minute. A successful Wisdom ({@skill Insight}) check contested by your Charisma ({@skill Deception}) check allows a listener to determine that the effect is faked.",
+      "source": {
+        "category": "feat",
+        "sourceName": "Actor",
+        "sourceId": "Actor|PHB",
+        "level": null,
+        "description": null
+      },
+      "active": true,
+      "selectable": false,
+      "availableOptions": null,
+      "selectedOption": null,
+      "effects": [],
+      "prerequisites": []
+    }
+  ],
+  "abilityScores": {
+    "scores": {
+      "strength": 10,
+      "dexterity": 10,
+      "constitution": 10,
+      "intelligence": 10,
+      "wisdom": 10,
+      "charisma": 10
+    },
+    "tracedScores": {
+      "strength": {
+        "baseValue": 10,
+        "modifiers": []
+      },
+      "dexterity": {
+        "baseValue": 10,
+        "modifiers": []
+      },
+      "constitution": {
+        "baseValue": 10,
+        "modifiers": []
+      },
+      "intelligence": {
+        "baseValue": 10,
+        "modifiers": []
+      },
+      "wisdom": {
+        "baseValue": 10,
+        "modifiers": []
+      },
+      "charisma": {
+        "baseValue": 10,
+        "modifiers": []
+      }
+    }
+  },
+  "proficiencies": {
+    "savingThrows": {
+      "strength": false,
+      "dexterity": false,
+      "constitution": false,
+      "intelligence": false,
+      "wisdom": false,
+      "charisma": false
+    },
+    "skills": {},
+    "armor": [],
+    "weapons": [],
+    "tools": [],
+    "languages": [],
+    "skillSources": {},
+    "armorSources": [],
+    "weaponSources": [],
+    "toolSources": [],
+    "languageSources": []
+  },
+  "equipment": [],
+  "currency": {
+    "cp": 0,
+    "sp": 0,
+    "ep": 0,
+    "gp": 0,
+    "pp": 0
+  },
+  "maxHitPoints": 13,
+  "currentHitPoints": 13,
+  "tempHitPoints": 0,
+  "hitDice": {},
+  "usedHitDice": {},
+  "armorClass": {
+    "baseValue": 10,
+    "modifiers": []
+  },
+  "initiative": {
+    "baseValue": 0,
+    "modifiers": []
+  },
+  "speed": {
+    "baseValue": 25,
+    "modifiers": []
+  },
+  "proficiencyBonus": {
+    "baseValue": 3,
+    "modifiers": []
+  },
+  "passivePerception": 10,
+  "features": [
+    {
+      "name": "Age",
+      "description": "Dwarves mature at the same rate as humans, but they're considered young until they reach the age of 50. On average, they live about 350 years.",
+      "source": {
+        "category": "race",
+        "sourceName": "Dwarf",
+        "sourceId": "Dwarf|PHB",
+        "level": null,
+        "description": {
+          "name": "Age",
+          "type": "entries",
+          "entries": [
+            "Dwarves mature at the same rate as humans, but they're considered young until they reach the age of 50. On average, they live about 350 years."
+          ]
+        }
+      },
+      "active": true,
+      "selectable": false,
+      "availableOptions": null,
+      "selectedOption": null,
+      "effects": [],
+      "prerequisites": []
+    },
+    {
+      "name": "Size",
+      "description": "Dwarves stand between 4 and 5 feet tall and average about 150 pounds. Your size is Medium.",
+      "source": {
+        "category": "race",
+        "sourceName": "Dwarf",
+        "sourceId": "Dwarf|PHB",
+        "level": null,
+        "description": {
+          "name": "Age",
+          "type": "entries",
+          "entries": [
+            "Dwarves mature at the same rate as humans, but they're considered young until they reach the age of 50. On average, they live about 350 years."
+          ]
+        }
+      },
+      "active": true,
+      "selectable": false,
+      "availableOptions": null,
+      "selectedOption": null,
+      "effects": [],
+      "prerequisites": []
+    },
+    {
+      "name": "Speed",
+      "description": "Your speed is not reduced by wearing heavy armor.",
+      "source": {
+        "category": "race",
+        "sourceName": "Dwarf",
+        "sourceId": "Dwarf|PHB",
+        "level": null,
+        "description": {
+          "name": "Age",
+          "type": "entries",
+          "entries": [
+            "Dwarves mature at the same rate as humans, but they're considered young until they reach the age of 50. On average, they live about 350 years."
+          ]
+        }
+      },
+      "active": true,
+      "selectable": false,
+      "availableOptions": null,
+      "selectedOption": null,
+      "effects": [],
+      "prerequisites": []
+    },
+    {
+      "name": "Darkvision",
+      "description": "Accustomed to life underground, you have superior vision in dark and dim conditions. You can see in dim light within 60 feet of you as if it were bright light, and in darkness as if it were dim light. You can't discern color in darkness, only shades of gray.",
+      "source": {
+        "category": "race",
+        "sourceName": "Dwarf",
+        "sourceId": "Dwarf|PHB",
+        "level": null,
+        "description": {
+          "name": "Age",
+          "type": "entries",
+          "entries": [
+            "Dwarves mature at the same rate as humans, but they're considered young until they reach the age of 50. On average, they live about 350 years."
+          ]
+        }
+      },
+      "active": true,
+      "selectable": false,
+      "availableOptions": null,
+      "selectedOption": null,
+      "effects": [],
+      "prerequisites": []
+    },
+    {
+      "name": "Dwarven Resilience",
+      "description": "You have advantage on saving throws against poison, and you have resistance against poison damage.",
+      "source": {
+        "category": "race",
+        "sourceName": "Dwarf",
+        "sourceId": "Dwarf|PHB",
+        "level": null,
+        "description": {
+          "name": "Age",
+          "type": "entries",
+          "entries": [
+            "Dwarves mature at the same rate as humans, but they're considered young until they reach the age of 50. On average, they live about 350 years."
+          ]
+        }
+      },
+      "active": true,
+      "selectable": false,
+      "availableOptions": null,
+      "selectedOption": null,
+      "effects": [],
+      "prerequisites": []
+    },
+    {
+      "name": "Dwarven Combat Training",
+      "description": "You have proficiency with the {@item battleaxe|phb}, {@item handaxe|phb}, {@item light hammer|phb}, and {@item warhammer|phb}.",
+      "source": {
+        "category": "race",
+        "sourceName": "Dwarf",
+        "sourceId": "Dwarf|PHB",
+        "level": null,
+        "description": {
+          "name": "Age",
+          "type": "entries",
+          "entries": [
+            "Dwarves mature at the same rate as humans, but they're considered young until they reach the age of 50. On average, they live about 350 years."
+          ]
+        }
+      },
+      "active": true,
+      "selectable": false,
+      "availableOptions": null,
+      "selectedOption": null,
+      "effects": [],
+      "prerequisites": []
+    },
+    {
+      "name": "Tool Proficiency",
+      "description": "You gain proficiency with the {@item artisan's tools|PHB} of your choice: {@item Smith's tools|phb}, {@item brewer's supplies|phb}, or {@item mason's tools|phb}.",
+      "source": {
+        "category": "race",
+        "sourceName": "Dwarf",
+        "sourceId": "Dwarf|PHB",
+        "level": null,
+        "description": {
+          "name": "Age",
+          "type": "entries",
+          "entries": [
+            "Dwarves mature at the same rate as humans, but they're considered young until they reach the age of 50. On average, they live about 350 years."
+          ]
+        }
+      },
+      "active": true,
+      "selectable": false,
+      "availableOptions": null,
+      "selectedOption": null,
+      "effects": [],
+      "prerequisites": []
+    },
+    {
+      "name": "Stonecunning",
+      "description": "Whenever you make an Intelligence ({@skill History}) check related to the origin of stonework, you are considered proficient in the {@skill History} skill and add double your proficiency bonus to the check, instead of your normal proficiency bonus.",
+      "source": {
+        "category": "race",
+        "sourceName": "Dwarf",
+        "sourceId": "Dwarf|PHB",
+        "level": null,
+        "description": {
+          "name": "Age",
+          "type": "entries",
+          "entries": [
+            "Dwarves mature at the same rate as humans, but they're considered young until they reach the age of 50. On average, they live about 350 years."
+          ]
+        }
+      },
+      "active": true,
+      "selectable": false,
+      "availableOptions": null,
+      "selectedOption": null,
+      "effects": [],
+      "prerequisites": []
+    },
+    {
+      "name": "Languages",
+      "description": "You can speak, read, and write Common and Dwarvish. Dwarvish is full of hard consonants and guttural sounds, and those characteristics spill over into whatever other language a dwarf might speak.",
+      "source": {
+        "category": "race",
+        "sourceName": "Dwarf",
+        "sourceId": "Dwarf|PHB",
+        "level": null,
+        "description": {
+          "name": "Age",
+          "type": "entries",
+          "entries": [
+            "Dwarves mature at the same rate as humans, but they're considered young until they reach the age of 50. On average, they live about 350 years."
+          ]
+        }
+      },
+      "active": true,
+      "selectable": false,
+      "availableOptions": null,
+      "selectedOption": null,
+      "effects": [],
+      "prerequisites": []
+    },
+    {
+      "name": "Spellcasting",
+      "description": "You have learned how to channel magical energy through objects. See the {@book Player's Handbook|XPHB} for the rules on spellcasting. The information below details how you use those rules with Artificer spells, which appear in the {@filter Artificer spell list|spells|class=Artificer} later in the class's description.\nYou produce your Artificer spells through tools. You can use {@item Thieves' Tools|XPHB}, {@item Tinker's Tools|XPHB}, or another kind of {@item Artisan's Tools|XPHB} with which you have proficiency as a {@variantrule Spellcasting Focus|XPHB}, and you must have one of those focuses in hand when you cast an Artificer spell (meaning the spell has an {@i M} component when you cast it).\nYou know two {@filter Artificer cantrips|spells|level=0|class=Artificer} of your choice. {@spell Acid Splash|XPHB} and {@spell Prestidigitation|XPHB} are recommended.\nWhenever you finish a {@variantrule Long Rest|XPHB}, you can replace one of your cantrips from this feature with another Artificer cantrip of your choice.\nWhen you reach Artificer levels 10 and 14, you learn another Artificer cantrip of your choice, as shown in the Cantrips column of the Artificer Features table.\nThe Artificer Features table shows how many spell slots you have to cast your level 1+ spells. You regain all expended slots when you finish a {@variantrule Long Rest|XPHB}.\nYou prepare the list of level 1+ spells that are available for you to cast with this feature. To start, choose two {@filter level 1 Artificer spells|spells|level=1|class=Artificer}. {@spell Cure Wounds|XPHB} and {@spell Grease|XPHB} are recommended.\nThe number of spells on your list increases as you gain Artificer levels, as shown in the Prepared Spells column of the Artificer Features table. Whenever that number increases, choose additional {@filter Artificer spells|spells|class=Artificer} until the number of spells on your list matches the number on the table. The chosen spells must be of a level for which you have spell slots. For example, if you're a level 5 Artificer, your list of prepared spells can include six Artificer spells of levels 1 and 2 in any combination.\nIf another Artificer feature gives you spells that you always have prepared, those don't count against the number of spells you can prepare with this feature, but those spells otherwise count as Artificer spells for you.\nWhenever you finish a {@variantrule Long Rest|XPHB}, you can change your list of prepared spells, replacing any of the spells there with other Artificer spells for which you have spell slots.\nIntelligence is your spellcasting ability for your Artificer spells.",
+      "source": {
+        "category": "class",
+        "sourceName": "Spellcasting (Artificer)",
+        "sourceId": "Spellcasting|Artificer|EFA",
+        "level": 1,
+        "description": null
+      },
+      "active": true,
+      "selectable": true,
+      "availableOptions": null,
+      "selectedOption": null,
+      "effects": [],
+      "prerequisites": []
+    },
+    {
+      "name": "Tinker's Magic",
+      "description": "You know the {@spell Mending|XPHB} cantrip.\nAs a {@action Magic|XPHB} action while holding {@item Tinker's Tools|XPHB}, you can create one item in an unoccupied space within 5 feet of yourself, choosing the item from the following list:\n- {@item Ball Bearings|XPHB}\n- {@item Basket|XPHB}\n- {@item Bedroll|XPHB}\n- {@item Bell|XPHB}\n- {@item Blanket|XPHB}\n- {@item Block and Tackle|XPHB}\n- {@item Glass Bottle|XPHB|Bottle, Glass}\n- {@item Bucket|XPHB}\n- {@item Caltrops|XPHB}\n- {@item Candle|XPHB}\n- {@item Crowbar|XPHB}\n- {@item Flask|XPHB}\n- {@item Grappling Hook|XPHB}\n- {@item Hunting Trap|XPHB}\n- {@item Jug|XPHB}\n- {@item Lamp|XPHB}\n- {@item Manacles|XPHB}\n- {@item Net|XPHB}\n- {@item Oil|XPHB}\n- {@item Paper|XPHB}\n- {@item Parchment|XPHB}\n- {@item Pole|XPHB}\n- {@item Pouch|XPHB}\n- {@item Rope|XPHB}\n- {@item Sack|XPHB}\n- {@item Shovel|XPHB}\n- {@item Iron Spikes|XPHB|Spikes, Iron}\n- {@item String|XPHB}\n- {@item Tinderbox|XPHB}\n- {@item Torch|XPHB}\n- {@item Vial|XPHB}\nSee the rules for the item in the {@book Player's Handbook|XPHB}. The item lasts until you finish a {@variantrule Long Rest|XPHB}, at which point it vanishes.\nYou can use this feature a number of times equal to your Intelligence modifier (minimum of once), and you regain all expended uses when you finish a {@variantrule Long Rest|XPHB}.",
+      "source": {
+        "category": "class",
+        "sourceName": "Tinker's Magic (Artificer)",
+        "sourceId": "Tinker's Magic|Artificer|EFA",
+        "level": 1,
+        "description": null
+      },
+      "active": true,
+      "selectable": false,
+      "availableOptions": null,
+      "selectedOption": null,
+      "effects": [],
+      "prerequisites": []
+    },
+    {
+      "name": "Replicate Magic Item",
+      "description": "You have learned arcane plans that you use to make magic items.\nWhen you gain this feature, choose four plans to learn from the Magic Item Plans (Artificer Level 2+) table (see the {@book Dungeon Master's Guide|XDMG} for the items' descriptions). {@item Bag of Holding|XDMG}, {@item Cap of Water Breathing|XDMG}, {@item Sending Stones|XDMG}, and {@item +1 Wand of the War Mage|XDMG|Wand of the War Mage} are recommended. Whenever you gain an Artificer level, you can replace one of the plans you know with a new plan for which you qualify.\nYou learn another plan of your choice when you reach certain Artificer levels, as shown in the Plans Known column of the Artificer Features table. When you choose a plan to learn, you choose it from any Magic Item Plans table for which you qualify; your qualification is based on your Artificer level.\nWhen you finish a {@variantrule Long Rest|XPHB}, you can create one or two different magic items if you have {@item Tinker's Tools|XPHB} in hand. Each item is based on one of the plans you know for this feature.\nIf a created item requires {@variantrule Attunement|XPHB}, you can attune yourself to it the instant you create it. If you decide to attune to the item later, you must do so using the normal process for {@variantrule Attunement|XPHB}.\nWhen you reach certain Artificer levels specified in the Magic Items column of the Artificer Features table, the number of magic items you can create at the end of a {@variantrule Long Rest|XPHB} increases. Each item you create must be based on a different plan you know.\nYou can't have more magic items from this feature than the number shown in the Magic Items column of the Artificer Features table for your level. If you try to exceed your maximum number of magic items for this feature, the oldest item vanishes, and then the new item appears.\nA magic item created by this feature functions as the normal magic item, except its magic isn't permanent; when you die, the magic item vanishes after {@dice 1d4} days. If you replace a plan you know with a new plan, any magic item created with the replaced plan immediately vanishes.\nIf an item that you created with this feature is a container, such as a {@item Bag of Holding|XDMG}, and it vanishes, its contents harmlessly appear in and around its space.\nYou can use any Wand or Weapon created by this feature as a {@variantrule Spellcasting Focus|XPHB} in lieu of using a set of {@item Artisan's Tools|XPHB}.\nThe Replicate Magic Item feature isn't the only way for an Artificer to make magic items. The {@book Dungeon Master's Guide|XDMG|6|Crafting Magic Items} provides rules for characters—not just Artificers—who want to make magic items of all sorts. Though many different characters can make magic items, Artificers can do it faster than others; each Artificer subclass improves a character's speed at making items of a certain category.\nWhen an Artificer crafts a magic item using the normal rules in the {@book Dungeon Master's Guide|XDMG|6|Crafting Magic Items}, the character gains no special connection to that item. Class features that refer to items created by your Replicate Magic Item feature don't apply to items you craft by other means.\n[object Object]\n[object Object]\n[object Object]\n[object Object]",
+      "source": {
+        "category": "class",
+        "sourceName": "Replicate Magic Item (Artificer)",
+        "sourceId": "Replicate Magic Item|Artificer|EFA",
+        "level": 2,
+        "description": null
+      },
+      "active": true,
+      "selectable": true,
+      "availableOptions": null,
+      "selectedOption": null,
+      "effects": [],
+      "prerequisites": []
+    },
+    {
+      "name": "Artificer Subclass",
+      "description": "You gain an Artificer subclass of your choice. The {@subclass Alchemist|Artificer|EFA|EFA}, {@subclass Armorer|Artificer|EFA|EFA}, {@subclass Artillerist|Artificer|EFA|EFA}, and {@subclass Battle Smith|Artificer|EFA|EFA}, and {@subclass Cartographer|Artificer|EFA|EFA} subclasses are detailed after this class's description. A subclass is a specialization that grants you features at certain Artificer levels. For the rest of your career, you gain each of your subclass's features that are of your Artificer level or lower.",
+      "source": {
+        "category": "class",
+        "sourceName": "Artificer Subclass (Artificer)",
+        "sourceId": "Artificer Subclass|Artificer|EFA",
+        "level": 3,
+        "description": null
+      },
+      "active": true,
+      "selectable": true,
+      "availableOptions": null,
+      "selectedOption": null,
+      "effects": [],
+      "prerequisites": []
+    },
+    {
+      "name": "Actor",
+      "description": "Skilled at mimicry and dramatics, you gain the following benefits:\n- You have advantage on Charisma ({@skill Deception}) and Charisma ({@skill Performance}) checks when trying to pass yourself off as a different person.\n- You can mimic the speech of another person or the sounds made by other creatures. You must have heard the person speaking, or heard the creature make the sound, for at least 1 minute. A successful Wisdom ({@skill Insight}) check contested by your Charisma ({@skill Deception}) check allows a listener to determine that the effect is faked.",
+      "source": {
+        "category": "feat",
+        "sourceName": "Actor",
+        "sourceId": "Actor|PHB",
+        "level": null,
+        "description": null
+      },
+      "active": true,
+      "selectable": false,
+      "availableOptions": null,
+      "selectedOption": null,
+      "effects": [],
+      "prerequisites": []
+    }
+  ],
+  "spellbooks": {},
+  "resources": {},
+  "inspiration": false,
+  "traits": {
+    "personalityTrait": "",
+    "ideal": "",
+    "bond": "",
+    "flaw": ""
+  },
+  "conditions": [],
+  "exhaustion": 0,
+  "pendingFeatureSelections": [
+    {
+      "id": "Spellcasting-1775140022916-cqik1fe7e",
+      "featureName": "Spellcasting",
+      "source": {
+        "category": "class",
+        "sourceName": "Spellcasting (Artificer)",
+        "sourceId": "Spellcasting|Artificer|EFA",
+        "level": 1,
+        "description": null
+      },
+      "description": "You have learned how to channel magical energy through objects. See the {@book Player's Handbook|XPHB} for the rules on spellcasting. The information below details how you use those rules with Artificer spells, which appear in the {@filter Artificer spell list|spells|class=Artificer} later in the class's description.\nYou produce your Artificer spells through tools. You can use {@item Thieves' Tools|XPHB}, {@item Tinker's Tools|XPHB}, or another kind of {@item Artisan's Tools|XPHB} with which you have proficiency as a {@variantrule Spellcasting Focus|XPHB}, and you must have one of those focuses in hand when you cast an Artificer spell (meaning the spell has an {@i M} component when you cast it).\nYou know two {@filter Artificer cantrips|spells|level=0|class=Artificer} of your choice. {@spell Acid Splash|XPHB} and {@spell Prestidigitation|XPHB} are recommended.\nWhenever you finish a {@variantrule Long Rest|XPHB}, you can replace one of your cantrips from this feature with another Artificer cantrip of your choice.\nWhen you reach Artificer levels 10 and 14, you learn another Artificer cantrip of your choice, as shown in the Cantrips column of the Artificer Features table.\nThe Artificer Features table shows how many spell slots you have to cast your level 1+ spells. You regain all expended slots when you finish a {@variantrule Long Rest|XPHB}.\nYou prepare the list of level 1+ spells that are available for you to cast with this feature. To start, choose two {@filter level 1 Artificer spells|spells|level=1|class=Artificer}. {@spell Cure Wounds|XPHB} and {@spell Grease|XPHB} are recommended.\nThe number of spells on your list increases as you gain Artificer levels, as shown in the Prepared Spells column of the Artificer Features table. Whenever that number increases, choose additional {@filter Artificer spells|spells|class=Artificer} until the number of spells on your list matches the number on the table. The chosen spells must be of a level for which you have spell slots. For example, if you're a level 5 Artificer, your list of prepared spells can include six Artificer spells of levels 1 and 2 in any combination.\nIf another Artificer feature gives you spells that you always have prepared, those don't count against the number of spells you can prepare with this feature, but those spells otherwise count as Artificer spells for you.\nWhenever you finish a {@variantrule Long Rest|XPHB}, you can change your list of prepared spells, replacing any of the spells there with other Artificer spells for which you have spell slots.\nIntelligence is your spellcasting ability for your Artificer spells.",
+      "availableOptions": null,
+      "effects": []
+    },
+    {
+      "id": "Replicate Magic Item-1775140022918-494s1auyh",
+      "featureName": "Replicate Magic Item",
+      "source": {
+        "category": "class",
+        "sourceName": "Replicate Magic Item (Artificer)",
+        "sourceId": "Replicate Magic Item|Artificer|EFA",
+        "level": 2,
+        "description": null
+      },
+      "description": "You have learned arcane plans that you use to make magic items.\nWhen you gain this feature, choose four plans to learn from the Magic Item Plans (Artificer Level 2+) table (see the {@book Dungeon Master's Guide|XDMG} for the items' descriptions). {@item Bag of Holding|XDMG}, {@item Cap of Water Breathing|XDMG}, {@item Sending Stones|XDMG}, and {@item +1 Wand of the War Mage|XDMG|Wand of the War Mage} are recommended. Whenever you gain an Artificer level, you can replace one of the plans you know with a new plan for which you qualify.\nYou learn another plan of your choice when you reach certain Artificer levels, as shown in the Plans Known column of the Artificer Features table. When you choose a plan to learn, you choose it from any Magic Item Plans table for which you qualify; your qualification is based on your Artificer level.\nWhen you finish a {@variantrule Long Rest|XPHB}, you can create one or two different magic items if you have {@item Tinker's Tools|XPHB} in hand. Each item is based on one of the plans you know for this feature.\nIf a created item requires {@variantrule Attunement|XPHB}, you can attune yourself to it the instant you create it. If you decide to attune to the item later, you must do so using the normal process for {@variantrule Attunement|XPHB}.\nWhen you reach certain Artificer levels specified in the Magic Items column of the Artificer Features table, the number of magic items you can create at the end of a {@variantrule Long Rest|XPHB} increases. Each item you create must be based on a different plan you know.\nYou can't have more magic items from this feature than the number shown in the Magic Items column of the Artificer Features table for your level. If you try to exceed your maximum number of magic items for this feature, the oldest item vanishes, and then the new item appears.\nA magic item created by this feature functions as the normal magic item, except its magic isn't permanent; when you die, the magic item vanishes after {@dice 1d4} days. If you replace a plan you know with a new plan, any magic item created with the replaced plan immediately vanishes.\nIf an item that you created with this feature is a container, such as a {@item Bag of Holding|XDMG}, and it vanishes, its contents harmlessly appear in and around its space.\nYou can use any Wand or Weapon created by this feature as a {@variantrule Spellcasting Focus|XPHB} in lieu of using a set of {@item Artisan's Tools|XPHB}.\nThe Replicate Magic Item feature isn't the only way for an Artificer to make magic items. The {@book Dungeon Master's Guide|XDMG|6|Crafting Magic Items} provides rules for characters—not just Artificers—who want to make magic items of all sorts. Though many different characters can make magic items, Artificers can do it faster than others; each Artificer subclass improves a character's speed at making items of a certain category.\nWhen an Artificer crafts a magic item using the normal rules in the {@book Dungeon Master's Guide|XDMG|6|Crafting Magic Items}, the character gains no special connection to that item. Class features that refer to items created by your Replicate Magic Item feature don't apply to items you craft by other means.\n[object Object]\n[object Object]\n[object Object]\n[object Object]",
+      "availableOptions": null,
+      "effects": []
+    },
+    {
+      "id": "Artificer Subclass-1775140022919-gqs9qygbq",
+      "featureName": "Artificer Subclass",
+      "source": {
+        "category": "class",
+        "sourceName": "Artificer Subclass (Artificer)",
+        "sourceId": "Artificer Subclass|Artificer|EFA",
+        "level": 3,
+        "description": null
+      },
+      "description": "You gain an Artificer subclass of your choice. The {@subclass Alchemist|Artificer|EFA|EFA}, {@subclass Armorer|Artificer|EFA|EFA}, {@subclass Artillerist|Artificer|EFA|EFA}, and {@subclass Battle Smith|Artificer|EFA|EFA}, and {@subclass Cartographer|Artificer|EFA|EFA} subclasses are detailed after this class's description. A subclass is a specialization that grants you features at certain Artificer levels. For the rest of your career, you gain each of your subclass's features that are of your Artificer level or lower.",
+      "availableOptions": null,
+      "effects": []
+    },
+    {
+      "id": "Armor Model-1775140022923-6yto78sp2",
+      "featureName": "Armor Model",
+      "source": {
+        "category": "subclass",
+        "sourceName": "Armor Model (Armorer Artificer)",
+        "sourceId": "Armor Model|Artificer|Armorer|EFA",
+        "level": 3,
+        "description": null
+      },
+      "description": "You can customize your Arcane Armor. When you do so, choose one of the following armor models: {@subclassFeature Dreadnaught|Artificer|EFA|Armorer|EFA|3|EFA}, {@subclassFeature Guardian|Artificer|EFA|Armorer|EFA|3|EFA}, or {@subclassFeature Infiltrator|Artificer|EFA|Armorer|EFA|3|EFA}. The model you choose gives you special benefits while you wear it.\nEach model includes a special weapon. When you attack with that weapon, you can add your Intelligence modifier, instead of your Strength or Dexterity modifier, to the attack and damage rolls.\nYou can change the armor's model whenever you finish a {@variantrule Short Rest|XPHB|Short} or {@variantrule Long Rest|XPHB} if you have {@item Smith's Tools|XPHB} in hand.\n[object Object]\n[object Object]\n[object Object]",
+      "availableOptions": null,
+      "effects": []
+    }
+  ],
+  "player": "7169f047-02f0-4cd6-9773-aea22d986ddc"
+}

@@ -1,0 +1,553 @@
+<% include('partials/header.ejs') %>
+
+  <main class="max-w-4xl mx-auto p-6 bg-white shadow-lg rounded-lg my-8">
+    <h1 class="text-3xl font-bold mb-6 text-gray-800 border-b pb-2">Create a Character</h1>
+
+    <form id="characterForm" action="/createCharacter" method="POST" class="space-y-8">
+      <!-- Basic Info -->
+      <section>
+        <h2 class="text-xl font-semibold mb-3">Basic Info</h2>
+        <div class="flex flex-col">
+          <label for="name" class="font-medium text-gray-700">Character Name:</label>
+          <input type="text" id="name" name="name" required
+            class="mt-1 p-2 border rounded focus:ring-2 focus:ring-blue-500">
+        </div>
+      </section>
+
+      <!-- Race & Heritage -->
+      <section>
+        <h2 class="text-xl font-semibold mb-3">Race & Heritage</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="flex flex-col">
+            <label for="race" class="font-medium text-gray-700">Race:</label>
+            <select id="race" name="race" required class="mt-1 p-2 border rounded">
+              <option value="">Select a race...</option>
+              <% races.forEach(race=> {
+                const r = JSON.parse(race); %>
+                <option value="<%= race %>">
+                  <%= `${r.name} (${r.source})` %>
+                </option>
+                <% }) %>
+            </select>
+          </div>
+
+          <div class="flex flex-col" id="subraceContainer" style="display: none;">
+            <label for="subrace" class="font-medium text-gray-700">Subrace:</label>
+            <select id="subrace" name="subrace" class="mt-1 p-2 border rounded">
+              <option value="">None</option>
+              <% subraces.forEach(sub=> {
+                const sr = JSON.parse(sub); %>
+                <option value="<%= sub %>" data-parent="<%= sr.raceName %>" data-race-source="<%= sr.raceSource %>">
+                  <%= `${sr.name} (${sr.source})` %>
+                </option>
+                <% }) %>
+            </select>
+          </div>
+        </div>
+      </section>
+
+      <!-- Class & Level -->
+      <section>
+        <h2 class="text-xl font-semibold mb-3">Class & Level</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div class="flex flex-col">
+            <label for="className" class="font-medium text-gray-700">Class:</label>
+            <select id="className" name="className" required class="mt-1 p-2 border rounded">
+              <option value="">Select a class...</option>
+              <% classes.forEach(cls=> {
+                const c = JSON.parse(cls); %>
+                <option value="<%= cls %>">
+                  <%= `${c.name} (${c.source})` %>
+                </option>
+                <% }) %>
+            </select>
+          </div>
+
+          <div class="flex flex-col">
+            <label for="level" class="font-medium text-gray-700">Level:</label>
+            <input type="number" id="level" name="level" min="1" max="20" value="1" required
+              class="mt-1 p-2 border rounded">
+          </div>
+
+          <div id="subclassContainer" class="flex flex-col" style="display: none;">
+            <label for="subclass" class="font-medium text-gray-700">Subclass:</label>
+            <select id="subclass" name="subclass" class="mt-1 p-2 border rounded">
+              <option value="">None</option>
+              <% subclasses.forEach(sc=> {
+                const s = JSON.parse(sc); %>
+                <option value="<%= sc %>" data-class="<%= s.className %>">
+                  <%= `${s.name} (${s.source})` %>
+                </option>
+                <% }) %>
+            </select>
+          </div>
+        </div>
+      </section>
+
+      <!-- Ability Scores -->
+      <section>
+        <h2 class="text-xl font-semibold mb-3">Ability Scores</h2>
+        <div class="grid grid-cols-2 md:grid-cols-6 gap-4">
+          <% abilities.forEach(ability=> {
+            const displayName = ability.charAt(0).toUpperCase() + ability.slice(1); %>
+            <div class="flex flex-col">
+              <label for="stat_<%= ability %>" class="text-sm font-medium">
+                <%= displayName %>
+              </label>
+              <input type="number" id="stat_<%= ability %>" name="stats[<%= ability %>]" min="1" max="20" value="10"
+                class="p-2 border rounded">
+            </div>
+            <% }) %>
+        </div>
+      </section>
+
+      <!-- Background & Alignment -->
+      <section class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <h2 class="text-xl font-semibold mb-3">Background</h2>
+          <select id="background" name="background" required class="w-full p-2 border rounded">
+            <option value="">Select a background...</option>
+            <% backgrounds.forEach(bg=> {
+              const b = JSON.parse(bg); %>
+              <option value="<%= bg %>">
+                <%= `${b.name} (${b.source})` %>
+              </option>
+              <% }) %>
+          </select>
+        </div>
+        <div>
+          <h2 class="text-xl font-semibold mb-3">Alignment</h2>
+          <select id="alignment" name="alignment" class="w-full p-2 border rounded">
+            <% alignments.forEach(align=> { %>
+              <option value="<%= align %>">
+                <%= align %>
+              </option>
+              <% }) %>
+          </select>
+        </div>
+      </section>
+
+      <!-- Feats -->
+      <section>
+        <h2 class="text-xl font-semibold mb-3">Feats (Optional)</h2>
+        <select id="feats" name="feats" multiple size="5" class="w-full p-2 border rounded">
+          <% feats.forEach(feat=> {
+            const f = JSON.parse(feat); %>
+            <option value="<%= feat %>">
+              <%= `${f.name} (${f.source})` %>
+            </option>
+            <% }) %>
+        </select>
+      </section>
+
+      <!-- Starting Equipment (dynamically loaded) -->
+      <section id="equipmentSection" style="display: none;">
+        <h2 class="text-xl font-semibold mb-3">Starting Equipment</h2>
+        <div id="equipmentChoices" class="space-y-4"></div>
+        <div id="equipmentGoldAlt" class="mt-2 text-sm text-gray-500"></div>
+      </section>
+
+      <!-- Spell Selection (dynamically loaded) -->
+      <section id="spellSection" style="display: none;">
+        <h2 class="text-xl font-semibold mb-3">Spellcasting</h2>
+        <div id="spellInfo" class="text-sm text-gray-600 mb-4"></div>
+
+        <!-- Cantrips -->
+        <div id="cantripSection" style="display: none;">
+          <h3 class="text-lg font-semibold mb-2">Cantrips <span id="cantripCounter"
+              class="text-sm font-normal text-gray-500"></span></h3>
+          <div id="cantripList"
+            class="grid grid-cols-2 md:grid-cols-3 gap-2 max-h-64 overflow-y-auto border rounded p-3 bg-gray-50"></div>
+        </div>
+
+        <!-- Spells -->
+        <div id="spellPickSection" class="mt-4" style="display: none;">
+          <h3 class="text-lg font-semibold mb-2">Spells <span id="spellCounter"
+              class="text-sm font-normal text-gray-500"></span></h3>
+          <div id="spellLevelFilter" class="flex gap-2 mb-2 flex-wrap"></div>
+          <div id="spellList"
+            class="grid grid-cols-1 md:grid-cols-2 gap-2 max-h-80 overflow-y-auto border rounded p-3 bg-gray-50"></div>
+        </div>
+      </section>
+
+      <button type="submit"
+        class="w-full bg-blue-600 text-white font-bold py-3 rounded hover:bg-blue-700 transition">Create
+        Character</button>
+    </form>
+
+    <div id="characterPreview" class="mt-8 p-4 bg-gray-100 rounded border hidden">
+      <h2 class="text-lg font-bold mb-2">Character Preview</h2>
+      <pre id="characterJson" class="text-sm overflow-auto"></pre>
+    </div>
+  </main>
+
+  <script>
+    const form = document.getElementById('characterForm');
+    const preview = document.getElementById('characterPreview');
+    const jsonDisplay = document.getElementById('characterJson');
+
+    const raceSelect = document.getElementById('race');
+    const subraceSelect = document.getElementById('subrace');
+    const subraceContainer = document.getElementById('subraceContainer');
+
+    const classSelect = document.getElementById('className');
+    const subclassSelect = document.getElementById('subclass');
+    const subclassContainer = document.getElementById('subclassContainer');
+    const levelInput = document.getElementById('level');
+
+    // State for spell/equipment selections
+    let selectedCantrips = [];
+    let selectedSpells = [];
+    let spellContext = null;
+
+    function safeParse(val) {
+      if (!val) return null;
+      try { return JSON.parse(val); } catch (e) { return null; }
+    }
+
+    // --- Race / Subrace filtering ---
+    raceSelect.addEventListener('change', () => {
+      const data = safeParse(raceSelect.value);
+      if (!data) { subraceContainer.style.display = 'none'; return; }
+      const { name, source } = data;
+      let count = 0;
+      Array.from(subraceSelect.options).forEach(opt => {
+        if (!opt.value) return;
+        const isMatch = opt.dataset.parent === name && opt.dataset.raceSource === source;
+        opt.style.display = isMatch ? 'block' : 'none';
+        if (isMatch) count++;
+      });
+      subraceContainer.style.display = count > 0 ? 'block' : 'none';
+      subraceSelect.value = "";
+    });
+
+    // --- Subclass filtering ---
+    function updateSubclassUI() {
+      const data = safeParse(classSelect.value);
+      const level = parseInt(levelInput.value) || 1;
+      if (!data) { subclassContainer.style.display = 'none'; return; }
+      const { name } = data;
+      const nameLower = name.toLowerCase();
+      const shouldShow = nameLower === 'warlock' || nameLower === 'cleric' || nameLower === 'sorcerer' || level >= 3;
+      let count = 0;
+      Array.from(subclassSelect.options).forEach(opt => {
+        if (!opt.value) return;
+        const isMatch = opt.dataset.class === name;
+        opt.style.display = isMatch ? 'block' : 'none';
+        if (isMatch) count++;
+      });
+      subclassContainer.style.display = (shouldShow && count > 0) ? 'block' : 'none';
+    }
+    classSelect.addEventListener('change', () => { updateSubclassUI(); loadEquipment(); loadSpellContext(); });
+    levelInput.addEventListener('input', () => { updateSubclassUI(); loadSpellContext(); });
+    subclassSelect.addEventListener('change', loadSpellContext);
+
+    // --- Equipment Loading ---
+    async function loadEquipment() {
+      const data = safeParse(classSelect.value);
+      const section = document.getElementById('equipmentSection');
+      const container = document.getElementById('equipmentChoices');
+      const goldAlt = document.getElementById('equipmentGoldAlt');
+
+      if (!data) { section.style.display = 'none'; return; }
+
+      try {
+        const res = await fetch(`/api/equipment/class/${encodeURIComponent(data.name)}?classSource=${encodeURIComponent(data.source)}`);
+        const eq = await res.json();
+
+        if (!eq.choices || eq.choices.length === 0) { section.style.display = 'none'; return; }
+
+        container.innerHTML = '';
+        eq.choices.forEach((choice, idx) => {
+          const div = document.createElement('div');
+          div.className = 'border rounded p-3 bg-gray-50';
+
+          if (choice.isAutomatic) {
+            const items = choice.options[0].items.map(i => i.data?.name || i.name).join(', ');
+            div.innerHTML = `<div class="text-sm"><span class="font-medium">Included:</span> ${items}</div>
+            <input type="hidden" name="equipmentChoices_group" value="${idx}" data-key="_">`;
+          } else {
+            let html = `<div class="text-sm font-medium mb-2">Choose one:</div>`;
+            choice.options.forEach(opt => {
+              const items = opt.items.map(i => i.data?.name || i.name).join(', ');
+              const id = `eq_${idx}_${opt.key}`;
+              html += `<label class="flex items-center gap-2 p-1 hover:bg-gray-100 rounded cursor-pointer">
+              <input type="radio" name="eq_choice_${idx}" value="${opt.key}" data-group="${idx}" class="eq-radio">
+              <span class="text-sm">(${opt.key}) ${items}</span>
+            </label>`;
+            });
+            div.innerHTML = html;
+          }
+          container.appendChild(div);
+        });
+
+        if (eq.goldAlternative) {
+          goldAlt.textContent = 'Or start with gold: ' + eq.goldAlternative.replace(/\{@dice ([^}]+)\}/g, '$1');
+        } else {
+          goldAlt.textContent = '';
+        }
+
+        section.style.display = 'block';
+      } catch (e) {
+        console.error('Equipment load error:', e);
+        section.style.display = 'none';
+      }
+    }
+
+    // --- Spell Context Loading ---
+    async function loadSpellContext() {
+      const data = safeParse(classSelect.value);
+      const level = parseInt(levelInput.value) || 1;
+      const spellSection = document.getElementById('spellSection');
+      const spellInfo = document.getElementById('spellInfo');
+      const cantripSection = document.getElementById('cantripSection');
+      const spellPickSection = document.getElementById('spellPickSection');
+
+      selectedCantrips = [];
+      selectedSpells = [];
+
+      if (!data) { spellSection.style.display = 'none'; return; }
+
+      const scData = safeParse(subclassSelect.value);
+      let url = `/api/spells/context/${encodeURIComponent(data.name)}/${level}?classSource=${encodeURIComponent(data.source)}`;
+      if (scData) {
+        url += `&subclassName=${encodeURIComponent(scData.name)}&subclassSource=${encodeURIComponent(scData.source)}`;
+      }
+
+      try {
+        const res = await fetch(url);
+        spellContext = await res.json();
+
+        if (!spellContext.isCaster) {
+          spellSection.style.display = 'none';
+          return;
+        }
+
+        spellSection.style.display = 'block';
+        const typeLabel = spellContext.acquisitionType === 'prepared' ? 'Prepared' : 'Known';
+        const formulaNote = spellContext.preparedFormula ? ` (${spellContext.preparedFormula})` : '';
+        spellInfo.innerHTML = `
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-2 bg-blue-50 p-3 rounded">
+          <div><strong>Caster Type:</strong> ${spellContext.casterProgression}</div>
+          <div><strong>Spell Type:</strong> ${typeLabel}</div>
+          <div><strong>Max Spell Level:</strong> ${spellContext.maxSpellLevel}</div>
+          <div><strong>Spell Slots:</strong> ${spellContext.spellSlots.filter(s => s > 0).join(' / ')}</div>
+        </div>`;
+
+        // Cantrips
+        if (spellContext.numCantrips > 0 && spellContext.cantrips.length > 0) {
+          cantripSection.style.display = 'block';
+          updateCantripCounter();
+          const cantripList = document.getElementById('cantripList');
+          cantripList.innerHTML = '';
+          spellContext.cantrips.forEach(c => {
+            const id = `cantrip_${c.name.replace(/\s+/g, '_')}`;
+            const label = document.createElement('label');
+            label.className = 'flex items-center gap-2 p-1.5 border rounded bg-white hover:bg-blue-50 cursor-pointer text-sm';
+            label.innerHTML = `<input type="checkbox" id="${id}" class="cantrip-cb" data-name="${c.name}" data-source="${c.source}">
+            <span>${c.name}</span>`;
+            cantripList.appendChild(label);
+          });
+          cantripList.addEventListener('change', handleCantripChange);
+        } else {
+          cantripSection.style.display = 'none';
+        }
+
+        // Spells
+        if (spellContext.spells.length > 0) {
+          spellPickSection.style.display = 'block';
+          updateSpellCounter();
+
+          // Level filter buttons
+          const filterDiv = document.getElementById('spellLevelFilter');
+          filterDiv.innerHTML = '';
+          const levels = [...new Set(spellContext.spells.map(s => s.level))].sort();
+          const allBtn = document.createElement('button');
+          allBtn.type = 'button';
+          allBtn.className = 'px-3 py-1 text-sm rounded bg-blue-600 text-white';
+          allBtn.textContent = 'All';
+          allBtn.onclick = () => filterSpells(0, allBtn);
+          filterDiv.appendChild(allBtn);
+          levels.forEach(lvl => {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'px-3 py-1 text-sm rounded bg-gray-200 hover:bg-gray-300';
+            btn.textContent = 'Level ' + lvl;
+            btn.onclick = () => filterSpells(lvl, btn);
+            filterDiv.appendChild(btn);
+          });
+
+          renderSpellList(0);
+        } else {
+          spellPickSection.style.display = 'none';
+        }
+      } catch (e) {
+        console.error('Spell context load error:', e);
+        spellSection.style.display = 'none';
+      }
+    }
+
+    function handleCantripChange(e) {
+      if (!e.target.classList.contains('cantrip-cb')) return;
+      const name = e.target.dataset.name;
+      const source = e.target.dataset.source;
+
+      if (e.target.checked) {
+        if (selectedCantrips.length >= spellContext.numCantrips) {
+          e.target.checked = false;
+          return;
+        }
+        selectedCantrips.push({ name, source });
+      } else {
+        selectedCantrips = selectedCantrips.filter(c => c.name !== name);
+      }
+      updateCantripCounter();
+    }
+
+    function updateCantripCounter() {
+      const el = document.getElementById('cantripCounter');
+      if (spellContext) {
+        el.textContent = `(${selectedCantrips.length} / ${spellContext.numCantrips})`;
+      }
+    }
+
+    function filterSpells(level, activeBtn) {
+      document.querySelectorAll('#spellLevelFilter button').forEach(b => {
+        b.className = 'px-3 py-1 text-sm rounded bg-gray-200 hover:bg-gray-300';
+      });
+      activeBtn.className = 'px-3 py-1 text-sm rounded bg-blue-600 text-white';
+      renderSpellList(level);
+    }
+
+    function renderSpellList(filterLevel) {
+      const spellList = document.getElementById('spellList');
+      spellList.innerHTML = '';
+      const spells = filterLevel === 0 ? spellContext.spells : spellContext.spells.filter(s => s.level === filterLevel);
+
+      spells.forEach(s => {
+        const id = `spell_${s.name.replace(/\s+/g, '_')}`;
+        const checked = selectedSpells.some(sp => sp.name === s.name) ? 'checked' : '';
+        const label = document.createElement('label');
+        label.className = 'flex items-center gap-2 p-1.5 border rounded bg-white hover:bg-blue-50 cursor-pointer text-sm';
+        const concStr = s.concentration ? ' <span class="text-orange-500 text-xs font-bold">C</span>' : '';
+        const ritStr = s.ritual ? ' <span class="text-purple-500 text-xs font-bold">R</span>' : '';
+        label.innerHTML = `<input type="checkbox" id="${id}" class="spell-cb" data-name="${s.name}" data-source="${s.source}" ${checked}>
+        <span>L${s.level} ${s.name}${concStr}${ritStr}</span>`;
+        spellList.appendChild(label);
+      });
+
+      spellList.removeEventListener('change', handleSpellChange);
+      spellList.addEventListener('change', handleSpellChange);
+    }
+
+    function handleSpellChange(e) {
+      if (!e.target.classList.contains('spell-cb')) return;
+      const name = e.target.dataset.name;
+      const source = e.target.dataset.source;
+
+      if (e.target.checked) {
+        // For known casters, enforce the limit. For prepared casters, let them pick freely.
+        if (spellContext.acquisitionType === 'known' && selectedSpells.length >= spellContext.numSpells) {
+          e.target.checked = false;
+          return;
+        }
+        selectedSpells.push({ name, source });
+      } else {
+        selectedSpells = selectedSpells.filter(s => s.name !== name);
+      }
+      updateSpellCounter();
+    }
+
+    function updateSpellCounter() {
+      const el = document.getElementById('spellCounter');
+      if (!spellContext) return;
+      if (spellContext.acquisitionType === 'known') {
+        el.textContent = `(${selectedSpells.length} / ${spellContext.numSpells} known)`;
+      } else {
+        el.textContent = `(${selectedSpells.length} selected — prepare ${spellContext.preparedFormula || spellContext.numSpells} per day)`;
+      }
+    }
+
+    // --- Form Submission ---
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const formData = new FormData(form);
+
+      try {
+        const raceData = safeParse(formData.get('race'));
+        const classData = safeParse(formData.get('className'));
+        const bgData = safeParse(formData.get('background'));
+
+        if (!raceData || !classData || !bgData) throw new Error("Missing required data");
+
+        // Gather equipment choices
+        const equipChoices = [];
+        document.querySelectorAll('.eq-radio:checked').forEach(radio => {
+          equipChoices.push({ groupIndex: parseInt(radio.dataset.group), choiceKey: radio.value });
+        });
+        // Include automatic items
+        document.querySelectorAll('input[name="equipmentChoices_group"]').forEach(hidden => {
+          equipChoices.push({ groupIndex: parseInt(hidden.value), choiceKey: hidden.dataset.key });
+        });
+
+        const payload = {
+          name: formData.get('name'),
+          race: raceData.name,
+          raceSource: raceData.source,
+          className: classData.name,
+          classSource: classData.source,
+          level: parseInt(formData.get('level')),
+          background: bgData.name,
+          backgroundSource: bgData.source,
+          alignment: formData.get('alignment'),
+          stats: {
+            strength: parseInt(formData.get('stats[strength]')),
+            dexterity: parseInt(formData.get('stats[dexterity]')),
+            constitution: parseInt(formData.get('stats[constitution]')),
+            intelligence: parseInt(formData.get('stats[intelligence]')),
+            wisdom: parseInt(formData.get('stats[wisdom]')),
+            charisma: parseInt(formData.get('stats[charisma]'))
+          },
+          feats: Array.from(formData.getAll('feats')).map(f => safeParse(f)).filter(f => f),
+          selectedCantrips,
+          selectedSpells,
+          equipmentChoices: equipChoices,
+        };
+
+        const srVal = formData.get('subrace');
+        const srData = safeParse(srVal);
+        if (srData) {
+          payload.subrace = srData.name;
+          payload.subraceSource = srData.source;
+        }
+
+        const scVal = formData.get('subclass');
+        const scData = safeParse(scVal);
+        if (scData) {
+          payload.subclass = scData.name;
+          payload.subclassSource = scData.source;
+        }
+
+        const response = await fetch('/createCharacter', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        const result = await response.json();
+        if (response.ok) {
+          preview.classList.remove('hidden');
+          jsonDisplay.textContent = JSON.stringify(result, null, 2);
+          if (result.id) setTimeout(() => window.location.href = `/character/${result.id}`, 1500);
+        } else {
+          alert('Error: ' + result.error);
+        }
+      } catch (err) {
+        console.error(err);
+        alert('Submission failed. Check your choices.');
+      }
+    });
+
+  </script>
+
+  <% include('partials/footer.ejs') %>

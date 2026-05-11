@@ -1,0 +1,1066 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= character.name %> — D&D 5E Character Sheet</title>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <link href="https://fonts.googleapis.com" rel="preconnect"/>
+  <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+  <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@400;600;700&family=Metamorphic&family=Mrs+Eaves&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --dnd-parchment: #fcfcfc;
+      --dnd-border: #000000;
+      --dnd-input-bg: #f8fafc;
+    }
+    body {
+      font-family: 'Crimson Pro', serif;
+      background-color: #333;
+      color: #000;
+    }
+    .dnd-font-header {
+      font-family: 'Metamorphic', serif;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .label-small {
+      font-size: 0.65rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: #4a4a4a;
+    }
+    input[type="text"], input[type="number"], textarea {
+      border: none;
+      background: transparent;
+      width: 100%;
+      padding: 2px 4px;
+      font-size: 0.9rem;
+    }
+    input:focus, textarea:focus {
+      outline: none;
+      background-color: rgba(0, 0, 0, 0.05);
+    }
+    .sketch-border {
+      border: 2px solid black;
+      border-radius: 4px;
+      position: relative;
+    }
+    .header-banner {
+      border: 3px solid black;
+      border-radius: 10px 50px 10px 50px / 50px 10px 50px 10px;
+      padding: 10px;
+      background: white;
+    }
+    .stat-box {
+      border: 2px solid black;
+      border-radius: 8px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 4px;
+      width: 65px;
+    }
+    .bubble {
+      border: 1px solid black;
+      border-radius: 50%;
+      width: 14px;
+      height: 14px;
+      display: inline-block;
+      margin-right: 4px;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+    .bubble.filled {
+      background-color: black;
+    }
+    .box-container {
+      border: 1px solid #000;
+      border-radius: 5px;
+      padding: 5px;
+      margin-bottom: 8px;
+    }
+    .sheet-page {
+      width: 850px;
+      min-height: 1100px;
+      margin: 20px auto;
+      background-color: white;
+      padding: 40px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.5);
+      position: relative;
+      overflow: hidden;
+    }
+    .skill-row {
+      display: flex;
+      align-items: center;
+      margin-bottom: 2px;
+      font-size: 0.75rem;
+    }
+    .line-input {
+      border-bottom: 1px solid #ccc !important;
+    }
+    .editable-input {
+      background: transparent;
+      border: none;
+    }
+    .editable-input.edit-active {
+      background: white;
+      border: 2px solid #4299e1;
+      border-radius: 2px;
+    }
+    .editable-input:read-only {
+      cursor: default;
+    }
+    .editable-input.edit-active:read-only {
+      cursor: pointer;
+    }
+    .no-print {
+      position: fixed;
+    }
+    .equipment-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.25rem 0;
+      border-bottom: 1px dashed #e2e8f0;
+    }
+    .equipment-item:last-child {
+      border-bottom: none;
+    }
+    .equipment-delete {
+      opacity: 0;
+      transition: opacity 0.2s;
+      color: #e53e3e;
+      cursor: pointer;
+    }
+    .equipment-item:hover .equipment-delete {
+      opacity: 1;
+    }
+    .equipment-add {
+      margin-top: 0.5rem;
+      font-size: 0.75rem;
+      color: #4299e1;
+      cursor: pointer;
+      display: none;
+    }
+    .equipment-add.visible {
+      display: block;
+    }
+    .feature-item {
+      margin-bottom: 8px;
+      padding: 4px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    .feature-delete {
+      color: #e53e3e;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+    .feature-item:hover .feature-delete {
+      opacity: 1;
+    }
+    .feature-delete.visible {
+      opacity: 1;
+    }
+    .spell-checkbox {
+      cursor: pointer;
+    }
+    @media print {
+      body {
+        background: white !important;
+        padding: 0 !important;
+        margin: 0 !important;
+      }
+      .sheet-page {
+        box-shadow: none !important;
+        margin: 0 !important;
+        width: 100% !important;
+        min-height: auto !important;
+      }
+      .no-print, .fixed {
+        display: none !important;
+        visibility: hidden !important;
+      }
+      .editable-input {
+        border: none !important;
+        background: transparent !important;
+      }
+    }
+  </style>
+</head>
+<body class="p-4">
+
+  <a href="/character/<%= character.id %>/pdf"
+     class="fixed top-4 left-4 z-50 px-4 py-2 bg-indigo-600 text-white rounded-lg shadow-lg hover:bg-indigo-700 transition flex items-center gap-2 no-print"
+     title="Download PDF">
+    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 11v6m0 0l-3-3m3 3l3-3"/>
+    </svg>
+    <span>Print PDF</span>
+  </a>
+
+  <form id="character-form" method="POST" action="/character/<%= character.id %>?_method=PUT">
+
+    <!-- ========================= PAGE 1: CORE STATS & INFO ========================= -->
+    <main class="sheet-page" data-purpose="character-core-info" id="page-1">
+
+      <!-- Edit Controls -->
+      <div class="flex gap-2 mb-4 no-print fixed top-4 right-4 z-50">
+        <button type="button" id="edit-toggle"
+          class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+          Edit Character
+        </button>
+        <button type="button" id="cancel-edit" class="px-4 py-2 bg-gray-400 text-white rounded-lg hover:bg-gray-500 transition hidden">
+          Cancel
+        </button>
+        <button type="submit" id="save-btn" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition hidden">
+          Save Changes
+        </button>
+        <button type="button" id="delete-btn" onclick="confirmDelete()"
+          class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition">
+          Delete Character
+        </button>
+      </div>
+
+      <!-- Header Section -->
+      <header class="flex gap-4 mb-8">
+        <div class="flex-none w-1/3">
+          <div class="header-banner h-24 flex items-center justify-center relative">
+            <img alt="D&D Logo" class="max-h-full" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDe8LhTl2Ib7K8TXaUdj2yjeSFdnbo0ur6sxyiNcpUdmRC8PJi__M3tJ1SY3GizQBEmOXf9LqompyZFV3nmSMXbmY7ov6RCNQYbMI_qjKsNAgkdb92C39NGFdvbj0jS02a9HpYSok1fxMCfalqiGqeKrgADLSwrU3VUvYTB2JJsiM5V7aJnmRBSsttjaS8P75fwwKYARLmLwB55oi8aLasEvfkOryxYf-XM31RWLrwbK3ZgiKMndAjp2d2BrOzbNnfy3dT7T8UkbN8"/>
+            <div class="absolute -bottom-3 left-4 bg-white px-2">
+              <input name="name" class="font-bold uppercase text-lg border-none focus:ring-0 editable-input" type="text" value="<%= character.name %>" readonly/>
+            </div>
+          </div>
+        </div>
+        <div class="flex-grow grid grid-cols-3 gap-2 border-2 border-black rounded-lg p-3">
+          <div>
+            <label class="label-small block">Class & Level</label>
+            <span class="line-input font-semibold"><%= classStr %></span>
+          </div>
+          <div>
+            <label class="label-small block">Background</label>
+            <span class="line-input font-semibold"><%= bgStr %></span>
+          </div>
+          <div>
+            <label class="label-small block">Player Name</label>
+            <input name="player" class="line-input editable-input" type="text" value="<%= character.player || '' %>" readonly/>
+          </div>
+          <div>
+            <label class="label-small block">Race</label>
+            <span class="line-input font-semibold"><%= raceDisplay %></span>
+          </div>
+          <div>
+            <label class="label-small block">Alignment</label>
+            <select name="alignment" class="line-input editable-input bg-transparent" disabled>
+              <option value="">Select...</option>
+              <% const alignments = ["Lawful Good", "Neutral Good", "Chaotic Good", "Lawful Neutral", "True Neutral", "Chaotic Neutral", "Lawful Evil", "Neutral Evil", "Chaotic Evil"];
+              alignments.forEach(function(a) { %>
+                <option value="<%= a %>" <%= character.alignment === a ? 'selected' : '' %>><%= a %></option>
+              <% }); %>
+            </select>
+          </div>
+          <div>
+            <label class="label-small block">XP</label>
+            <input name="experience" class="line-input editable-input" type="number" value="<%= character.experience %>" readonly min="0"/>
+          </div>
+        </div>
+      </header>
+
+      <div class="grid grid-cols-12 gap-6">
+        <!-- LEFT COLUMN: Attributes & Skills -->
+        <section class="col-span-4 space-y-4" data-purpose="stats-and-skills">
+          <div class="flex gap-4">
+            <!-- Attributes -->
+            <div class="space-y-4">
+              <% abilityData.forEach(function(a) { %>
+                <div class="stat-box">
+                  <span class="label-small"><%= a.abbr %></span>
+                  <input name="abilityScores[<%= a.name %>]" class="text-center text-xl font-bold editable-input" type="number" value="<%= a.score %>" readonly min="1" max="30"/>
+                  <div class="border border-black rounded-full w-8 h-6 flex items-center justify-center text-xs mt-1"><%= a.modStr %></div>
+                </div>
+              <% }); %>
+            </div>
+            <!-- Proficiency & Saves -->
+            <div class="flex-grow space-y-4">
+              <div class="sketch-border p-2 flex items-center gap-2">
+                <div id="inspiration-bubble" class="bubble <%= character.inspiration ? 'filled' : '' %>" onclick="toggleInspiration()"></div>
+                <input type="checkbox" name="inspiration" id="inspiration" value="1" <%= character.inspiration ? 'checked' : '' %> class="hidden"/>
+                <input name="proficiencyBonus" class="w-8 text-center font-bold editable-input" type="text" value="<%= profBonusStr %>" readonly/>
+                <span class="label-small">Proficiency Bonus</span>
+              </div>
+
+              <!-- Saving Throws -->
+              <div class="sketch-border p-2">
+                <span class="label-small block text-center mb-2">Saving Throws</span>
+                <% savingThrows.forEach(function(st) { %>
+                  <div class="skill-row">
+                    <div class="bubble <%= st.proficient ? 'filled' : '' %>" data-save="<%= st.name %>" onclick="toggleSaveBubble(this)"></div>
+                    <input type="checkbox" name="savingThrows[<%= st.name %>]" class="hidden" <%= st.proficient ? 'checked' : '' %>/>
+                    <input class="w-6 border-b editable-input" type="text" value="<%= st.modStr %>" readonly/>
+                    <span><%= st.label %></span>
+                  </div>
+                <% }); %>
+              </div>
+
+              <!-- Skills -->
+              <div class="sketch-border p-2">
+                <span class="label-small block text-center mb-2">Skills</span>
+                <% skills.forEach(function(sk) { %>
+                  <div class="skill-row">
+                    <div class="bubble <%= sk.proficient ? 'filled' : '' %>" data-skill="<%= sk.name %>" onclick="toggleSkillBubble(this)"></div>
+                    <input type="checkbox" name="skills[<%= sk.name %>]" value="1" class="hidden" <%= sk.proficient ? 'checked' : '' %>/>
+                    <input type="checkbox" name="skillExpertise[<%= sk.name %>]" value="1" class="hidden" <%= sk.expertise ? 'checked' : '' %>/>
+                    <input class="w-6 border-b editable-input" type="text" value="<%= sk.modStr %>" readonly/>
+                    <span><%= sk.label %></span>
+                    <span class="text-gray-500 text-xs">(<%= sk.ability %>)</span>
+                  </div>
+                <% }); %>
+              </div>
+            </div>
+          </div>
+
+          <!-- Passive Perception -->
+          <div class="sketch-border p-2 flex items-center gap-2">
+            <input name="passivePerception" class="w-8 text-center font-bold editable-input" type="number" value="<%= character.passivePerception || 10 %>" readonly min="0"/>
+            <span class="label-small">Passive Wisdom (Perception)</span>
+          </div>
+
+          <!-- Languages & Proficiencies -->
+          <div class="sketch-border p-2 h-40">
+            <span class="label-small block">Other Proficiencies & Languages</span>
+            <textarea name="otherProficienciesText" class="h-32 text-xs w-full resize-none editable-input" readonly><%= otherProfs.join('\n') %></textarea>
+          </div>
+        </section>
+
+        <!-- CENTER COLUMN: Combat & Health -->
+        <section class="col-span-4 space-y-4" data-purpose="combat-stats">
+          <!-- Top Stats -->
+          <div class="grid grid-cols-3 gap-2">
+            <div class="stat-box w-full border-2">
+              <span class="label-small">Armor Class</span>
+              <input name="armorClass" class="text-center text-xl font-bold editable-input" type="number" value="<%= character.armorClass?.baseValue || 10 %>" readonly min="0"/>
+            </div>
+            <div class="stat-box w-full border-2">
+              <span class="label-small">Initiative</span>
+              <input name="initiative" class="text-center text-xl font-bold editable-input" type="number" value="<%= character.initiative?.baseValue || 0 %>" readonly/>
+            </div>
+            <div class="stat-box w-full border-2">
+              <span class="label-small">Speed</span>
+              <input name="speed" class="text-center text-xl font-bold editable-input" type="number" value="<%= character.speed?.baseValue || 30 %>" readonly min="0"/>
+            </div>
+          </div>
+
+          <!-- Health Pool -->
+          <div class="sketch-border p-3 space-y-2">
+            <div class="flex justify-between items-center text-xs">
+              <span>Hit Point Maximum</span>
+              <input name="maxHitPoints" class="w-20 border-b editable-input" type="number" value="<%= character.maxHitPoints %>" readonly min="1"/>
+            </div>
+            <input name="currentHitPoints" class="text-center text-2xl h-12 editable-input" placeholder="Current HP" type="number" value="<%= character.currentHitPoints %>" readonly/>
+            <p class="text-center label-small">Current Hit Points</p>
+          </div>
+          <div class="sketch-border p-3">
+            <input name="tempHitPoints" class="text-center h-12 editable-input" placeholder="Temporary HP" type="number" value="<%= character.tempHitPoints || 0 %>" readonly/>
+            <p class="text-center label-small">Temporary Hit Points</p>
+          </div>
+
+          <!-- Hit Dice & Deaths -->
+          <div class="grid grid-cols-2 gap-4">
+            <div class="sketch-border p-2">
+              <div class="flex justify-between label-small">
+                <span>Total</span>
+                <span class="font-bold"><%= totalLevel %></span>
+              </div>
+              <div class="text-center text-lg h-8 font-bold"><%= hitDieStr || '—' %></div>
+              <p class="text-center label-small">Hit Dice</p>
+            </div>
+            <div class="sketch-border p-2">
+              <div class="flex items-center justify-center gap-1">
+                <span class="label-small">Successes</span>
+                <div class="bubble <%= character.deathSaveSuccess1 ? 'filled' : '' %>" onclick="toggleDeathSave(this, 'success1')"></div>
+                <div class="bubble <%= character.deathSaveSuccess2 ? 'filled' : '' %>" onclick="toggleDeathSave(this, 'success2')"></div>
+                <div class="bubble <%= character.deathSaveSuccess3 ? 'filled' : '' %>" onclick="toggleDeathSave(this, 'success3')"></div>
+              </div>
+              <div class="flex items-center justify-center gap-1 mt-1">
+                <span class="label-small">Failures</span>
+                <div class="bubble <%= character.deathSaveFail1 ? 'filled' : '' %>" onclick="toggleDeathSave(this, 'fail1')"></div>
+                <div class="bubble <%= character.deathSaveFail2 ? 'filled' : '' %>" onclick="toggleDeathSave(this, 'fail2')"></div>
+                <div class="bubble <%= character.deathSaveFail3 ? 'filled' : '' %>" onclick="toggleDeathSave(this, 'fail3')"></div>
+              </div>
+              <p class="text-center label-small">Death Saves</p>
+            </div>
+          </div>
+          <input type="checkbox" name="deathSaveSuccess1" class="hidden" <%= character.deathSaveSuccess1 ? 'checked' : '' %>/>
+          <input type="checkbox" name="deathSaveSuccess2" class="hidden" <%= character.deathSaveSuccess2 ? 'checked' : '' %>/>
+          <input type="checkbox" name="deathSaveSuccess3" class="hidden" <%= character.deathSaveSuccess3 ? 'checked' : '' %>/>
+          <input type="checkbox" name="deathSaveFail1" class="hidden" <%= character.deathSaveFail1 ? 'checked' : '' %>/>
+          <input type="checkbox" name="deathSaveFail2" class="hidden" <%= character.deathSaveFail2 ? 'checked' : '' %>/>
+          <input type="checkbox" name="deathSaveFail3" class="hidden" <%= character.deathSaveFail3 ? 'checked' : '' %>/>
+
+          <!-- Attacks & Spellcasting -->
+          <div class="sketch-border p-2 h-64">
+            <span class="label-small block border-b mb-2">Attacks & Spellcasting</span>
+            <table class="w-full text-[10px]">
+              <thead>
+                <tr class="border-b">
+                  <th class="text-left">Name</th>
+                  <th class="text-left">ATK Bonus</th>
+                  <th class="text-left">Damage/Type</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% weapons.forEach(function(w) { %>
+                  <tr>
+                    <td><%= w.name %></td>
+                    <td><%= w.atkBonusStr %></td>
+                    <td><%= w.damage %></td>
+                  </tr>
+                <% }); %>
+                <% for(let i = weapons.length; i < 3; i++) { %>
+                  <tr><td>&nbsp;</td><td></td><td></td></tr>
+                <% } %>
+              </tbody>
+            </table>
+            <% if (spellData) { %>
+              <div class="mt-2 pt-1 border-t text-xs">
+                Spell Save DC: <input name="spellSaveDC" class="font-bold w-12 bg-transparent border-none text-center editable-input" type="number" value="<%= spellData.saveDC %>" readonly min="0"/>
+                | Spell Attack: <input name="spellAttackBonus" class="font-bold w-12 bg-transparent border-none text-center editable-input" type="number" value="<%= spellData.attackBonus %>" readonly/>
+              </div>
+            <% } %>
+          </div>
+
+          <!-- Equipment -->
+          <div class="sketch-border p-2 h-64">
+            <span class="label-small block border-b mb-2">Equipment</span>
+            <div class="flex">
+              <div class="w-12 space-y-1">
+                <div class="border p-1 text-[8px]">CP <input name="currency[cp]" class="w-full bg-transparent border-none text-xs" type="number" value="<%= character.currency?.cp || 0 %>" readonly min="0"/></div>
+                <div class="border p-1 text-[8px]">SP <input name="currency[sp]" class="w-full bg-transparent border-none text-xs" type="number" value="<%= character.currency?.sp || 0 %>" readonly min="0"/></div>
+                <div class="border p-1 text-[8px]">EP <input name="currency[ep]" class="w-full bg-transparent border-none text-xs" type="number" value="<%= character.currency?.ep || 0 %>" readonly min="0"/></div>
+                <div class="border p-1 text-[8px]">GP <input name="currency[gp]" class="w-full bg-transparent border-none text-xs" type="number" value="<%= character.currency?.gp || 0 %>" readonly min="0"/></div>
+                <div class="border p-1 text-[8px]">PP <input name="currency[pp]" class="w-full bg-transparent border-none text-xs" type="number" value="<%= character.currency?.pp || 0 %>" readonly min="0"/></div>
+              </div>
+              <div id="equipment-list" class="flex-grow ml-2 overflow-y-auto text-xs">
+                <% equipment.forEach(function(e, idx) { %>
+                  <div class="equipment-item" data-index="<%= idx %>">
+                    <span class="equipment-delete" onclick="removeEquipment(<%= idx %>)">&times;</span>
+                    <input type="text" name="equipment[<%= idx %>][name]" value="<%= e.name %>" readonly class="flex-1 bg-transparent border-none text-xs editable-input" placeholder="Item name"/>
+                    <input type="number" name="equipment[<%= idx %>][quantity]" value="<%= e.quantity %>" readonly min="1" class="w-12 bg-transparent border-none text-xs text-center editable-input" placeholder="Qty"/>
+                  </div>
+                <% }); %>
+              </div>
+            </div>
+            <div class="equipment-add" id="add-equipment-btn" onclick="addEquipment()">+ Add Equipment</div>
+          </div>
+        </section>
+
+        <!-- RIGHT COLUMN: Personality Traits -->
+        <section class="col-span-4 space-y-4" data-purpose="personality-traits">
+          <div class="sketch-border p-2">
+            <textarea name="traits[personalityTrait]" class="w-full h-16 text-xs resize-none editable-input" readonly placeholder="Personality traits..."><%= character.traits?.personalityTrait || '' %></textarea>
+            <p class="text-center label-small">Personality Traits</p>
+          </div>
+          <div class="sketch-border p-2">
+            <textarea name="traits[ideal]" class="w-full h-16 text-xs resize-none editable-input" readonly placeholder="Ideals..."><%= character.traits?.ideal || '' %></textarea>
+            <p class="text-center label-small">Ideals</p>
+          </div>
+          <div class="sketch-border p-2">
+            <textarea name="traits[bond]" class="w-full h-16 text-xs resize-none editable-input" readonly placeholder="Bonds..."><%= character.traits?.bond || '' %></textarea>
+            <p class="text-center label-small">Bonds</p>
+          </div>
+          <div class="sketch-border p-2">
+            <textarea name="traits[flaw]" class="w-full h-16 text-xs resize-none editable-input" readonly placeholder="Flaws..."><%= character.traits?.flaw || '' %></textarea>
+            <p class="text-center label-small">Flaws</p>
+          </div>
+
+          <!-- Features & Traits -->
+          <div class="sketch-border p-3 h-[500px]">
+            <span class="label-small block mb-2">Features & Traits</span>
+            <div id="features-list" class="w-full h-[420px] overflow-y-auto text-xs">
+              <% features.forEach(function(f, idx) { %>
+                <div class="feature-item" data-index="<%= idx %>">
+                  <div class="flex items-start gap-2">
+                    <span class="feature-delete" onclick="removeFeature(<%= idx %>)">&times;</span>
+                    <div class="flex-1">
+                      <input type="text" name="features[<%= idx %>][name]" value="<%= f.name %>" readonly class="font-bold w-full bg-transparent border-none text-xs editable-input" placeholder="Feature name"/>
+                      <!--<textarea name="features[<%= idx %>][description]" readonly class="w-full text-gray-600 mt-1 bg-transparent border-none resize-none editable-input" rows="2" placeholder="Feature description"><%= f.description || '' %></textarea>-->
+                    </div>
+                  </div>
+                </div>
+              <% }); %>
+            </div>
+            <div class="feature-add text-blue-500 cursor-pointer text-sm mt-2 hover:underline" onclick="addFeature()">+ Add Feature</div>
+          </div>
+        </section>
+      </div>
+
+      <footer class="absolute bottom-4 left-0 w-full text-center text-[10px] text-gray-400">
+        TM &copy; 2014 Wizards of the Coast LLC. Permission granted to photocopy this document for personal use.
+      </footer>
+    </main>
+
+    <!-- ========================= PAGE 2: SPELLCASTING ========================= -->
+    <% if (spellData) { %>
+      <div class="h-10"></div>
+      <main class="sheet-page" data-purpose="spellcasting-info" id="page-2">
+        <header class="flex gap-4 mb-8">
+          <div class="flex-none w-1/3">
+            <div class="header-banner h-20 flex items-center justify-center">
+              <div class="dnd-font-header text-xl font-bold"><%= spellData.className %> Spellcasting</div>
+            </div>
+          </div>
+          <div class="flex-grow grid grid-cols-3 gap-4">
+            <div class="sketch-border text-center p-2">
+              <span class="label-small">Spellcasting Ability</span>
+              <div class="text-2xl font-bold"><%= spellData.ability %></div>
+            </div>
+            <div class="sketch-border text-center p-2">
+              <span class="label-small">Spell Save DC</span>
+              <input name="spellSaveDC" class="text-center font-bold text-2xl bg-transparent border-none editable-input" type="number" value="<%= spellData.saveDC %>" readonly min="0"/>
+            </div>
+            <div class="sketch-border text-center p-2">
+              <span class="label-small">Spell Attack Bonus</span>
+              <input name="spellAttackBonus" class="text-center font-bold text-2xl bg-transparent border-none editable-input" type="number" value="<%= spellData.attackBonus %>" readonly/>
+            </div>
+          </div>
+        </header>
+
+        <div class="grid grid-cols-3 gap-6">
+          <!-- Cantrips & Level 1-2 -->
+          <div class="space-y-4">
+            <div class="sketch-border p-2">
+              <div class="bg-gray-100 p-1 flex justify-between items-center mb-2">
+                <span class="font-bold text-sm">0</span>
+                <span class="label-small">CANTRIPS</span>
+              </div>
+              <div class="space-y-1 text-xs">
+                <% spellData.cantrips.forEach(function(s) { %>
+                  <div class="line-input h-5"><%= s.name %></div>
+                <% }); %>
+                <% if (spellData.cantrips.length === 0) { %>
+                  <div class="text-gray-400 italic">None</div>
+                <% } %>
+              </div>
+            </div>
+            <% [1, 2].forEach(function(lvl) { %>
+              <div class="sketch-border p-2">
+                <div class="bg-gray-100 p-1 flex justify-between items-center mb-2">
+                  <div class="flex items-center gap-2">
+                    <span class="font-bold text-sm"><%= lvl %></span>
+                    <div class="border border-black w-4 h-4"></div>
+                    <span class="text-[8px]">Slots Total</span>
+                    <div class="border border-black w-4 h-4"></div>
+                    <span class="text-[8px]">Expended</span>
+                  </div>
+                </div>
+                <div class="flex gap-2 mb-2">
+                  <div class="border p-1 flex-1 text-center">
+                    <input name="spellSlots[<%= lvl %>][max]" class="w-full text-center font-bold bg-transparent border-none editable-input" type="number" value="<%= spellData.slots[lvl] ? spellData.slots[lvl].max : 0 %>" readonly min="0"/>
+                  </div>
+                  <div class="border p-1 flex-1 text-center">
+                    <input name="spellSlots[<%= lvl %>][used]" class="w-full text-center font-bold bg-transparent border-none editable-input" type="number" value="<%= spellData.slots[lvl] ? spellData.slots[lvl].used : 0 %>" readonly min="0"/>
+                  </div>
+                </div>
+                <div class="space-y-1 text-xs">
+                  <% (spellData.spellsByLevel[lvl] || []).forEach(function(s) { %>
+                    <div class="flex items-center gap-1">
+                      <div class="bubble spell-checkbox"></div>
+                      <span class="line-input"><%= s.name %></span>
+                    </div>
+                  <% }); %>
+                  <% if (!(spellData.spellsByLevel[lvl] || []).length) { %>
+                    <div class="text-gray-400 italic">—</div>
+                  <% } %>
+                </div>
+              </div>
+            <% }); %>
+          </div>
+
+          <!-- Level 3, 4, 5 -->
+          <div class="space-y-4">
+            <% [3, 4, 5].forEach(function(lvl) { %>
+              <div class="sketch-border p-2 h-64">
+                <div class="bg-gray-100 p-1 flex justify-between items-center mb-2">
+                  <div class="flex items-center gap-2">
+                    <span class="font-bold text-sm"><%= lvl %></span>
+                    <div class="border border-black w-4 h-4"></div>
+                    <span class="text-[8px]">Slots Total</span>
+                    <div class="border border-black w-4 h-4"></div>
+                    <span class="text-[8px]">Expended</span>
+                  </div>
+                </div>
+                <div class="flex gap-2 mb-2">
+                  <div class="border p-1 flex-1 text-center">
+                    <input name="spellSlots[<%= lvl %>][max]" class="w-full text-center font-bold bg-transparent border-none editable-input" type="number" value="<%= spellData.slots[lvl] ? spellData.slots[lvl].max : 0 %>" readonly min="0"/>
+                  </div>
+                  <div class="border p-1 flex-1 text-center">
+                    <input name="spellSlots[<%= lvl %>][used]" class="w-full text-center font-bold bg-transparent border-none editable-input" type="number" value="<%= spellData.slots[lvl] ? spellData.slots[lvl].used : 0 %>" readonly min="0"/>
+                  </div>
+                </div>
+                <div class="space-y-1 text-xs overflow-y-auto" style="max-height: 140px;">
+                  <% (spellData.spellsByLevel[lvl] || []).forEach(function(s) { %>
+                    <div class="flex items-center gap-1">
+                      <div class="bubble spell-checkbox"></div>
+                      <span class="line-input"><%= s.name %></span>
+                    </div>
+                  <% }); %>
+                  <% if (!(spellData.spellsByLevel[lvl] || []).length) { %>
+                    <div class="text-gray-400 italic">—</div>
+                  <% } %>
+                </div>
+              </div>
+            <% }); %>
+          </div>
+
+          <!-- Level 6-9 -->
+          <div class="space-y-4">
+            <% [6, 7, 8, 9].forEach(function(lvl) { %>
+              <div class="sketch-border p-2 h-40">
+                <div class="bg-gray-100 p-1 flex justify-between items-center mb-2">
+                  <div class="flex items-center gap-2">
+                    <span class="font-bold text-sm"><%= lvl %></span>
+                    <div class="border border-black w-4 h-4"></div>
+                    <span class="text-[8px]">Slots Total</span>
+                    <div class="border border-black w-4 h-4"></div>
+                    <span class="text-[8px]">Expended</span>
+                  </div>
+                </div>
+                <div class="flex gap-2 mb-2">
+                  <div class="border p-1 flex-1 text-center">
+                    <input name="spellSlots[<%= lvl %>][max]" class="w-full text-center font-bold bg-transparent border-none editable-input" type="number" value="<%= spellData.slots[lvl] ? spellData.slots[lvl].max : 0 %>" readonly min="0"/>
+                  </div>
+                  <div class="border p-1 flex-1 text-center">
+                    <input name="spellSlots[<%= lvl %>][used]" class="w-full text-center font-bold bg-transparent border-none editable-input" type="number" value="<%= spellData.slots[lvl] ? spellData.slots[lvl].used : 0 %>" readonly min="0"/>
+                  </div>
+                </div>
+                <div class="space-y-1 text-xs overflow-y-auto" style="max-height: 60px;">
+                  <% (spellData.spellsByLevel[lvl] || []).forEach(function(s) { %>
+                    <div class="flex items-center gap-1">
+                      <div class="bubble spell-checkbox"></div>
+                      <span class="line-input"><%= s.name %></span>
+                    </div>
+                  <% }); %>
+                  <% if (!(spellData.spellsByLevel[lvl] || []).length) { %>
+                    <div class="text-gray-400 italic">—</div>
+                  <% } %>
+                </div>
+              </div>
+            <% }); %>
+          </div>
+        </div>
+
+        <footer class="absolute bottom-4 left-0 w-full text-center text-[10px] text-gray-400">
+          TM &copy; 2014 Wizards of the Coast LLC. Permission granted to photocopy this document for personal use.
+        </footer>
+      </main>
+    <% } %>
+
+  </form>
+
+  <script>
+    const editToggle = document.getElementById('edit-toggle');
+    const cancelEdit = document.getElementById('cancel-edit');
+    const saveBtn = document.getElementById('save-btn');
+    const form = document.getElementById('character-form');
+    const equipmentList = document.getElementById('equipment-list');
+    const addEquipmentBtn = document.getElementById('add-equipment-btn');
+    const featuresList = document.getElementById('features-list');
+
+    let originalValues = {};
+    let equipmentCount = <%= equipment.length %>;
+    let featureCount = <%= features.length %>;
+    let isEditing = false;
+
+    function toggleInspiration() {
+      if (!isEditing) return;
+      const bubble = document.getElementById('inspiration-bubble');
+      const checkbox = document.getElementById('inspiration');
+      bubble.classList.toggle('filled');
+      checkbox.checked = bubble.classList.contains('filled');
+    }
+
+    function toggleSaveBubble(bubble) {
+      if (!isEditing) return;
+      bubble.classList.toggle('filled');
+      const name = bubble.dataset.save;
+      const checkbox = form.querySelector(`input[name="savingThrows[${name}]"]`);
+      if (checkbox) checkbox.checked = bubble.classList.contains('filled');
+    }
+
+    function toggleSkillBubble(bubble) {
+      if (!isEditing) return;
+      bubble.classList.toggle('filled');
+      const name = bubble.dataset.skill;
+      const checkbox = form.querySelector(`input[name="skills[${name}]"]`);
+      if (checkbox) checkbox.checked = bubble.classList.contains('filled');
+    }
+
+    function toggleDeathSave(bubble, type) {
+      if (!isEditing) return;
+      bubble.classList.toggle('filled');
+    }
+
+    function saveOriginalValues() {
+      originalValues = {};
+      form.querySelectorAll('input[readonly], textarea[readonly]').forEach(input => {
+        if (input.type === 'checkbox') {
+          originalValues[input.name] = input.checked;
+        } else {
+          originalValues[input.name] = input.value;
+        }
+      });
+      const equipItems = equipmentList.querySelectorAll('.equipment-item');
+      originalValues.equipment = [];
+      equipItems.forEach(item => {
+        originalValues.equipment.push({
+          name: item.querySelector('[name$="[name]"]').value,
+          quantity: item.querySelector('[name$="[quantity]"]').value
+        });
+      });
+      const featItems = featuresList.querySelectorAll('.feature-item');
+      originalValues.features = [];
+      featItems.forEach(item => {
+        originalValues.features.push({
+          name: item.querySelector('[name$="[name]"]').value,
+          description: item.querySelector('[name$="[description]"]').value
+        });
+      });
+    }
+
+    function enableEditing() {
+      isEditing = true;
+
+      featuresList.querySelectorAll('input, textarea').forEach(el => {
+        el.removeAttribute('readonly');
+        el.classList.add('edit-active');
+      });
+      equipmentList.querySelectorAll('input').forEach(el => {
+        el.removeAttribute('readonly');
+        el.classList.add('edit-active');
+      });
+      form.querySelectorAll('input[readonly], select[readonly]').forEach(input => {
+        input.removeAttribute('readonly');
+        input.classList.add('edit-active');
+      });
+      form.querySelectorAll('select[disabled]').forEach(select => {
+        select.removeAttribute('disabled');
+        select.classList.add('edit-active');
+      });
+
+      addEquipmentBtn.classList.add('visible');
+      showFeatureDeleteButtons();
+      editToggle.classList.add('hidden');
+      cancelEdit.classList.remove('hidden');
+      saveBtn.classList.remove('hidden');
+      saveOriginalValues();
+    }
+
+    function disableEditing() {
+      isEditing = false;
+
+      featuresList.querySelectorAll('input, textarea').forEach(el => {
+        el.setAttribute('readonly', '');
+        el.classList.remove('edit-active');
+      });
+      equipmentList.querySelectorAll('input').forEach(el => {
+        el.setAttribute('readonly', '');
+        el.classList.remove('edit-active');
+      });
+      form.querySelectorAll('input:not([type="checkbox"]):not([type="radio"])').forEach(input => {
+        if (!input.closest('.equipment-item') && !input.closest('.feature-item')) {
+          input.setAttribute('readonly', '');
+          input.classList.remove('edit-active');
+        }
+      });
+      form.querySelectorAll('select').forEach(select => {
+        select.setAttribute('disabled', '');
+        select.classList.remove('edit-active');
+      });
+
+      addEquipmentBtn.classList.remove('visible');
+      hideFeatureDeleteButtons();
+      editToggle.classList.remove('hidden');
+      cancelEdit.classList.add('hidden');
+      saveBtn.classList.add('hidden');
+    }
+
+    function restoreOriginalValues() {
+      if (!originalValues || Object.keys(originalValues).length === 0) return;
+
+      form.querySelectorAll('input, textarea').forEach(input => {
+        if (originalValues.hasOwnProperty(input.name)) {
+          if (input.type === 'checkbox') {
+            input.checked = originalValues[input.name];
+          } else {
+            input.value = originalValues[input.name];
+          }
+        }
+      });
+
+      document.getElementById('inspiration-bubble').classList.toggle('filled', originalValues['inspiration'] || false);
+
+      form.querySelectorAll('[data-save]').forEach(bubble => {
+        const name = bubble.dataset.save;
+        const checkbox = form.querySelector(`input[name="savingThrows[${name}]"]`);
+        if (checkbox && originalValues[`savingThrows[${name}]`] !== undefined) {
+          bubble.classList.toggle('filled', originalValues[`savingThrows[${name}]`]);
+          checkbox.checked = originalValues[`savingThrows[${name}]`];
+        }
+      });
+
+      form.querySelectorAll('[data-skill]').forEach(bubble => {
+        const name = bubble.dataset.skill;
+        const checkbox = form.querySelector(`input[name="skills[${name}]"]`);
+        if (checkbox && originalValues[`skills[${name}]`] !== undefined) {
+          bubble.classList.toggle('filled', originalValues[`skills[${name}]`]);
+          checkbox.checked = originalValues[`skills[${name}]`];
+        }
+      });
+
+      if (originalValues.equipment) {
+        equipmentList.innerHTML = '';
+        originalValues.equipment.forEach((eq, idx) => {
+          addEquipmentHTML(idx, eq.name, eq.quantity, false);
+        });
+        equipmentCount = originalValues.equipment.length;
+      }
+      if (originalValues.features) {
+        featuresList.innerHTML = '';
+        originalValues.features.forEach((f, idx) => {
+          addFeatureHTML(idx, f.name, f.description, false);
+        });
+        featureCount = originalValues.features.length;
+      }
+    }
+
+    function addFeatureHTML(idx, name, description, editMode = false) {
+      const div = document.createElement('div');
+      div.className = 'feature-item';
+      div.dataset.index = idx;
+      const inputClass = editMode ? 'font-bold w-full bg-white border-2 border-blue-400 text-xs' : 'font-bold w-full bg-transparent border-none text-xs';
+      const textareaClass = editMode ? 'w-full text-gray-600 mt-1 bg-white border-2 border-blue-400 resize-none' : 'w-full text-gray-600 mt-1 bg-transparent border-none resize-none';
+      div.innerHTML = `
+        <div class="flex items-start gap-2">
+          <span class="feature-delete ${editMode ? '' : ''}" onclick="removeFeature(${idx})">&times;</span>
+          <div class="flex-1">
+            <input type="text" name="features[${idx}][name]" value="${name || ''}" ${editMode ? '' : 'readonly'}
+              class="${inputClass}" placeholder="Feature name">
+            <textarea name="features[${idx}][description]" ${editMode ? '' : 'readonly'}
+              class="${textareaClass}"
+              rows="2" placeholder="Feature description">${description || ''}</textarea>
+          </div>
+        </div>
+      `;
+      featuresList.appendChild(div);
+    }
+
+    function addEquipment() {
+      addEquipmentHTML(equipmentCount, '', 1, true);
+      equipmentCount++;
+    }
+
+    function addEquipmentHTML(idx, name, quantity, editMode = false) {
+      const div = document.createElement('div');
+      div.className = 'equipment-item';
+      div.dataset.index = idx;
+      const inputClass = editMode ? 'flex-1 bg-white border-2 border-blue-400 text-xs' : 'flex-1 bg-transparent border-none text-xs';
+      const qtyClass = editMode ? 'w-12 bg-white border-2 border-blue-400 text-xs text-center' : 'w-12 bg-transparent border-none text-xs text-center';
+      div.innerHTML = `
+        <span class="equipment-delete" onclick="removeEquipment(${idx})">&times;</span>
+        <input type="text" name="equipment[${idx}][name]" value="${name || ''}" ${editMode ? '' : 'readonly'}
+          class="${inputClass}" placeholder="Item name">
+        <input type="number" name="equipment[${idx}][quantity]" value="${quantity || 1}" ${editMode ? '' : 'readonly'} min="1"
+          class="${qtyClass}" placeholder="Qty">
+      `;
+      equipmentList.appendChild(div);
+    }
+
+    function removeEquipment(idx) {
+      if (!isEditing) return;
+      const item = equipmentList.querySelector(`[data-index="${idx}"]`);
+      if (item) {
+        item.remove();
+        reindexEquipment();
+      }
+    }
+
+    function reindexEquipment() {
+      const items = equipmentList.querySelectorAll('.equipment-item');
+      items.forEach((item, i) => {
+        item.dataset.index = i;
+        item.querySelectorAll('input').forEach(input => {
+          input.name = input.name.replace(/equipment\[\d+\]/, `equipment[${i}]`);
+        });
+      });
+      equipmentCount = items.length;
+    }
+
+    function addFeature() {
+      addFeatureHTML(featureCount, '', '', true);
+      featureCount++;
+    }
+
+    function removeFeature(idx) {
+      if (!isEditing) return;
+      const item = featuresList.querySelector(`[data-index="${idx}"]`);
+      if (item) {
+        item.remove();
+        reindexFeatures();
+      }
+    }
+
+    function reindexFeatures() {
+      const items = featuresList.querySelectorAll('.feature-item');
+      items.forEach((item, i) => {
+        item.dataset.index = i;
+        item.querySelectorAll('input, textarea').forEach(el => {
+          el.name = el.name.replace(/features\[\d+\]/, `features[${i}]`);
+        });
+        item.querySelector('.feature-delete').setAttribute('onclick', `removeFeature(${i})`);
+      });
+      featureCount = items.length;
+    }
+
+    function showFeatureDeleteButtons() {
+      featuresList.querySelectorAll('.feature-delete').forEach(btn => {
+        btn.classList.add('visible');
+      });
+    }
+
+    function hideFeatureDeleteButtons() {
+      featuresList.querySelectorAll('.feature-delete').forEach(btn => {
+        btn.classList.remove('visible');
+      });
+    }
+
+    editToggle.addEventListener('click', () => {
+      enableEditing();
+    });
+    cancelEdit.addEventListener('click', () => {
+      restoreOriginalValues();
+      disableEditing();
+    });
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const formData = new FormData(form);
+      const data = {};
+
+      for (const [key, value] of formData.entries()) {
+        if (key.includes('[')) {
+          const match = key.match(/^([^[]+)\[([^\]]+)\](?:\[([^\]]+)\])?$/);
+          if (match) {
+            const [, parent, child, grandchild] = match;
+            if (grandchild !== undefined) {
+              if (!data[parent]) data[parent] = {};
+              if (!data[parent][child]) data[parent][child] = {};
+              data[parent][child][grandchild] = value;
+            } else {
+              if (!data[parent]) data[parent] = {};
+              data[parent][child] = value;
+            }
+          }
+        } else if (key.startsWith('deathSave')) {
+          data[key] = formData.has(key);
+        } else {
+          data[key] = value;
+        }
+      }
+
+      data.inspiration = formData.has('inspiration');
+
+      data.equipment = [];
+      const equipItems = equipmentList.querySelectorAll('.equipment-item');
+      equipItems.forEach(item => {
+        const name = item.querySelector('[name$="[name]"]').value;
+        const quantity = parseInt(item.querySelector('[name$="[quantity]"]').value) || 1;
+        if (name) {
+          data.equipment.push({ name, quantity });
+        }
+      });
+
+      data.savingThrows = {};
+      form.querySelectorAll('input[name^="savingThrows["]').forEach(cb => {
+        const match = cb.name.match(/^savingThrows\[(\w+)\]$/);
+        if (match) {
+          data.savingThrows[match[1]] = cb.checked;
+        }
+      });
+
+      data.skills = {};
+      form.querySelectorAll('input[name^="skills["]').forEach(cb => {
+        const match = cb.name.match(/^skills\[([\w\s]+)\]$/);
+        if (match) {
+          data.skills[match[1]] = cb.checked;
+        }
+      });
+
+      data.skillExpertise = {};
+      form.querySelectorAll('input[name^="skillExpertise["]').forEach(cb => {
+        const match = cb.name.match(/^skillExpertise\[([\w\s]+)\]$/);
+        if (match) {
+          data.skillExpertise[match[1]] = cb.checked;
+        }
+      });
+
+      data.otherProficiencies = data.otherProficienciesText ? data.otherProficienciesText.split('\n').filter(p => p.trim()) : [];
+
+      data.features = [];
+      const featureItems = featuresList.querySelectorAll('.feature-item');
+      featureItems.forEach(item => {
+        const name = item.querySelector('[name$="[name]"]').value;
+        const description = item.querySelector('[name$="[description]"]').value;
+        if (name) {
+          data.features.push({ name, description });
+        }
+      });
+
+      try {
+        const response = await fetch(`/character/<%= character.id %>`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data),
+        });
+
+        if (response.ok) {
+          disableEditing();
+          location.reload();
+        } else {
+          const error = await response.json();
+          alert('Error saving: ' + (error.error || 'Unknown error'));
+        }
+      } catch (err) {
+        alert('Error saving: ' + err.message);
+      }
+    });
+
+    async function confirmDelete() {
+      const charName = '<%= character.name %>';
+      if (confirm(`Are you sure you want to delete ${charName}? This action cannot be undone.`)) {
+        try {
+          const response = await fetch(`/character/<%= character.id %>`, {
+            method: 'DELETE',
+          });
+          if (response.redirected) {
+            window.location.href = response.url;
+          } else if (response.ok) {
+            window.location.href = '/hall';
+          } else {
+            const error = await response.json();
+            alert('Error deleting: ' + (error.error || 'Unknown error'));
+          }
+        } catch (err) {
+          alert('Error deleting: ' + err.message);
+        }
+      }
+    }
+  </script>
+
+</body>
+</html>

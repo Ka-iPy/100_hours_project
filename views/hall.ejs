@@ -1,0 +1,24 @@
+<% include('partials/header.ejs') %>
+<main>
+  <h1>
+      Greetings, <%= username %>!
+  </h1>
+  <a href="/logout">Logout</a>
+  <a href="/createCharacter">Create a Character</a>
+
+  <h2>Your Characters</h2>
+  <% if (characters && characters.length > 0) { %>
+    <ul>
+      <% characters.forEach(function(char) { %>
+        <li>
+          <a href="/character/<%= char.id %>">
+            <%= char.name %> — Level <%= char.getTotalLevel() %> <%= char.classes.length > 0 ? char.classes[0].className : '' %>
+          </a>
+        </li>
+      <% }); %>
+    </ul>
+  <% } else { %>
+    <p>You haven't created any characters yet.</p>
+  <% } %>
+</main>
+<% include('partials/footer.ejs') %>
