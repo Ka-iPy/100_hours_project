@@ -18,6 +18,7 @@ class DataLoader {
     this.classFeatures = [];
     this.optionalFeatures = [];
     this.spells = [];
+    this.filteredSpells = [];
     this.items = [];
     this.skills = [];
     this.languages = [];
@@ -77,6 +78,12 @@ class DataLoader {
           );
           if (data.spell) this.spells.push(...data.spell);
         }
+      }
+
+      // Load filtered spells index (class->spell membership)
+      const filteredSpellsPath = path.join(this.dataDir, "spells", "Filtered_spells.json");
+      if (fs.existsSync(filteredSpellsPath)) {
+        this.filteredSpells = JSON.parse(fs.readFileSync(filteredSpellsPath, "utf8"));
       }
 
       // Load items

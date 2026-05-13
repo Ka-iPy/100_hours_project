@@ -82,7 +82,7 @@
     }
     .sheet-page {
       width: 850px;
-      min-height: 1100px;
+      min-height: 1123px;
       margin: 20px auto;
       background-color: white;
       padding: 40px;
@@ -167,6 +167,10 @@
     .spell-checkbox {
       cursor: pointer;
     }
+    @page {
+      size: A4;
+      margin: 0.6in;
+    }
     @media print {
       body {
         background: white !important;
@@ -178,6 +182,13 @@
         margin: 0 !important;
         width: 100% !important;
         min-height: auto !important;
+        height: auto !important;
+        overflow: visible !important;
+        padding: 20px 40px !important;
+        page-break-inside: avoid;
+      }
+      .sheet-page + .sheet-page {
+        page-break-before: page;
       }
       .no-print, .fixed {
         display: none !important;
@@ -186,6 +197,16 @@
       .editable-input {
         border: none !important;
         background: transparent !important;
+      }
+      .h-10 {
+        display: none !important;
+      }
+      #features-list,
+      .sketch-border textarea,
+      .sketch-border div[style*="max-height"] {
+        max-height: none !important;
+        height: auto !important;
+        overflow: visible !important;
       }
     }
   </style>
@@ -328,11 +349,6 @@
             <span class="label-small">Passive Wisdom (Perception)</span>
           </div>
 
-          <!-- Languages & Proficiencies -->
-          <div class="sketch-border p-2 h-40">
-            <span class="label-small block">Other Proficiencies & Languages</span>
-            <textarea name="otherProficienciesText" class="h-32 text-xs w-full resize-none editable-input" readonly><%= otherProfs.join('\n') %></textarea>
-          </div>
         </section>
 
         <!-- CENTER COLUMN: Combat & Health -->
@@ -457,42 +473,28 @@
           </div>
         </section>
 
-        <!-- RIGHT COLUMN: Personality Traits -->
-        <section class="col-span-4 space-y-4" data-purpose="personality-traits">
-          <div class="sketch-border p-2">
-            <textarea name="traits[personalityTrait]" class="w-full h-16 text-xs resize-none editable-input" readonly placeholder="Personality traits..."><%= character.traits?.personalityTrait || '' %></textarea>
-            <p class="text-center label-small">Personality Traits</p>
-          </div>
-          <div class="sketch-border p-2">
-            <textarea name="traits[ideal]" class="w-full h-16 text-xs resize-none editable-input" readonly placeholder="Ideals..."><%= character.traits?.ideal || '' %></textarea>
-            <p class="text-center label-small">Ideals</p>
-          </div>
-          <div class="sketch-border p-2">
-            <textarea name="traits[bond]" class="w-full h-16 text-xs resize-none editable-input" readonly placeholder="Bonds..."><%= character.traits?.bond || '' %></textarea>
-            <p class="text-center label-small">Bonds</p>
-          </div>
-          <div class="sketch-border p-2">
-            <textarea name="traits[flaw]" class="w-full h-16 text-xs resize-none editable-input" readonly placeholder="Flaws..."><%= character.traits?.flaw || '' %></textarea>
-            <p class="text-center label-small">Flaws</p>
-          </div>
-
-          <!-- Features & Traits -->
-          <div class="sketch-border p-3 h-[500px]">
+        <!-- RIGHT COLUMN: Features & Traits + Proficiencies -->
+        <section class="col-span-4 space-y-4" data-purpose="features-and-traits">
+          <div class="sketch-border p-3">
             <span class="label-small block mb-2">Features & Traits</span>
-            <div id="features-list" class="w-full h-[420px] overflow-y-auto text-xs">
+            <div id="features-list" class="w-full text-xs" style="max-height: 400px; overflow-y: auto;">
               <% features.forEach(function(f, idx) { %>
                 <div class="feature-item" data-index="<%= idx %>">
                   <div class="flex items-start gap-2">
                     <span class="feature-delete" onclick="removeFeature(<%= idx %>)">&times;</span>
                     <div class="flex-1">
                       <input type="text" name="features[<%= idx %>][name]" value="<%= f.name %>" readonly class="font-bold w-full bg-transparent border-none text-xs editable-input" placeholder="Feature name"/>
-                      <!--<textarea name="features[<%= idx %>][description]" readonly class="w-full text-gray-600 mt-1 bg-transparent border-none resize-none editable-input" rows="2" placeholder="Feature description"><%= f.description || '' %></textarea>-->
                     </div>
                   </div>
                 </div>
               <% }); %>
             </div>
             <div class="feature-add text-blue-500 cursor-pointer text-sm mt-2 hover:underline" onclick="addFeature()">+ Add Feature</div>
+          </div>
+
+          <div class="sketch-border p-2">
+            <span class="label-small block">Other Proficiencies & Languages</span>
+            <textarea name="otherProficienciesText" class="w-full h-32 text-xs resize-none editable-input" readonly><%= otherProfs.join('\n') %></textarea>
           </div>
         </section>
       </div>
@@ -502,10 +504,39 @@
       </footer>
     </main>
 
-    <!-- ========================= PAGE 2: SPELLCASTING ========================= -->
+    <!-- ========================= PAGE 2: PERSONALITY DETAILS ========================= -->
+    <div class="h-10"></div>
+    <main class="sheet-page" data-purpose="personality-details" id="page-2">
+      <h2 class="dnd-font-header text-2xl text-center mb-8 border-b-2 border-black pb-2">Character Details</h2>
+
+      <div class="grid grid-cols-2 gap-6" style="height: 860px;">
+        <div class="sketch-border p-4 flex flex-col">
+          <span class="label-small block mb-2">Personality Traits</span>
+          <textarea name="traits[personalityTrait]" class="w-full flex-1 text-xs resize-none editable-input" readonly placeholder="Personality traits..."><%= character.traits?.personalityTrait || '' %></textarea>
+        </div>
+        <div class="sketch-border p-4 flex flex-col">
+          <span class="label-small block mb-2">Ideals</span>
+          <textarea name="traits[ideal]" class="w-full flex-1 text-xs resize-none editable-input" readonly placeholder="Ideals..."><%= character.traits?.ideal || '' %></textarea>
+        </div>
+        <div class="sketch-border p-4 flex flex-col">
+          <span class="label-small block mb-2">Bonds</span>
+          <textarea name="traits[bond]" class="w-full flex-1 text-xs resize-none editable-input" readonly placeholder="Bonds..."><%= character.traits?.bond || '' %></textarea>
+        </div>
+        <div class="sketch-border p-4 flex flex-col">
+          <span class="label-small block mb-2">Flaws</span>
+          <textarea name="traits[flaw]" class="w-full flex-1 text-xs resize-none editable-input" readonly placeholder="Flaws..."><%= character.traits?.flaw || '' %></textarea>
+        </div>
+      </div>
+
+      <footer class="absolute bottom-4 left-0 w-full text-center text-[10px] text-gray-400">
+        TM &copy; 2014 Wizards of the Coast LLC. Permission granted to photocopy this document for personal use.
+      </footer>
+    </main>
+
+    <!-- ========================= PAGE 3: SPELLCASTING ========================= -->
     <% if (spellData) { %>
       <div class="h-10"></div>
-      <main class="sheet-page" data-purpose="spellcasting-info" id="page-2">
+      <main class="sheet-page" data-purpose="spellcasting-info" id="page-3">
         <header class="flex gap-4 mb-8">
           <div class="flex-none w-1/3">
             <div class="header-banner h-20 flex items-center justify-center">

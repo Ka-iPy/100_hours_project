@@ -428,8 +428,9 @@ export default {
       });
 
       const pdf = await page.pdf({
-        format: "Letter",
+        format: "A4",
         printBackground: true,
+        preferCSSPageSize: true,
         margin: {
           top: "0.4in",
           right: "0.4in",
