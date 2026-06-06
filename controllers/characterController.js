@@ -111,7 +111,7 @@ export default {
       const builder = new CharacterBuilder(loader);
       const character = builder.build({
         name,
-        player: req.session.user.id,
+        player: req.session.user.username,
         race,
         raceSource,
         subrace,
@@ -137,6 +137,7 @@ export default {
       await character.save();
       res.status(201).json(character);
     } catch (err) {
+      console.log(err);
       console.error("Error creating character:", err);
       res.status(500).json({ error: err.message, stack: err.stack });
     }

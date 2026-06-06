@@ -101,7 +101,7 @@ const SCHOOL_CODE_MAP = {
   transmutation: "T",
 };
 
-export class SpellListResolver {
+class SpellListResolver {
   constructor(loader) {
     this.loader = loader;
   }

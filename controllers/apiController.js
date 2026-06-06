@@ -1,5 +1,5 @@
 import loader from "../data/loader.js";
-import { SpellListResolver } from "../models/SpellListResolver.js";
+import SpellListResolver from "../models/SpellListResolver.js";
 
 const validCollections = [
   "races",
@@ -45,7 +45,11 @@ export function getFeatOrigin(req, res) {
 
 export function getSubclassFeatureParent(req, res) {
   const { name, className, subclassShortName } = req.query;
-  const parent = loader.getSubclassFeatureParent(name, className, subclassShortName);
+  const parent = loader.getSubclassFeatureParent(
+    name,
+    className,
+    subclassShortName,
+  );
   if (!parent) return res.status(404).json({ error: "Parent not found" });
   res.json(parent);
 }
@@ -124,7 +128,14 @@ export function getStartingEquipment(req, res) {
           resolvedItems.push({
             name: itemName,
             source: itemSource || null,
-            data: itemData ? { name: itemData.name, type: itemData.type, weight: itemData.weight, value: itemData.value } : null,
+            data: itemData
+              ? {
+                  name: itemData.name,
+                  type: itemData.type,
+                  weight: itemData.weight,
+                  value: itemData.value,
+                }
+              : null,
           });
         } else if (item.equipmentType) {
           resolvedItems.push({
@@ -139,7 +150,14 @@ export function getStartingEquipment(req, res) {
             name: itemName,
             source: itemSource || null,
             quantity: item.quantity || 1,
-            data: itemData ? { name: itemData.name, type: itemData.type, weight: itemData.weight, value: itemData.value } : null,
+            data: itemData
+              ? {
+                  name: itemData.name,
+                  type: itemData.type,
+                  weight: itemData.weight,
+                  value: itemData.value,
+                }
+              : null,
           });
         }
       }
@@ -163,4 +181,3 @@ export function getStartingEquipment(req, res) {
     additionalFromBackground: equipment.additionalFromBackground || false,
   });
 }
-
