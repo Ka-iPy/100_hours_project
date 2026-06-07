@@ -204,7 +204,7 @@ export default {
           }
         }
       });
-
+      // I really don't like using topeof here
       if (typeof updates.armorClass !== "undefined") {
         const val = parseInt(updates.armorClass, 10);
         if (!isNaN(val)) character.armorClass.baseValue = val;
