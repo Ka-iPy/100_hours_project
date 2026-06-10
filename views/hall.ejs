@@ -14,6 +14,13 @@
           <a href="/character/<%= char.id %>">
             <%= char.name %> — Level <%= char.getTotalLevel() %> <%= char.classes.length > 0 ? char.classes[0].className : '' %>
           </a>
+          <button type="button" id="delete-btn" onclick='confirmDelete(<%- JSON.stringify({
+            id: char.id,
+            name: char.name
+          }) %>)'
+            class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition">
+            Delete Character
+          </button>
         </li>
       <% }); %>
     </ul>
@@ -21,4 +28,28 @@
     <p>You haven't created any characters yet.</p>
   <% } %>
 </main>
+<script>
+  async function confirmDelete(char) {
+    const charName = char.name;
+
+    if (confirm(`Are you sure you want to delete ${charName}? This action cannot be undone.`)) {
+      try {
+        const response = await fetch(`/character/${char.id}`, {
+          method: 'DELETE',
+        });
+
+        if (response.redirected) {
+          window.location.href = response.url;
+        } else if (response.ok) {
+          window.location.href = '/hall';
+        } else {
+          const error = await response.json();
+          alert('Error deleting: ' + (error.error || 'Unknown error'));
+        }
+      } catch (err) {
+        alert('Error deleting: ' + err.message);
+      }
+    }
+  }
+</script>
 <% include('partials/footer.ejs') %>
