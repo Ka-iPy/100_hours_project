@@ -2,6 +2,7 @@ import { CharacterBuilder } from "../models/CharacterBuilder.js";
 import { Character, Equipment, TracedFeature } from "../models/Character.js";
 import loader from "../data/loader.js";
 import puppeteer from "puppeteer-core";
+import { degrees, PDFDocument, rgb, StandardFonts } from "pdf-lib";
 import { fileURLToPath } from "url";
 import { dirname, join } from "path";
 
@@ -412,6 +413,8 @@ export default {
         });
       });
 
+      // This need replacement --switch to pdf-lib library
+      // reading docs right now...
       const browser = await puppeteer.launch({
         executablePath: "/usr/bin/chromium",
         args: ["--no-sandbox", "--disable-setuid-sandbox"],
@@ -453,6 +456,7 @@ export default {
       res.status(500).json({ error: err.message });
     }
   },
+  //Up is the pdf generation section
 };
 
 function getAttributeSources(character, attribute) {
