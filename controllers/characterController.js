@@ -444,7 +444,7 @@ export default {
       });
 
       await browser.close();
-
+      // Daily commit
       res.setHeader("Content-Type", "application/pdf");
       res.setHeader(
         "Content-Disposition",
