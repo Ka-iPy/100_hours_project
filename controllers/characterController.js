@@ -113,6 +113,7 @@ export default {
       const character = builder.build({
         name,
         player: req.session.user.username,
+        playerID: req.session.user.id,
         race,
         raceSource,
         subrace,

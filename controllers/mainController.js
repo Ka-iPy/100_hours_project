@@ -14,8 +14,10 @@ export function signupPage(req, res) {
 // Notice it uses EJS variables
 export async function hall(req, res) {
   const characters = await Character.loadAllForPlayer(req.session.user.id);
+  console.log(req.session.user.id);
   res.render("hall", {
     username: req.session.user.username,
+    userID: req.session.user.id,
     characters,
   });
 }
