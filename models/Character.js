@@ -167,7 +167,7 @@ export class ClassLevel {
   }
 }
 
-import { FEATURE_CATEGORIES } from '../utils/featureCategory.js';
+import { FEATURE_CATEGORIES } from "../utils/featureCategory.js";
 
 export class TracedFeature {
   constructor({
@@ -550,6 +550,7 @@ export class Character {
   constructor() {
     this.id = crypto.randomUUID();
     this.player = "";
+    this.playerID = "";
     this.name = "";
     this.alignment = "";
     this.experience = 0;
@@ -794,10 +795,18 @@ export class Character {
       tempHitPoints: this.tempHitPoints,
       hitDice: { ...this.hitDice },
       usedHitDice: { ...this.usedHitDice },
-      armorClass: this.armorClass?.toJSON ? this.armorClass.toJSON() : { baseValue: this.armorClass ?? 10, modifiers: [] },
-      initiative: this.initiative?.toJSON ? this.initiative.toJSON() : { baseValue: this.initiative ?? 0, modifiers: [] },
-      speed: this.speed?.toJSON ? this.speed.toJSON() : { baseValue: this.speed ?? 30, modifiers: [] },
-      proficiencyBonus: this.proficiencyBonus?.toJSON ? this.proficiencyBonus.toJSON() : { baseValue: this.proficiencyBonus ?? 2, modifiers: [] },
+      armorClass: this.armorClass?.toJSON
+        ? this.armorClass.toJSON()
+        : { baseValue: this.armorClass ?? 10, modifiers: [] },
+      initiative: this.initiative?.toJSON
+        ? this.initiative.toJSON()
+        : { baseValue: this.initiative ?? 0, modifiers: [] },
+      speed: this.speed?.toJSON
+        ? this.speed.toJSON()
+        : { baseValue: this.speed ?? 30, modifiers: [] },
+      proficiencyBonus: this.proficiencyBonus?.toJSON
+        ? this.proficiencyBonus.toJSON()
+        : { baseValue: this.proficiencyBonus ?? 2, modifiers: [] },
       passivePerception: this.passivePerception,
       features: this.features.map((f) => f.toJSON()),
       spellbooks: Object.fromEntries(
@@ -919,9 +928,7 @@ export class Character {
     const files = fs.readdirSync(dir).filter((f) => f.endsWith(".json"));
     const characters = [];
     for (const file of files) {
-      const data = JSON.parse(
-        fs.readFileSync(path.join(dir, file), "utf8"),
-      );
+      const data = JSON.parse(fs.readFileSync(path.join(dir, file), "utf8"));
       if (data.player === playerId) {
         characters.push(Character.fromJSON(data));
       }
