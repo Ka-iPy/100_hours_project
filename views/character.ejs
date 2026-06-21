@@ -1,57 +1,73 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title><%= character.name %> — D&D 5E Character Sheet</title>
+  <title>
+    <%= character.name %> — D&D 5E Character Sheet
+  </title>
   <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-  <link href="https://fonts.googleapis.com" rel="preconnect"/>
-  <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
-  <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@400;600;700&family=Metamorphic&family=Mrs+Eaves&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com" rel="preconnect" />
+  <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@400;600;700&family=Metamorphic&family=Mrs+Eaves&display=swap"
+    rel="stylesheet" />
   <style>
     :root {
       --dnd-parchment: #fcfcfc;
       --dnd-border: #000000;
       --dnd-input-bg: #f8fafc;
     }
+
     body {
       font-family: 'Crimson Pro', serif;
       background-color: #333;
       color: #000;
     }
+
     .dnd-font-header {
       font-family: 'Metamorphic', serif;
       text-transform: uppercase;
       letter-spacing: 0.05em;
     }
+
     .label-small {
       font-size: 0.65rem;
       font-weight: 700;
       text-transform: uppercase;
       color: #4a4a4a;
     }
-    input[type="text"], input[type="number"], textarea {
+
+    input[type="text"],
+    input[type="number"],
+    textarea {
       border: none;
       background: transparent;
       width: 100%;
       padding: 2px 4px;
       font-size: 0.9rem;
     }
-    input:focus, textarea:focus {
+
+    input:focus,
+    textarea:focus {
       outline: none;
       background-color: rgba(0, 0, 0, 0.05);
     }
+
     .sketch-border {
       border: 2px solid black;
       border-radius: 4px;
       position: relative;
     }
+
     .header-banner {
       border: 3px solid black;
       border-radius: 10px 50px 10px 50px / 50px 10px 50px 10px;
       padding: 10px;
       background: white;
     }
+
     .stat-box {
       border: 2px solid black;
       border-radius: 8px;
@@ -61,6 +77,7 @@
       padding: 4px;
       width: 65px;
     }
+
     .bubble {
       border: 1px solid black;
       border-radius: 50%;
@@ -71,52 +88,63 @@
       cursor: pointer;
       flex-shrink: 0;
     }
+
     .bubble.filled {
       background-color: black;
     }
+
     .box-container {
       border: 1px solid #000;
       border-radius: 5px;
       padding: 5px;
       margin-bottom: 8px;
     }
+
     .sheet-page {
       width: 850px;
       min-height: 1123px;
       margin: 20px auto;
       background-color: white;
       padding: 40px;
-      box-shadow: 0 0 20px rgba(0,0,0,0.5);
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
       position: relative;
       overflow: hidden;
     }
+
     .skill-row {
       display: flex;
       align-items: center;
       margin-bottom: 2px;
       font-size: 0.75rem;
     }
+
     .line-input {
       border-bottom: 1px solid #ccc !important;
     }
+
     .editable-input {
       background: transparent;
       border: none;
     }
+
     .editable-input.edit-active {
       background: white;
       border: 2px solid #4299e1;
       border-radius: 2px;
     }
+
     .editable-input:read-only {
       cursor: default;
     }
+
     .editable-input.edit-active:read-only {
       cursor: pointer;
     }
+
     .no-print {
       position: fixed;
     }
+
     .equipment-item {
       display: flex;
       align-items: center;
@@ -124,18 +152,22 @@
       padding: 0.25rem 0;
       border-bottom: 1px dashed #e2e8f0;
     }
+
     .equipment-item:last-child {
       border-bottom: none;
     }
+
     .equipment-delete {
       opacity: 0;
       transition: opacity 0.2s;
       color: #e53e3e;
       cursor: pointer;
     }
+
     .equipment-item:hover .equipment-delete {
       opacity: 1;
     }
+
     .equipment-add {
       margin-top: 0.5rem;
       font-size: 0.75rem;
@@ -143,40 +175,49 @@
       cursor: pointer;
       display: none;
     }
+
     .equipment-add.visible {
       display: block;
     }
+
     .feature-item {
       margin-bottom: 8px;
       padding: 4px;
       border: 1px solid #ccc;
       border-radius: 4px;
     }
+
     .feature-delete {
       color: #e53e3e;
       cursor: pointer;
       opacity: 0;
       transition: opacity 0.2s;
     }
+
     .feature-item:hover .feature-delete {
       opacity: 1;
     }
+
     .feature-delete.visible {
       opacity: 1;
     }
+
     .spell-checkbox {
       cursor: pointer;
     }
+
     @page {
       size: A4;
       margin: 0.6in;
     }
+
     @media print {
       body {
         background: white !important;
         padding: 0 !important;
         margin: 0 !important;
       }
+
       .sheet-page {
         box-shadow: none !important;
         margin: 0 !important;
@@ -187,20 +228,26 @@
         padding: 20px 40px !important;
         page-break-inside: avoid;
       }
-      .sheet-page + .sheet-page {
+
+      .sheet-page+.sheet-page {
         page-break-before: page;
       }
-      .no-print, .fixed {
+
+      .no-print,
+      .fixed {
         display: none !important;
         visibility: hidden !important;
       }
+
       .editable-input {
         border: none !important;
         background: transparent !important;
       }
+
       .h-10 {
         display: none !important;
       }
+
       #features-list,
       .sketch-border textarea,
       .sketch-border div[style*="max-height"] {
@@ -211,14 +258,16 @@
     }
   </style>
 </head>
+
 <body class="p-4">
 
   <a href="/character/<%= character.id %>/pdf"
-     class="fixed top-4 left-4 z-50 px-4 py-2 bg-indigo-600 text-white rounded-lg shadow-lg hover:bg-indigo-700 transition flex items-center gap-2 no-print"
-     title="Download PDF">
+    class="fixed top-4 left-4 z-50 px-4 py-2 bg-indigo-600 text-white rounded-lg shadow-lg hover:bg-indigo-700 transition flex items-center gap-2 no-print"
+    title="Download PDF">
     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
-      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 11v6m0 0l-3-3m3 3l3-3"/>
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+        d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 11v6m0 0l-3-3m3 3l3-3" />
     </svg>
     <span>Print PDF</span>
   </a>
@@ -234,10 +283,12 @@
           class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
           Edit Character
         </button>
-        <button type="button" id="cancel-edit" class="px-4 py-2 bg-gray-400 text-white rounded-lg hover:bg-gray-500 transition hidden">
+        <button type="button" id="cancel-edit"
+          class="px-4 py-2 bg-gray-400 text-white rounded-lg hover:bg-gray-500 transition hidden">
           Cancel
         </button>
-        <button type="submit" id="save-btn" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition hidden">
+        <button type="submit" id="save-btn"
+          class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition hidden">
           Save Changes
         </button>
         <button type="button" id="delete-btn" onclick="confirmDelete()"
@@ -250,42 +301,54 @@
       <header class="flex gap-4 mb-8">
         <div class="flex-none w-1/3">
           <div class="header-banner h-24 flex items-center justify-center relative">
-            <img alt="D&D Logo" class="max-h-full" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDe8LhTl2Ib7K8TXaUdj2yjeSFdnbo0ur6sxyiNcpUdmRC8PJi__M3tJ1SY3GizQBEmOXf9LqompyZFV3nmSMXbmY7ov6RCNQYbMI_qjKsNAgkdb92C39NGFdvbj0jS02a9HpYSok1fxMCfalqiGqeKrgADLSwrU3VUvYTB2JJsiM5V7aJnmRBSsttjaS8P75fwwKYARLmLwB55oi8aLasEvfkOryxYf-XM31RWLrwbK3ZgiKMndAjp2d2BrOzbNnfy3dT7T8UkbN8"/>
+            <img alt="D&D Logo" class="max-h-full"
+              src="https://lh3.googleusercontent.com/aida-public/AB6AXuDe8LhTl2Ib7K8TXaUdj2yjeSFdnbo0ur6sxyiNcpUdmRC8PJi__M3tJ1SY3GizQBEmOXf9LqompyZFV3nmSMXbmY7ov6RCNQYbMI_qjKsNAgkdb92C39NGFdvbj0jS02a9HpYSok1fxMCfalqiGqeKrgADLSwrU3VUvYTB2JJsiM5V7aJnmRBSsttjaS8P75fwwKYARLmLwB55oi8aLasEvfkOryxYf-XM31RWLrwbK3ZgiKMndAjp2d2BrOzbNnfy3dT7T8UkbN8" />
             <div class="absolute -bottom-3 left-4 bg-white px-2">
-              <input name="name" class="font-bold uppercase text-lg border-none focus:ring-0 editable-input" type="text" value="<%= character.name %>" readonly/>
+              <input name="name" class="font-bold uppercase text-lg border-none focus:ring-0 editable-input" type="text"
+                value="<%= character.name %>" readonly />
             </div>
           </div>
         </div>
         <div class="flex-grow grid grid-cols-3 gap-2 border-2 border-black rounded-lg p-3">
           <div>
             <label class="label-small block">Class & Level</label>
-            <span class="line-input font-semibold"><%= classStr %></span>
+            <span class="line-input font-semibold">
+              <%= classStr %>
+            </span>
           </div>
           <div>
             <label class="label-small block">Background</label>
-            <span class="line-input font-semibold"><%= bgStr %></span>
+            <span class="line-input font-semibold">
+              <%= bgStr %>
+            </span>
           </div>
           <div>
             <label class="label-small block">Player Name</label>
-            <input name="player" class="line-input editable-input" type="text" value="<%= character.player || '' %>" readonly/>
+            <input name="player" class="line-input editable-input" type="text" value="<%= character.player || '' %>"
+              readonly />
           </div>
           <div>
             <label class="label-small block">Race</label>
-            <span class="line-input font-semibold"><%= raceDisplay %></span>
+            <span class="line-input font-semibold">
+              <%= raceDisplay %>
+            </span>
           </div>
           <div>
             <label class="label-small block">Alignment</label>
             <select name="alignment" class="line-input editable-input bg-transparent" disabled>
               <option value="">Select...</option>
-              <% const alignments = ["Lawful Good", "Neutral Good", "Chaotic Good", "Lawful Neutral", "True Neutral", "Chaotic Neutral", "Lawful Evil", "Neutral Evil", "Chaotic Evil"];
-              alignments.forEach(function(a) { %>
-                <option value="<%= a %>" <%= character.alignment === a ? 'selected' : '' %>><%= a %></option>
-              <% }); %>
+              <% const alignments=["Lawful Good", "Neutral Good" , "Chaotic Good" , "Lawful Neutral" , "True Neutral"
+                , "Chaotic Neutral" , "Lawful Evil" , "Neutral Evil" , "Chaotic Evil" ]; alignments.forEach(function(a)
+                { %>
+                <option value="<%= a %>" <%=character.alignment===a ? 'selected' : '' %>><%= a %>
+                </option>
+                <% }); %>
             </select>
           </div>
           <div>
             <label class="label-small block">XP</label>
-            <input name="experience" class="line-input editable-input" type="number" value="<%= character.experience %>" readonly min="0"/>
+            <input name="experience" class="line-input editable-input" type="number" value="<%= character.experience %>"
+              readonly min="0" />
           </div>
         </div>
       </header>
@@ -298,18 +361,26 @@
             <div class="space-y-4">
               <% abilityData.forEach(function(a) { %>
                 <div class="stat-box">
-                  <span class="label-small"><%= a.abbr %></span>
-                  <input name="abilityScores[<%= a.name %>]" class="text-center text-xl font-bold editable-input" type="number" value="<%= a.score %>" readonly min="1" max="30"/>
-                  <div class="border border-black rounded-full w-8 h-6 flex items-center justify-center text-xs mt-1"><%= a.modStr %></div>
+                  <span class="label-small">
+                    <%= a.abbr %>
+                  </span>
+                  <input name="abilityScores[<%= a.name %>]" class="text-center text-xl font-bold editable-input"
+                    type="number" value="<%= a.score %>" readonly min="1" max="30" />
+                  <div class="border border-black rounded-full w-8 h-6 flex items-center justify-center text-xs mt-1">
+                    <%= a.modStr %>
+                  </div>
                 </div>
-              <% }); %>
+                <% }); %>
             </div>
             <!-- Proficiency & Saves -->
             <div class="flex-grow space-y-4">
               <div class="sketch-border p-2 flex items-center gap-2">
-                <div id="inspiration-bubble" class="bubble <%= character.inspiration ? 'filled' : '' %>" onclick="toggleInspiration()"></div>
-                <input type="checkbox" name="inspiration" id="inspiration" value="1" <%= character.inspiration ? 'checked' : '' %> class="hidden"/>
-                <input name="proficiencyBonus" class="w-8 text-center font-bold editable-input" type="text" value="<%= profBonusStr %>" readonly/>
+                <div id="inspiration-bubble" class="bubble <%= character.inspiration ? 'filled' : '' %>"
+                  onclick="toggleInspiration()"></div>
+                <input type="checkbox" name="inspiration" id="inspiration" value="1" <%=character.inspiration
+                  ? 'checked' : '' %> class="hidden"/>
+                <input name="proficiencyBonus" class="w-8 text-center font-bold editable-input" type="text"
+                  value="<%= profBonusStr %>" readonly />
                 <span class="label-small">Proficiency Bonus</span>
               </div>
 
@@ -318,12 +389,16 @@
                 <span class="label-small block text-center mb-2">Saving Throws</span>
                 <% savingThrows.forEach(function(st) { %>
                   <div class="skill-row">
-                    <div class="bubble <%= st.proficient ? 'filled' : '' %>" data-save="<%= st.name %>" onclick="toggleSaveBubble(this)"></div>
-                    <input type="checkbox" name="savingThrows[<%= st.name %>]" class="hidden" <%= st.proficient ? 'checked' : '' %>/>
-                    <input class="w-6 border-b editable-input" type="text" value="<%= st.modStr %>" readonly/>
-                    <span><%= st.label %></span>
+                    <div class="bubble <%= st.proficient ? 'filled' : '' %>" data-save="<%= st.name %>"
+                      onclick="toggleSaveBubble(this)"></div>
+                    <input type="checkbox" name="savingThrows[<%= st.name %>]" class="hidden" <%=st.proficient
+                      ? 'checked' : '' %>/>
+                    <input class="w-6 border-b editable-input" type="text" value="<%= st.modStr %>" readonly />
+                    <span>
+                      <%= st.label %>
+                    </span>
                   </div>
-                <% }); %>
+                  <% }); %>
               </div>
 
               <!-- Skills -->
@@ -331,21 +406,27 @@
                 <span class="label-small block text-center mb-2">Skills</span>
                 <% skills.forEach(function(sk) { %>
                   <div class="skill-row">
-                    <div class="bubble <%= sk.proficient ? 'filled' : '' %>" data-skill="<%= sk.name %>" onclick="toggleSkillBubble(this)"></div>
-                    <input type="checkbox" name="skills[<%= sk.name %>]" value="1" class="hidden" <%= sk.proficient ? 'checked' : '' %>/>
-                    <input type="checkbox" name="skillExpertise[<%= sk.name %>]" value="1" class="hidden" <%= sk.expertise ? 'checked' : '' %>/>
-                    <input class="w-6 border-b editable-input" type="text" value="<%= sk.modStr %>" readonly/>
-                    <span><%= sk.label %></span>
+                    <div class="bubble <%= sk.proficient ? 'filled' : '' %>" data-skill="<%= sk.name %>"
+                      onclick="toggleSkillBubble(this)"></div>
+                    <input type="checkbox" name="skills[<%= sk.name %>]" value="1" class="hidden" <%=sk.proficient
+                      ? 'checked' : '' %>/>
+                    <input type="checkbox" name="skillExpertise[<%= sk.name %>]" value="1" class="hidden"
+                      <%=sk.expertise ? 'checked' : '' %>/>
+                    <input class="w-6 border-b editable-input" type="text" value="<%= sk.modStr %>" readonly />
+                    <span>
+                      <%= sk.label %>
+                    </span>
                     <span class="text-gray-500 text-xs">(<%= sk.ability %>)</span>
                   </div>
-                <% }); %>
+                  <% }); %>
               </div>
             </div>
           </div>
 
           <!-- Passive Perception -->
           <div class="sketch-border p-2 flex items-center gap-2">
-            <input name="passivePerception" class="w-8 text-center font-bold editable-input" type="number" value="<%= character.passivePerception || 10 %>" readonly min="0"/>
+            <input name="passivePerception" class="w-8 text-center font-bold editable-input" type="number"
+              value="<%= character.passivePerception || 10 %>" readonly min="0" />
             <span class="label-small">Passive Wisdom (Perception)</span>
           </div>
 
@@ -357,15 +438,18 @@
           <div class="grid grid-cols-3 gap-2">
             <div class="stat-box w-full border-2">
               <span class="label-small">Armor Class</span>
-              <input name="armorClass" class="text-center text-xl font-bold editable-input" type="number" value="<%= character.armorClass?.baseValue || 10 %>" readonly min="0"/>
+              <input name="armorClass" class="text-center text-xl font-bold editable-input" type="number"
+                value="<%= character.armorClass?.baseValue || 10 %>" readonly min="0" />
             </div>
             <div class="stat-box w-full border-2">
               <span class="label-small">Initiative</span>
-              <input name="initiative" class="text-center text-xl font-bold editable-input" type="number" value="<%= character.initiative?.baseValue || 0 %>" readonly/>
+              <input name="initiative" class="text-center text-xl font-bold editable-input" type="number"
+                value="<%= character.initiative?.baseValue || 0 %>" readonly />
             </div>
             <div class="stat-box w-full border-2">
               <span class="label-small">Speed</span>
-              <input name="speed" class="text-center text-xl font-bold editable-input" type="number" value="<%= character.speed?.baseValue || 30 %>" readonly min="0"/>
+              <input name="speed" class="text-center text-xl font-bold editable-input" type="number"
+                value="<%= character.speed?.baseValue || 30 %>" readonly min="0" />
             </div>
           </div>
 
@@ -373,13 +457,16 @@
           <div class="sketch-border p-3 space-y-2">
             <div class="flex justify-between items-center text-xs">
               <span>Hit Point Maximum</span>
-              <input name="maxHitPoints" class="w-20 border-b editable-input" type="number" value="<%= character.maxHitPoints %>" readonly min="1"/>
+              <input name="maxHitPoints" class="w-20 border-b editable-input" type="number"
+                value="<%= character.maxHitPoints %>" readonly min="1" />
             </div>
-            <input name="currentHitPoints" class="text-center text-2xl h-12 editable-input" placeholder="Current HP" type="number" value="<%= character.currentHitPoints %>" readonly/>
+            <input name="currentHitPoints" class="text-center text-2xl h-12 editable-input" placeholder="Current HP"
+              type="number" value="<%= character.currentHitPoints %>" readonly />
             <p class="text-center label-small">Current Hit Points</p>
           </div>
           <div class="sketch-border p-3">
-            <input name="tempHitPoints" class="text-center h-12 editable-input" placeholder="Temporary HP" type="number" value="<%= character.tempHitPoints || 0 %>" readonly/>
+            <input name="tempHitPoints" class="text-center h-12 editable-input" placeholder="Temporary HP" type="number"
+              value="<%= character.tempHitPoints || 0 %>" readonly />
             <p class="text-center label-small">Temporary Hit Points</p>
           </div>
 
@@ -388,33 +475,46 @@
             <div class="sketch-border p-2">
               <div class="flex justify-between label-small">
                 <span>Total</span>
-                <span class="font-bold"><%= totalLevel %></span>
+                <span class="font-bold">
+                  <%= totalLevel %>
+                </span>
               </div>
-              <div class="text-center text-lg h-8 font-bold"><%= hitDieStr || '—' %></div>
+              <div class="text-center text-lg h-8 font-bold">
+                <%= hitDieStr || '—' %>
+              </div>
               <p class="text-center label-small">Hit Dice</p>
             </div>
             <div class="sketch-border p-2">
               <div class="flex items-center justify-center gap-1">
                 <span class="label-small">Successes</span>
-                <div class="bubble <%= character.deathSaveSuccess1 ? 'filled' : '' %>" onclick="toggleDeathSave(this, 'success1')"></div>
-                <div class="bubble <%= character.deathSaveSuccess2 ? 'filled' : '' %>" onclick="toggleDeathSave(this, 'success2')"></div>
-                <div class="bubble <%= character.deathSaveSuccess3 ? 'filled' : '' %>" onclick="toggleDeathSave(this, 'success3')"></div>
+                <div class="bubble <%= character.deathSaveSuccess1 ? 'filled' : '' %>"
+                  onclick="toggleDeathSave(this, 'success1')"></div>
+                <div class="bubble <%= character.deathSaveSuccess2 ? 'filled' : '' %>"
+                  onclick="toggleDeathSave(this, 'success2')"></div>
+                <div class="bubble <%= character.deathSaveSuccess3 ? 'filled' : '' %>"
+                  onclick="toggleDeathSave(this, 'success3')"></div>
               </div>
               <div class="flex items-center justify-center gap-1 mt-1">
                 <span class="label-small">Failures</span>
-                <div class="bubble <%= character.deathSaveFail1 ? 'filled' : '' %>" onclick="toggleDeathSave(this, 'fail1')"></div>
-                <div class="bubble <%= character.deathSaveFail2 ? 'filled' : '' %>" onclick="toggleDeathSave(this, 'fail2')"></div>
-                <div class="bubble <%= character.deathSaveFail3 ? 'filled' : '' %>" onclick="toggleDeathSave(this, 'fail3')"></div>
+                <div class="bubble <%= character.deathSaveFail1 ? 'filled' : '' %>"
+                  onclick="toggleDeathSave(this, 'fail1')"></div>
+                <div class="bubble <%= character.deathSaveFail2 ? 'filled' : '' %>"
+                  onclick="toggleDeathSave(this, 'fail2')"></div>
+                <div class="bubble <%= character.deathSaveFail3 ? 'filled' : '' %>"
+                  onclick="toggleDeathSave(this, 'fail3')"></div>
               </div>
               <p class="text-center label-small">Death Saves</p>
             </div>
           </div>
-          <input type="checkbox" name="deathSaveSuccess1" class="hidden" <%= character.deathSaveSuccess1 ? 'checked' : '' %>/>
-          <input type="checkbox" name="deathSaveSuccess2" class="hidden" <%= character.deathSaveSuccess2 ? 'checked' : '' %>/>
-          <input type="checkbox" name="deathSaveSuccess3" class="hidden" <%= character.deathSaveSuccess3 ? 'checked' : '' %>/>
-          <input type="checkbox" name="deathSaveFail1" class="hidden" <%= character.deathSaveFail1 ? 'checked' : '' %>/>
-          <input type="checkbox" name="deathSaveFail2" class="hidden" <%= character.deathSaveFail2 ? 'checked' : '' %>/>
-          <input type="checkbox" name="deathSaveFail3" class="hidden" <%= character.deathSaveFail3 ? 'checked' : '' %>/>
+          <input type="checkbox" name="deathSaveSuccess1" class="hidden" <%=character.deathSaveSuccess1 ? 'checked' : ''
+            %>/>
+          <input type="checkbox" name="deathSaveSuccess2" class="hidden" <%=character.deathSaveSuccess2 ? 'checked' : ''
+            %>/>
+          <input type="checkbox" name="deathSaveSuccess3" class="hidden" <%=character.deathSaveSuccess3 ? 'checked' : ''
+            %>/>
+          <input type="checkbox" name="deathSaveFail1" class="hidden" <%=character.deathSaveFail1 ? 'checked' : '' %>/>
+          <input type="checkbox" name="deathSaveFail2" class="hidden" <%=character.deathSaveFail2 ? 'checked' : '' %>/>
+          <input type="checkbox" name="deathSaveFail3" class="hidden" <%=character.deathSaveFail3 ? 'checked' : '' %>/>
 
           <!-- Attacks & Spellcasting -->
           <div class="sketch-border p-2 h-64">
@@ -430,22 +530,36 @@
               <tbody>
                 <% weapons.forEach(function(w) { %>
                   <tr>
-                    <td><%= w.name %></td>
-                    <td><%= w.atkBonusStr %></td>
-                    <td><%= w.damage %></td>
+                    <td>
+                      <%= w.name %>
+                    </td>
+                    <td>
+                      <%= w.atkBonusStr %>
+                    </td>
+                    <td>
+                      <%= w.damage %>
+                    </td>
                   </tr>
-                <% }); %>
-                <% for(let i = weapons.length; i < 3; i++) { %>
-                  <tr><td>&nbsp;</td><td></td><td></td></tr>
-                <% } %>
+                  <% }); %>
+                    <% for(let i=weapons.length; i < 3; i++) { %>
+                      <tr>
+                        <td>&nbsp;</td>
+                        <td></td>
+                        <td></td>
+                      </tr>
+                      <% } %>
               </tbody>
             </table>
             <% if (spellData) { %>
               <div class="mt-2 pt-1 border-t text-xs">
-                Spell Save DC: <input name="spellSaveDC" class="font-bold w-12 bg-transparent border-none text-center editable-input" type="number" value="<%= spellData.saveDC %>" readonly min="0"/>
-                | Spell Attack: <input name="spellAttackBonus" class="font-bold w-12 bg-transparent border-none text-center editable-input" type="number" value="<%= spellData.attackBonus %>" readonly/>
+                Spell Save DC: <input name="spellSaveDC"
+                  class="font-bold w-12 bg-transparent border-none text-center editable-input" type="number"
+                  value="<%= spellData.saveDC %>" readonly min="0" />
+                | Spell Attack: <input name="spellAttackBonus"
+                  class="font-bold w-12 bg-transparent border-none text-center editable-input" type="number"
+                  value="<%= spellData.attackBonus %>" readonly />
               </div>
-            <% } %>
+              <% } %>
           </div>
 
           <!-- Equipment -->
@@ -453,20 +567,33 @@
             <span class="label-small block border-b mb-2">Equipment</span>
             <div class="flex">
               <div class="w-12 space-y-1">
-                <div class="border p-1 text-[8px]">CP <input name="currency[cp]" class="w-full bg-transparent border-none text-xs" type="number" value="<%= character.currency?.cp || 0 %>" readonly min="0"/></div>
-                <div class="border p-1 text-[8px]">SP <input name="currency[sp]" class="w-full bg-transparent border-none text-xs" type="number" value="<%= character.currency?.sp || 0 %>" readonly min="0"/></div>
-                <div class="border p-1 text-[8px]">EP <input name="currency[ep]" class="w-full bg-transparent border-none text-xs" type="number" value="<%= character.currency?.ep || 0 %>" readonly min="0"/></div>
-                <div class="border p-1 text-[8px]">GP <input name="currency[gp]" class="w-full bg-transparent border-none text-xs" type="number" value="<%= character.currency?.gp || 0 %>" readonly min="0"/></div>
-                <div class="border p-1 text-[8px]">PP <input name="currency[pp]" class="w-full bg-transparent border-none text-xs" type="number" value="<%= character.currency?.pp || 0 %>" readonly min="0"/></div>
+                <div class="border p-1 text-[8px]">CP <input name="currency[cp]"
+                    class="w-full bg-transparent border-none text-xs" type="number"
+                    value="<%= character.currency?.cp || 0 %>" readonly min="0" /></div>
+                <div class="border p-1 text-[8px]">SP <input name="currency[sp]"
+                    class="w-full bg-transparent border-none text-xs" type="number"
+                    value="<%= character.currency?.sp || 0 %>" readonly min="0" /></div>
+                <div class="border p-1 text-[8px]">EP <input name="currency[ep]"
+                    class="w-full bg-transparent border-none text-xs" type="number"
+                    value="<%= character.currency?.ep || 0 %>" readonly min="0" /></div>
+                <div class="border p-1 text-[8px]">GP <input name="currency[gp]"
+                    class="w-full bg-transparent border-none text-xs" type="number"
+                    value="<%= character.currency?.gp || 0 %>" readonly min="0" /></div>
+                <div class="border p-1 text-[8px]">PP <input name="currency[pp]"
+                    class="w-full bg-transparent border-none text-xs" type="number"
+                    value="<%= character.currency?.pp || 0 %>" readonly min="0" /></div>
               </div>
               <div id="equipment-list" class="flex-grow ml-2 overflow-y-auto text-xs">
                 <% equipment.forEach(function(e, idx) { %>
                   <div class="equipment-item" data-index="<%= idx %>">
-                    <span class="equipment-delete" onclick="removeEquipment(<%= idx %>)">&times;</span>
-                    <input type="text" name="equipment[<%= idx %>][name]" value="<%= e.name %>" readonly class="flex-1 bg-transparent border-none text-xs editable-input" placeholder="Item name"/>
-                    <input type="number" name="equipment[<%= idx %>][quantity]" value="<%= e.quantity %>" readonly min="1" class="w-12 bg-transparent border-none text-xs text-center editable-input" placeholder="Qty"/>
+                    <span class="equipment-delete" onclick="removeEquipment('<%= idx %>')">&times;</span>
+                    <input type="text" name="equipment[<%= idx %>][name]" value="<%= e.name %>" readonly
+                      class="flex-1 bg-transparent border-none text-xs editable-input" placeholder="Item name" />
+                    <input type="number" name="equipment[<%= idx %>][quantity]" value="<%= e.quantity %>" readonly
+                      min="1" class="w-12 bg-transparent border-none text-xs text-center editable-input"
+                      placeholder="Qty" />
                   </div>
-                <% }); %>
+                  <% }); %>
               </div>
             </div>
             <div class="equipment-add" id="add-equipment-btn" onclick="addEquipment()">+ Add Equipment</div>
@@ -481,20 +608,24 @@
               <% features.forEach(function(f, idx) { %>
                 <div class="feature-item" data-index="<%= idx %>">
                   <div class="flex items-start gap-2">
-                    <span class="feature-delete" onclick="removeFeature(<%= idx %>)">&times;</span>
+                    <span class="feature-delete" onclick="removeFeature('<%= idx %>')">&times;</span>
                     <div class="flex-1">
-                      <input type="text" name="features[<%= idx %>][name]" value="<%= f.name %>" readonly class="font-bold w-full bg-transparent border-none text-xs editable-input" placeholder="Feature name"/>
+                      <input type="text" name="features[<%= idx %>][name]" value="<%= f.name %>" readonly
+                        class="font-bold w-full bg-transparent border-none text-xs editable-input"
+                        placeholder="Feature name" />
                     </div>
                   </div>
                 </div>
-              <% }); %>
+                <% }); %>
             </div>
-            <div class="feature-add text-blue-500 cursor-pointer text-sm mt-2 hover:underline" onclick="addFeature()">+ Add Feature</div>
+            <div class="feature-add text-blue-500 cursor-pointer text-sm mt-2 hover:underline" onclick="addFeature()">+
+              Add Feature</div>
           </div>
 
           <div class="sketch-border p-2">
             <span class="label-small block">Other Proficiencies & Languages</span>
-            <textarea name="otherProficienciesText" class="w-full h-32 text-xs resize-none editable-input" readonly><%= otherProfs.join('\n') %></textarea>
+            <textarea name="otherProficienciesText" class="w-full h-32 text-xs resize-none editable-input"
+              readonly><%= otherProfs.join('\n') %></textarea>
           </div>
         </section>
       </div>
@@ -512,19 +643,23 @@
       <div class="grid grid-cols-2 gap-6" style="height: 860px;">
         <div class="sketch-border p-4 flex flex-col">
           <span class="label-small block mb-2">Personality Traits</span>
-          <textarea name="traits[personalityTrait]" class="w-full flex-1 text-xs resize-none editable-input" readonly placeholder="Personality traits..."><%= character.traits?.personalityTrait || '' %></textarea>
+          <textarea name="traits[personalityTrait]" class="w-full flex-1 text-xs resize-none editable-input" readonly
+            placeholder="Personality traits..."><%= character.traits?.personalityTrait || '' %></textarea>
         </div>
         <div class="sketch-border p-4 flex flex-col">
           <span class="label-small block mb-2">Ideals</span>
-          <textarea name="traits[ideal]" class="w-full flex-1 text-xs resize-none editable-input" readonly placeholder="Ideals..."><%= character.traits?.ideal || '' %></textarea>
+          <textarea name="traits[ideal]" class="w-full flex-1 text-xs resize-none editable-input" readonly
+            placeholder="Ideals..."><%= character.traits?.ideal || '' %></textarea>
         </div>
         <div class="sketch-border p-4 flex flex-col">
           <span class="label-small block mb-2">Bonds</span>
-          <textarea name="traits[bond]" class="w-full flex-1 text-xs resize-none editable-input" readonly placeholder="Bonds..."><%= character.traits?.bond || '' %></textarea>
+          <textarea name="traits[bond]" class="w-full flex-1 text-xs resize-none editable-input" readonly
+            placeholder="Bonds..."><%= character.traits?.bond || '' %></textarea>
         </div>
         <div class="sketch-border p-4 flex flex-col">
           <span class="label-small block mb-2">Flaws</span>
-          <textarea name="traits[flaw]" class="w-full flex-1 text-xs resize-none editable-input" readonly placeholder="Flaws..."><%= character.traits?.flaw || '' %></textarea>
+          <textarea name="traits[flaw]" class="w-full flex-1 text-xs resize-none editable-input" readonly
+            placeholder="Flaws..."><%= character.traits?.flaw || '' %></textarea>
         </div>
       </div>
 
@@ -540,21 +675,28 @@
         <header class="flex gap-4 mb-8">
           <div class="flex-none w-1/3">
             <div class="header-banner h-20 flex items-center justify-center">
-              <div class="dnd-font-header text-xl font-bold"><%= spellData.className %> Spellcasting</div>
+              <div class="dnd-font-header text-xl font-bold">
+                <%= spellData.className %> Spellcasting
+              </div>
             </div>
           </div>
           <div class="flex-grow grid grid-cols-3 gap-4">
             <div class="sketch-border text-center p-2">
               <span class="label-small">Spellcasting Ability</span>
-              <div class="text-2xl font-bold"><%= spellData.ability %></div>
+              <div class="text-2xl font-bold">
+                <%= spellData.ability %>
+              </div>
             </div>
             <div class="sketch-border text-center p-2">
               <span class="label-small">Spell Save DC</span>
-              <input name="spellSaveDC" class="text-center font-bold text-2xl bg-transparent border-none editable-input" type="number" value="<%= spellData.saveDC %>" readonly min="0"/>
+              <input name="spellSaveDC" class="text-center font-bold text-2xl bg-transparent border-none editable-input"
+                type="number" value="<%= spellData.saveDC %>" readonly min="0" />
             </div>
             <div class="sketch-border text-center p-2">
               <span class="label-small">Spell Attack Bonus</span>
-              <input name="spellAttackBonus" class="text-center font-bold text-2xl bg-transparent border-none editable-input" type="number" value="<%= spellData.attackBonus %>" readonly/>
+              <input name="spellAttackBonus"
+                class="text-center font-bold text-2xl bg-transparent border-none editable-input" type="number"
+                value="<%= spellData.attackBonus %>" readonly />
             </div>
           </div>
         </header>
@@ -569,18 +711,22 @@
               </div>
               <div class="space-y-1 text-xs">
                 <% spellData.cantrips.forEach(function(s) { %>
-                  <div class="line-input h-5"><%= s.name %></div>
-                <% }); %>
-                <% if (spellData.cantrips.length === 0) { %>
-                  <div class="text-gray-400 italic">None</div>
-                <% } %>
+                  <div class="line-input h-5">
+                    <%= s.name %>
+                  </div>
+                  <% }); %>
+                    <% if (spellData.cantrips.length===0) { %>
+                      <div class="text-gray-400 italic">None</div>
+                      <% } %>
               </div>
             </div>
             <% [1, 2].forEach(function(lvl) { %>
               <div class="sketch-border p-2">
                 <div class="bg-gray-100 p-1 flex justify-between items-center mb-2">
                   <div class="flex items-center gap-2">
-                    <span class="font-bold text-sm"><%= lvl %></span>
+                    <span class="font-bold text-sm">
+                      <%= lvl %>
+                    </span>
                     <div class="border border-black w-4 h-4"></div>
                     <span class="text-[8px]">Slots Total</span>
                     <div class="border border-black w-4 h-4"></div>
@@ -589,25 +735,31 @@
                 </div>
                 <div class="flex gap-2 mb-2">
                   <div class="border p-1 flex-1 text-center">
-                    <input name="spellSlots[<%= lvl %>][max]" class="w-full text-center font-bold bg-transparent border-none editable-input" type="number" value="<%= spellData.slots[lvl] ? spellData.slots[lvl].max : 0 %>" readonly min="0"/>
+                    <input name="spellSlots[<%= lvl %>][max]"
+                      class="w-full text-center font-bold bg-transparent border-none editable-input" type="number"
+                      value="<%= spellData.slots[lvl] ? spellData.slots[lvl].max : 0 %>" readonly min="0" />
                   </div>
                   <div class="border p-1 flex-1 text-center">
-                    <input name="spellSlots[<%= lvl %>][used]" class="w-full text-center font-bold bg-transparent border-none editable-input" type="number" value="<%= spellData.slots[lvl] ? spellData.slots[lvl].used : 0 %>" readonly min="0"/>
+                    <input name="spellSlots[<%= lvl %>][used]"
+                      class="w-full text-center font-bold bg-transparent border-none editable-input" type="number"
+                      value="<%= spellData.slots[lvl] ? spellData.slots[lvl].used : 0 %>" readonly min="0" />
                   </div>
                 </div>
                 <div class="space-y-1 text-xs">
                   <% (spellData.spellsByLevel[lvl] || []).forEach(function(s) { %>
                     <div class="flex items-center gap-1">
                       <div class="bubble spell-checkbox"></div>
-                      <span class="line-input"><%= s.name %></span>
+                      <span class="line-input">
+                        <%= s.name %>
+                      </span>
                     </div>
-                  <% }); %>
-                  <% if (!(spellData.spellsByLevel[lvl] || []).length) { %>
-                    <div class="text-gray-400 italic">—</div>
-                  <% } %>
+                    <% }); %>
+                      <% if (!(spellData.spellsByLevel[lvl] || []).length) { %>
+                        <div class="text-gray-400 italic">—</div>
+                        <% } %>
                 </div>
               </div>
-            <% }); %>
+              <% }); %>
           </div>
 
           <!-- Level 3, 4, 5 -->
@@ -616,7 +768,9 @@
               <div class="sketch-border p-2 h-64">
                 <div class="bg-gray-100 p-1 flex justify-between items-center mb-2">
                   <div class="flex items-center gap-2">
-                    <span class="font-bold text-sm"><%= lvl %></span>
+                    <span class="font-bold text-sm">
+                      <%= lvl %>
+                    </span>
                     <div class="border border-black w-4 h-4"></div>
                     <span class="text-[8px]">Slots Total</span>
                     <div class="border border-black w-4 h-4"></div>
@@ -625,25 +779,31 @@
                 </div>
                 <div class="flex gap-2 mb-2">
                   <div class="border p-1 flex-1 text-center">
-                    <input name="spellSlots[<%= lvl %>][max]" class="w-full text-center font-bold bg-transparent border-none editable-input" type="number" value="<%= spellData.slots[lvl] ? spellData.slots[lvl].max : 0 %>" readonly min="0"/>
+                    <input name="spellSlots[<%= lvl %>][max]"
+                      class="w-full text-center font-bold bg-transparent border-none editable-input" type="number"
+                      value="<%= spellData.slots[lvl] ? spellData.slots[lvl].max : 0 %>" readonly min="0" />
                   </div>
                   <div class="border p-1 flex-1 text-center">
-                    <input name="spellSlots[<%= lvl %>][used]" class="w-full text-center font-bold bg-transparent border-none editable-input" type="number" value="<%= spellData.slots[lvl] ? spellData.slots[lvl].used : 0 %>" readonly min="0"/>
+                    <input name="spellSlots[<%= lvl %>][used]"
+                      class="w-full text-center font-bold bg-transparent border-none editable-input" type="number"
+                      value="<%= spellData.slots[lvl] ? spellData.slots[lvl].used : 0 %>" readonly min="0" />
                   </div>
                 </div>
                 <div class="space-y-1 text-xs overflow-y-auto" style="max-height: 140px;">
                   <% (spellData.spellsByLevel[lvl] || []).forEach(function(s) { %>
                     <div class="flex items-center gap-1">
                       <div class="bubble spell-checkbox"></div>
-                      <span class="line-input"><%= s.name %></span>
+                      <span class="line-input">
+                        <%= s.name %>
+                      </span>
                     </div>
-                  <% }); %>
-                  <% if (!(spellData.spellsByLevel[lvl] || []).length) { %>
-                    <div class="text-gray-400 italic">—</div>
-                  <% } %>
+                    <% }); %>
+                      <% if (!(spellData.spellsByLevel[lvl] || []).length) { %>
+                        <div class="text-gray-400 italic">—</div>
+                        <% } %>
                 </div>
               </div>
-            <% }); %>
+              <% }); %>
           </div>
 
           <!-- Level 6-9 -->
@@ -652,7 +812,9 @@
               <div class="sketch-border p-2 h-40">
                 <div class="bg-gray-100 p-1 flex justify-between items-center mb-2">
                   <div class="flex items-center gap-2">
-                    <span class="font-bold text-sm"><%= lvl %></span>
+                    <span class="font-bold text-sm">
+                      <%= lvl %>
+                    </span>
                     <div class="border border-black w-4 h-4"></div>
                     <span class="text-[8px]">Slots Total</span>
                     <div class="border border-black w-4 h-4"></div>
@@ -661,25 +823,31 @@
                 </div>
                 <div class="flex gap-2 mb-2">
                   <div class="border p-1 flex-1 text-center">
-                    <input name="spellSlots[<%= lvl %>][max]" class="w-full text-center font-bold bg-transparent border-none editable-input" type="number" value="<%= spellData.slots[lvl] ? spellData.slots[lvl].max : 0 %>" readonly min="0"/>
+                    <input name="spellSlots[<%= lvl %>][max]"
+                      class="w-full text-center font-bold bg-transparent border-none editable-input" type="number"
+                      value="<%= spellData.slots[lvl] ? spellData.slots[lvl].max : 0 %>" readonly min="0" />
                   </div>
                   <div class="border p-1 flex-1 text-center">
-                    <input name="spellSlots[<%= lvl %>][used]" class="w-full text-center font-bold bg-transparent border-none editable-input" type="number" value="<%= spellData.slots[lvl] ? spellData.slots[lvl].used : 0 %>" readonly min="0"/>
+                    <input name="spellSlots[<%= lvl %>][used]"
+                      class="w-full text-center font-bold bg-transparent border-none editable-input" type="number"
+                      value="<%= spellData.slots[lvl] ? spellData.slots[lvl].used : 0 %>" readonly min="0" />
                   </div>
                 </div>
                 <div class="space-y-1 text-xs overflow-y-auto" style="max-height: 60px;">
                   <% (spellData.spellsByLevel[lvl] || []).forEach(function(s) { %>
                     <div class="flex items-center gap-1">
                       <div class="bubble spell-checkbox"></div>
-                      <span class="line-input"><%= s.name %></span>
+                      <span class="line-input">
+                        <%= s.name %>
+                      </span>
                     </div>
-                  <% }); %>
-                  <% if (!(spellData.spellsByLevel[lvl] || []).length) { %>
-                    <div class="text-gray-400 italic">—</div>
-                  <% } %>
+                    <% }); %>
+                      <% if (!(spellData.spellsByLevel[lvl] || []).length) { %>
+                        <div class="text-gray-400 italic">—</div>
+                        <% } %>
                 </div>
               </div>
-            <% }); %>
+              <% }); %>
           </div>
         </div>
 
@@ -687,7 +855,7 @@
           TM &copy; 2014 Wizards of the Coast LLC. Permission granted to photocopy this document for personal use.
         </footer>
       </main>
-    <% } %>
+      <% } %>
 
   </form>
 
@@ -701,8 +869,8 @@
     const featuresList = document.getElementById('features-list');
 
     let originalValues = {};
-    let equipmentCount = <%= equipment.length %>;
-    let featureCount = <%= features.length %>;
+    let equipmentCount = parseInt('<%= (equipment || []).length %>') || 0;
+    let featureCount = parseInt('<%= (features || []).length %>') || 0;
     let isEditing = false;
 
     function toggleInspiration() {
@@ -1094,4 +1262,5 @@
   </script>
 
 </body>
+
 </html>

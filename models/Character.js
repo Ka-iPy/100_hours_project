@@ -777,6 +777,7 @@ export class Character {
     return {
       id: this.id,
       player: this.player,
+      playerID: this.playerID,
       name: this.name,
       alignment: this.alignment,
       experience: this.experience,
@@ -834,6 +835,7 @@ export class Character {
     const char = new Character();
     char.id = json.id || crypto.randomUUID();
     char.player = json.player || "";
+    char.playerID = json.playerID || "";
     char.name = json.name || "";
     char.alignment = json.alignment || "";
     char.experience = json.experience || 0;
@@ -929,7 +931,7 @@ export class Character {
     const characters = [];
     for (const file of files) {
       const data = JSON.parse(fs.readFileSync(path.join(dir, file), "utf8"));
-      if (data.player === playerId) {
+      if (data.playerID === playerId || data.player === playerId) {
         characters.push(Character.fromJSON(data));
       }
     }
