@@ -1,13 +1,14 @@
 import { CharacterBuilder } from "../models/CharacterBuilder.js";
 import { Character, Equipment, TracedFeature } from "../models/Character.js";
 import loader from "../data/loader.js";
-import puppeteer from "puppeteer-core";
-import { degrees, PDFDocument, rgb, StandardFonts } from "pdf-lib";
+import { PDFDocument, rgb, StandardFonts } from "pdf-lib";
+import { readFileSync } from "fs";
 import { fileURLToPath } from "url";
 import { dirname, join } from "path";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
+const TEMPLATE_PATH = join(__dirname, "..", "templates", "character-sheet.pdf");
 
 export default {
   getCharacterCreator: async (req, res) => {
@@ -400,6 +401,7 @@ export default {
 
   printPDF: async (req, res) => {
     try {
+      await loader.loadAll();
       const { id } = req.params;
       const character = await Character.load(id);
       if (!character) {
@@ -407,51 +409,188 @@ export default {
       }
 
       const helpers = buildCharacterViewHelpers(character);
-      const html = await new Promise((resolve, reject) => {
-        res.app.render("character", { character, ...helpers }, (err, html) => {
-          if (err) reject(err);
-          else resolve(html);
-        });
-      });
 
-      // This need replacement --switch to pdf-lib library
-      // reading docs right now...
-      const browser = await puppeteer.launch({
-        executablePath: "/usr/bin/chromium",
-        args: ["--no-sandbox", "--disable-setuid-sandbox"],
-        headless: true,
-      });
+      // --- Load the fillable PDF template ---
+      const templateBytes = readFileSync(TEMPLATE_PATH);
+      const pdfDoc = await PDFDocument.load(templateBytes);
+      const form = pdfDoc.getForm();
 
-      const page = await browser.newPage();
-      await page.setContent(html, { waitUntil: "networkidle0" });
-      await page.emulateMediaType("print");
+      // Helper: safely set a text field
+      const setText = (name, value) => {
+        try {
+          const field = form.getTextField(name);
+          field.setText(String(value ?? ""));
+        } catch { /* field not found – skip */ }
+      };
 
-      await page.evaluate(() => {
-        document.querySelectorAll(".no-print, .fixed").forEach((el) => {
-          el.style.display = "none !important";
-        });
-      });
+      // Helper: safely check a checkbox
+      const setCheck = (name, checked) => {
+        try {
+          const field = form.getCheckBox(name);
+          if (checked) field.check();
+          else field.uncheck();
+        } catch { /* skip */ }
+      };
 
-      const pdf = await page.pdf({
-        format: "A4",
-        printBackground: true,
-        preferCSSPageSize: true,
-        margin: {
-          top: "0.4in",
-          right: "0.4in",
-          bottom: "0.4in",
-          left: "0.4in",
-        },
-      });
+      // --- Header ---
+      setText("CharacterName", character.name);
+      setText("PlayerName", character.player);
+      setText("Class(subclass)andLvl", helpers.classStr);
+      setText("Exp", character.experience || 0);
+      setText("Race", helpers.raceDisplay);
+      setText("Alignment", character.alignment);
+      setText("Background", helpers.bgStr);
 
-      await browser.close();
-      // Daily commit
+      // --- Core stats ---
+      setCheck("Inspiration", character.inspiration);
+      setText("Profeciency", helpers.profBonusStr);
+
+      const initVal = character.initiative?.calculate
+        ? character.initiative.calculate()
+        : character.initiative?.baseValue ?? helpers.abilityData.find(a => a.name === "dexterity")?.mod ?? 0;
+      setText("Initiative", helpers.fmt(initVal));
+
+      const speedVal = character.speed?.calculate
+        ? character.speed.calculate()
+        : character.speed?.baseValue ?? 30;
+      setText("Speed", speedVal + " ft");
+
+      // --- Ability scores ---
+      const abilityFieldMap = {
+        strength: { score: "StrScore", mod: "StrMod" },
+        dexterity: { score: "DexScore", mod: "DexMod" },
+        constitution: { score: "ConScore", mod: "ConMod" },
+        intelligence: { score: "IntScore", mod: "Copy of Textfield6680 (4)" },
+        wisdom: { score: "WisScore", mod: "WisMod" },
+        charisma: { score: "ChaScore", mod: "ChaMod" },
+      };
+      for (const ab of helpers.abilityData) {
+        const m = abilityFieldMap[ab.name];
+        if (m) {
+          setText(m.score, ab.score);
+          setText(m.mod, ab.modStr);
+        }
+      }
+
+      // --- Saving throws ---
+      const saveFieldMap = {
+        strength: { mod: "StrSavingThrowMod" },
+        dexterity: { mod: "DexSavingThrowMod" },
+        constitution: { mod: "ConSavingThrowMod" },
+        intelligence: { mod: "IntSavingThrowMod" },
+        wisdom: { mod: "WisSavingThrowMod" },
+        charisma: { mod: "CharSavingThrowMod" },
+      };
+      for (const st of helpers.savingThrows) {
+        const m = saveFieldMap[st.name];
+        if (m) {
+          setText(m.mod, st.modStr);
+        }
+      }
+
+      // --- Skills ---
+      const skillFieldMap = {
+        acrobatics: "AcrobaticsMod",
+        "animal handling": "AnimalHandelingMod",
+        arcana: "ArcanaMod",
+        athletics: "AthleticsMod",
+        deception: "DeceptionMod",
+        history: "HistoryMod",
+        insight: "InsightMod",
+        intimidation: "IntimidationMod",
+        investigation: "InvestigationMod",
+        medicine: "MedicineMod",
+        nature: "NatureMod",
+        perception: "PerceptionMod",
+        performance: "PerformaneMod",
+        persuasion: "PersuasionMod",
+        religion: "ReligionMod",
+        "sleight of hand": "SleightOfHandMod",
+        stealth: "StealthMod",
+        survival: "SurvivalMod",
+      };
+      for (const sk of helpers.skills) {
+        const field = skillFieldMap[sk.name];
+        if (field) setText(field, sk.modStr);
+      }
+
+      // --- Combat ---
+      const acVal = character.armorClass?.calculate
+        ? character.armorClass.calculate()
+        : character.armorClass?.baseValue ?? 10;
+      setText("ArmorClass", acVal);
+      setText("MaxHP", character.maxHitPoints || 0);
+      setText("CurrentHP", character.currentHitPoints ?? character.maxHitPoints ?? 0);
+      setText("HitPoints", character.tempHitPoints || 0);
+      setText("HitDiceMax", helpers.hitDieStr);
+      setText("HitDiceCurrent", helpers.hitDieStr);
+
+      // --- Weapons ---
+      for (let i = 0; i < 3; i++) {
+        const w = helpers.weapons[i];
+        if (w) {
+          setText(`WeaponName(${i + 1})`, w.name);
+          setText(`Weapon(${i + 1})AtkModifier`, w.atkBonusStr);
+          setText(`Weapon(${i + 1})OnHitEffect`, w.damage);
+        }
+      }
+
+      // --- Death saves ---
+      setCheck("DeathSaveSuccess(1)", character.deathSaveSuccess1);
+      setCheck("DeathSaveSuccess(2)", character.deathSaveSuccess2);
+      setCheck("DeathSaveSuccess(3)", character.deathSaveSuccess3);
+      setCheck("DeathSaveFail(1)", character.deathSaveFail1);
+      setCheck("DeathSaveFail(2)", character.deathSaveFail2);
+      setCheck("DeathSaveFail(3)", character.deathSaveFail3);
+
+      // --- Traits ---
+      setText("Personality", character.traits?.personality || "");
+      setText("Ideals", character.traits?.ideals || "");
+      setText("Bonds", character.traits?.bonds || "");
+      setText("Flaws", character.traits?.flaws || "");
+
+      // --- Features & Proficiencies ---
+      const featText = helpers.features.map(f => `${f.name}: ${f.description}`).join("\n\n");
+      setText("FeaturesAndTraits", featText);
+      setText("ProfecienciesAndLanguages", helpers.otherProfs.join("\n"));
+
+      // --- Spells (header fields in the template) ---
+      if (helpers.spellData) {
+        const sd = helpers.spellData;
+        setText("SpellcasterClasses", sd.className);
+        setText("SpellAbilityMod", sd.ability);
+        setText("SpellSaveDC", sd.saveDC);
+        setText("SpellAttackMod", sd.attackBonusStr);
+        setText("CantripsAmount", sd.cantrips?.length || 0);
+        setText("KnownOrPreparedSpells",
+          Object.values(sd.spellsByLevel).flat().length + (sd.cantrips?.length || 0)
+        );
+
+        for (let lvl = 1; lvl <= 9; lvl++) {
+          const slot = sd.slots[lvl];
+          if (slot) {
+            setText(`TotalLvl${lvl}SpellSlots`, slot.max || 0);
+            setText(`Lvl${lvl}UsedSpellSlots`, slot.used || 0);
+          }
+        }
+      }
+
+      // --- Flatten the form so the fields render as static text ---
+      form.flatten();
+
+      // --- Generate spell card pages and append them ---
+      if (helpers.spellData) {
+        await appendSpellCardPages(pdfDoc, helpers.spellData, loader);
+      }
+
+      // --- Serialize and send ---
+      const pdfBytes = await pdfDoc.save();
       res.setHeader("Content-Type", "application/pdf");
       res.setHeader(
         "Content-Disposition",
         `attachment; filename="${character.name.replace(/[^a-z0-9]/gi, "_")}_Character_Sheet.pdf"`,
       );
-      res.send(pdf);
+      res.send(Buffer.from(pdfBytes));
     } catch (err) {
       console.error("Error generating PDF:", err);
       res.status(500).json({ error: err.message });
@@ -552,6 +691,333 @@ function stripHtmlTags(str) {
     else if (!inTag) out += str[i];
   }
   return out;
+}
+
+// ── Spell school names ──
+const SCHOOL_NAMES = {
+  A: "Abjuration", C: "Conjuration", D: "Divination", EN: "Enchantment",
+  EV: "Evocation", I: "Illusion", N: "Necromancy", T: "Transmutation",
+};
+
+/**
+ * Flatten 5etools structured entries into plain text.
+ */
+function flattenEntries(entries) {
+  if (!entries) return "";
+  const parts = [];
+  for (const e of entries) {
+    if (typeof e === "string") {
+      // Strip 5etools tags like {@damage 1d6}, {@spell Alarm|PHB}, etc.
+      parts.push(e.replace(/\{@[a-zA-Z]+ ([^|}]+)[^}]*\}/g, "$1"));
+    } else if (e.entries) {
+      parts.push(flattenEntries(e.entries));
+    } else if (e.items) {
+      parts.push(flattenEntries(e.items));
+    } else if (e.name && e.entries) {
+      parts.push(`${e.name}: ${flattenEntries(e.entries)}`);
+    } else if (e.name && e.entry) {
+      const txt = typeof e.entry === "string"
+        ? e.entry.replace(/\{@[a-zA-Z]+ ([^|}]+)[^}]*\}/g, "$1")
+        : flattenEntries([e.entry]);
+      parts.push(`${e.name}. ${txt}`);
+    }
+  }
+  return parts.join(" ");
+}
+
+/**
+ * Format a 5etools time array into a readable string.
+ */
+function formatTime(timeArr) {
+  if (!timeArr || !timeArr.length) return "—";
+  const t = timeArr[0];
+  return `${t.number} ${t.unit}`;
+}
+
+/**
+ * Format a 5etools range object.
+ */
+function formatRange(range) {
+  if (!range) return "—";
+  if (range.type === "point") {
+    const d = range.distance;
+    if (d.type === "self") return "Self";
+    if (d.type === "touch") return "Touch";
+    if (d.type === "sight") return "Sight";
+    return `${d.amount} ${d.type}`;
+  }
+  if (range.type === "special") return "Special";
+  return "—";
+}
+
+/**
+ * Format components object.
+ */
+function formatComponents(comp) {
+  if (!comp) return "—";
+  const parts = [];
+  if (comp.v) parts.push("V");
+  if (comp.s) parts.push("S");
+  if (comp.m) {
+    const matStr = typeof comp.m === "string" ? comp.m : comp.m.text || "";
+    parts.push(`M (${matStr})`);
+  }
+  return parts.join(", ") || "—";
+}
+
+/**
+ * Format duration array.
+ */
+function formatDuration(durArr) {
+  if (!durArr || !durArr.length) return "—";
+  const d = durArr[0];
+  if (d.type === "instant") return "Instantaneous";
+  if (d.type === "permanent") return "Until dispelled";
+  if (d.type === "special") return "Special";
+  if (d.type === "timed") {
+    const conc = d.concentration ? "Conc. " : "";
+    return `${conc}${d.duration.amount} ${d.duration.type}${d.duration.amount > 1 ? "s" : ""}`;
+  }
+  return "—";
+}
+
+/**
+ * Draw multi-line text with word wrap, returns the Y position after drawing.
+ */
+function drawWrappedText(page, text, x, y, maxWidth, fontSize, font, color) {
+  const words = text.split(/\s+/);
+  let line = "";
+  let curY = y;
+  const lineHeight = fontSize + 2;
+
+  for (const word of words) {
+    const testLine = line ? line + " " + word : word;
+    const width = font.widthOfTextAtSize(testLine, fontSize);
+    if (width > maxWidth && line) {
+      page.drawText(line, { x, y: curY, size: fontSize, font, color });
+      curY -= lineHeight;
+      line = word;
+    } else {
+      line = testLine;
+    }
+  }
+  if (line) {
+    page.drawText(line, { x, y: curY, size: fontSize, font, color });
+    curY -= lineHeight;
+  }
+  return curY;
+}
+
+/**
+ * Robust spell lookup that avoids skeleton foundry.json duplicates.
+ */
+function getSpellDetails(dataLoader, name, source) {
+  const key = `${name}|${source || ""}`.toLowerCase();
+  const matches = dataLoader.spells.filter((s) => {
+    if (source) {
+      return `${s.name}|${s.source}`.toLowerCase() === key;
+    }
+    return s.name.toLowerCase() === name.toLowerCase();
+  });
+  return matches.find((s) => s.entries || s.time) || matches[0] || {};
+}
+
+/**
+ * Append spell card pages to the PDF document.
+ * Layout: 2 columns × 4 rows per page (8 cards per page).
+ */
+async function appendSpellCardPages(pdfDoc, spellData, dataLoader) {
+  const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+  const boldFont = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+
+  // Collect all spells (cantrips + leveled) with full data
+  const allSpells = [];
+
+  for (const cantrip of (spellData.cantrips || [])) {
+    const full = getSpellDetails(dataLoader, cantrip.name, cantrip.source);
+    allSpells.push({
+      name: cantrip.name,
+      level: 0,
+      school: cantrip.school || full.school || "",
+      ...full,
+    });
+  }
+
+  const leveledSpells = Object.entries(spellData.spellsByLevel || {})
+    .sort(([a], [b]) => Number(a) - Number(b))
+    .flatMap(([lvl, spells]) =>
+      spells.map(s => {
+        const full = getSpellDetails(dataLoader, s.name, typeof s.source === "string" ? s.source : null);
+        return {
+          name: s.name,
+          level: Number(lvl),
+          school: s.school || full.school || "",
+          ...full,
+        };
+      })
+    );
+  allSpells.push(...leveledSpells);
+
+  if (allSpells.length === 0) return;
+
+  // Match the template's page dimensions
+  const firstPage = pdfDoc.getPages()[0];
+  const pageW = firstPage.getWidth();
+  const pageH = firstPage.getHeight();
+  const margin = 30;
+  const cols = 2;
+  const rows = 4;
+  const gap = 10;
+  const cardW = (pageW - 2 * margin - (cols - 1) * gap) / cols;
+  const cardH = (pageH - 2 * margin - (rows - 1) * gap) / rows;
+  const cardsPerPage = cols * rows;
+
+  // Colors
+  const black = rgb(0, 0, 0);
+  const darkGray = rgb(0.3, 0.3, 0.3);
+  const headerBg = rgb(0.15, 0.15, 0.25);
+  const headerText = rgb(1, 1, 1);
+  const borderColor = rgb(0.4, 0.4, 0.5);
+  const metaColor = rgb(0.2, 0.2, 0.4);
+
+  for (let i = 0; i < allSpells.length; i++) {
+    if (i % cardsPerPage === 0) {
+      // Add a new page
+      pdfDoc.addPage([pageW, pageH]);
+    }
+
+    const pageIndex = Math.floor(i / cardsPerPage);
+    const pages = pdfDoc.getPages();
+    const page = pages[pages.length - 1];
+
+    const posInPage = i % cardsPerPage;
+    const col = posInPage % cols;
+    const row = Math.floor(posInPage / cols);
+
+    const x = margin + col * (cardW + gap);
+    const y = pageH - margin - row * (cardH + gap);
+
+    const spell = allSpells[i];
+
+    // --- Card border ---
+    page.drawRectangle({
+      x, y: y - cardH, width: cardW, height: cardH,
+      borderColor, borderWidth: 1,
+    });
+
+    // --- Header bar ---
+    const headerH = 20;
+    page.drawRectangle({
+      x: x + 1, y: y - headerH, width: cardW - 2, height: headerH,
+      color: headerBg,
+    });
+
+    // Spell name in header
+    const displayName = spell.name.length > 28
+      ? spell.name.substring(0, 26) + "…"
+      : spell.name;
+    page.drawText(displayName, {
+      x: x + 6, y: y - headerH + 5,
+      size: 10, font: boldFont, color: headerText,
+    });
+
+    // Level & school on right of header
+    const schoolName = SCHOOL_NAMES[spell.school] || spell.school || "";
+    const levelStr = spell.level === 0
+      ? `Cantrip`
+      : `Lvl ${spell.level}`;
+    const tagStr = `${levelStr} ${schoolName}`;
+    const tagWidth = font.widthOfTextAtSize(tagStr, 7);
+    page.drawText(tagStr, {
+      x: x + cardW - tagWidth - 6, y: y - headerH + 6,
+      size: 7, font, color: rgb(0.75, 0.75, 0.85),
+    });
+
+    // --- Meta info ---
+    const metaStartY = y - headerH - 12;
+    const metaFontSize = 7;
+    const metaLineH = 10;
+    const metaX = x + 6;
+    const metaValX = x + 72;
+
+    const metaFields = [
+      ["Casting Time:", formatTime(spell.time)],
+      ["Range:", formatRange(spell.range)],
+      ["Components:", formatComponents(spell.components)],
+      ["Duration:", formatDuration(spell.duration)],
+    ];
+
+    let curY = metaStartY;
+    for (const [label, value] of metaFields) {
+      page.drawText(label, {
+        x: metaX, y: curY, size: metaFontSize, font: boldFont, color: metaColor,
+      });
+      // Wrap long component lines
+      const valMaxW = cardW - (metaValX - x) - 8;
+      const valWidth = font.widthOfTextAtSize(value, metaFontSize);
+      if (valWidth > valMaxW) {
+        curY = drawWrappedText(page, value, metaValX, curY, valMaxW, metaFontSize, font, darkGray);
+      } else {
+        page.drawText(value, {
+          x: metaValX, y: curY, size: metaFontSize, font, color: darkGray,
+        });
+        curY -= metaLineH;
+      }
+    }
+
+    // --- Separator line ---
+    curY -= 3;
+    page.drawLine({
+      start: { x: x + 6, y: curY },
+      end: { x: x + cardW - 6, y: curY },
+      thickness: 0.5, color: borderColor,
+    });
+    curY -= 8;
+
+    // --- Description ---
+    const descText = flattenEntries(spell.entries);
+    if (descText) {
+      const descMaxW = cardW - 16;
+      const descFontSize = 6.5;
+      const bottomLimit = y - cardH + 6;
+      const availableHeight = curY - bottomLimit;
+      const linesAvailable = Math.floor(availableHeight / (descFontSize + 2));
+      // Truncate description to fit
+      const words = descText.split(/\s+/);
+      let lines = [];
+      let line = "";
+      for (const word of words) {
+        const testLine = line ? line + " " + word : word;
+        const w = font.widthOfTextAtSize(testLine, descFontSize);
+        if (w > descMaxW && line) {
+          lines.push(line);
+          if (lines.length >= linesAvailable) break;
+          line = word;
+        } else {
+          line = testLine;
+        }
+      }
+      if (line && lines.length < linesAvailable) lines.push(line);
+      if (lines.length >= linesAvailable && lines.length > 0) {
+        lines[lines.length - 1] = lines[lines.length - 1].substring(0, lines[lines.length - 1].length - 3) + "...";
+      }
+
+      for (const ln of lines) {
+        page.drawText(ln, {
+          x: x + 8, y: curY, size: descFontSize, font, color: black,
+        });
+        curY -= descFontSize + 2;
+      }
+    }
+
+    // Ritual tag if applicable
+    if (spell.meta?.ritual) {
+      page.drawText("(Ritual)", {
+        x: x + cardW - 40, y: y - cardH + 4,
+        size: 6, font: boldFont, color: metaColor,
+      });
+    }
+  }
 }
 
 const SKILL_ABILITIES = {
