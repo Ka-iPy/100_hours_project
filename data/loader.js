@@ -81,9 +81,15 @@ class DataLoader {
       }
 
       // Load filtered spells index (class->spell membership)
-      const filteredSpellsPath = path.join(this.dataDir, "spells", "Filtered_spells.json");
+      const filteredSpellsPath = path.join(
+        this.dataDir,
+        "spells",
+        "Filtered_spells.json",
+      );
       if (fs.existsSync(filteredSpellsPath)) {
-        this.filteredSpells = JSON.parse(fs.readFileSync(filteredSpellsPath, "utf8"));
+        this.filteredSpells = JSON.parse(
+          fs.readFileSync(filteredSpellsPath, "utf8"),
+        );
       }
 
       // Load items
@@ -127,9 +133,15 @@ class DataLoader {
       }
 
       // Load spell source lookup (class -> spell mappings)
-      const spellLookupPath = path.join(this.dataDir, "generated", "gendata-spell-source-lookup.json");
+      const spellLookupPath = path.join(
+        this.dataDir,
+        "generated",
+        "gendata-spell-source-lookup.json",
+      );
       if (fs.existsSync(spellLookupPath)) {
-        this.spellSourceLookup = JSON.parse(fs.readFileSync(spellLookupPath, "utf8"));
+        this.spellSourceLookup = JSON.parse(
+          fs.readFileSync(spellLookupPath, "utf8"),
+        );
       }
 
       this.mapRelationships();
@@ -295,7 +307,7 @@ class DataLoader {
       return this.subraces.find(
         (sr) =>
           `${sr.name}|${sr.source}`.toLowerCase() ===
-          `${name}|${source}`.toLowerCase() || sr.name.toLowerCase() === key,
+            `${name}|${source}`.toLowerCase() || sr.name.toLowerCase() === key,
       );
     }
     return null;
@@ -330,7 +342,7 @@ class DataLoader {
           sc.className?.toLowerCase() === className.toLowerCase() &&
           (sc.name?.toLowerCase() === subclassName.toLowerCase() ||
             sc.subclassShortName?.toLowerCase() ===
-            subclassName.toLowerCase()) &&
+              subclassName.toLowerCase()) &&
           sc.source?.toLowerCase() === source.toLowerCase(),
       ) || null
     );
@@ -440,3 +452,5 @@ class DataLoader {
 
 export const loader = new DataLoader();
 export default loader;
+
+//I forgot how to explain dis shit
