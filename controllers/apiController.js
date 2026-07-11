@@ -1,5 +1,12 @@
 import loader from "../data/loader.js";
 import SpellListResolver from "../models/SpellListResolver.js";
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
+import { dirname } from "path";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 const validCollections = [
   "races",
@@ -130,11 +137,11 @@ export function getStartingEquipment(req, res) {
             source: itemSource || null,
             data: itemData
               ? {
-                  name: itemData.name,
-                  type: itemData.type,
-                  weight: itemData.weight,
-                  value: itemData.value,
-                }
+                name: itemData.name,
+                type: itemData.type,
+                weight: itemData.weight,
+                value: itemData.value,
+              }
               : null,
           });
         } else if (item.equipmentType) {
@@ -152,11 +159,11 @@ export function getStartingEquipment(req, res) {
             quantity: item.quantity || 1,
             data: itemData
               ? {
-                  name: itemData.name,
-                  type: itemData.type,
-                  weight: itemData.weight,
-                  value: itemData.value,
-                }
+                name: itemData.name,
+                type: itemData.type,
+                weight: itemData.weight,
+                value: itemData.value,
+              }
               : null,
           });
         }
@@ -180,4 +187,82 @@ export function getStartingEquipment(req, res) {
     goldAlternative: equipment.goldAlternative || null,
     additionalFromBackground: equipment.additionalFromBackground || false,
   });
+}
+
+export function lookupEntity(req, res) {
+  const { type, name, source } = req.query;
+  if (!type || !name) {
+    return res.status(400).json({ error: "Missing type or name" });
+  }
+
+  const cleanName = name.trim();
+  const cleanSource = source ? source.trim() : null;
+
+  let data = null;
+
+  switch (type.toLowerCase()) {
+    case "spell":
+      data = loader.getSpell(cleanName, cleanSource);
+      break;
+    case "item":
+      data = loader.getItem(cleanName, cleanSource);
+      break;
+    case "feat":
+      data = loader.getFeat(cleanName, cleanSource);
+      break;
+    case "race":
+      data = loader.getRace(cleanName, cleanSource);
+      break;
+    case "background":
+      data = loader.getBackground(cleanName, cleanSource);
+      break;
+    case "class":
+      data = loader.getClass(cleanName, cleanSource);
+      break;
+    case "skill":
+      data = loader.getSkill(cleanName);
+      break;
+    case "condition":
+      try {
+        const filePath = path.join(__dirname, "..", "data", "conditionsdiseases.json");
+        if (fs.existsSync(filePath)) {
+          const fileData = JSON.parse(fs.readFileSync(filePath, "utf8"));
+          const list = fileData.condition || [];
+          data = list.find(c => c.name.toLowerCase() === cleanName.toLowerCase());
+        }
+      } catch (err) {
+        console.error("Error loading conditions:", err);
+      }
+      break;
+    case "action":
+      try {
+        const filePath = path.join(__dirname, "..", "data", "actions.json");
+        if (fs.existsSync(filePath)) {
+          const fileData = JSON.parse(fs.readFileSync(filePath, "utf8"));
+          const list = fileData.action || [];
+          data = list.find(a => a.name.toLowerCase() === cleanName.toLowerCase());
+        }
+      } catch (err) {
+        console.error("Error loading actions:", err);
+      }
+      break;
+    case "sense":
+      try {
+        const filePath = path.join(__dirname, "..", "data", "senses.json");
+        if (fs.existsSync(filePath)) {
+          const fileData = JSON.parse(fs.readFileSync(filePath, "utf8"));
+          const list = fileData.sense || [];
+          data = list.find(s => s.name.toLowerCase() === cleanName.toLowerCase());
+        }
+      } catch (err) {
+        console.error("Error loading senses:", err);
+      }
+      break;
+  }
+
+  if (!data) {
+    return res.status(404).json({ error: `${type} not found` });
+  }
+
+  res.json(data);
 }

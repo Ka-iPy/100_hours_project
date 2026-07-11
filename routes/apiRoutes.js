@@ -7,6 +7,7 @@ const router = express.Router();
 router.get("/spells/context/:className/:level", apiController.getSpellContext);
 router.get("/equipment/class/:className", apiController.getStartingEquipment);
 
+router.get("/lookup", apiController.lookupEntity);
 router.get("/:collection", apiController.getCollection);
 router.get("/relationships/feat-origin/:name", apiController.getFeatOrigin);
 router.get("/relationships/subclass-feature-parent", apiController.getSubclassFeatureParent);

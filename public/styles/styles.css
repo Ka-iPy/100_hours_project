@@ -1,0 +1,655 @@
+@import url('https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Cinzel:wght@400;600;700&family=Crimson+Pro:wght@400;600;700&display=swap');
+
+:root {
+  --rpg-bg: #0d0e12;
+  --rpg-panel-bg: #14161f;
+  --rpg-panel-header-bg: #1c1f2b;
+  --rpg-border: #8b6b43;
+  --rpg-border-glow: #c5a059;
+  --rpg-text-primary: #e6dfcc;
+  --rpg-text-secondary: #b0a284;
+  --rpg-accent-crimson: #9e2a2b;
+  --rpg-accent-blue: #3a86c8;
+  --rpg-input-bg: rgba(8, 9, 13, 0.7);
+  --rpg-input-focus: rgba(197, 160, 89, 0.15);
+}
+
+body {
+  background-color: var(--rpg-bg);
+  background-image:
+    radial-gradient(circle at 50% 30%, rgba(28, 31, 43, 0.4) 0%, rgba(13, 14, 18, 0.9) 100%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80' viewBox='0 0 80 80'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.05' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.05 0'/%3E%3C/filter%3E%3Crect width='80' height='80' filter='url(%23noise)'/%3E%3C/svg%3E");
+  color: var(--rpg-text-primary);
+  font-family: 'Crimson Pro', serif;
+  min-height: 100vh;
+  padding: 20px;
+}
+
+/* Typography */
+.rpg-title {
+  font-family: 'Cinzel Decorative', serif;
+  color: var(--rpg-border-glow);
+  text-shadow: 0 0 10px rgba(197, 160, 89, 0.3);
+}
+
+.rpg-header-font {
+  font-family: 'Cinzel', serif;
+  letter-spacing: 0.05em;
+}
+
+.label-small {
+  font-family: 'Cinzel', serif;
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--rpg-text-secondary);
+  letter-spacing: 0.08em;
+}
+
+/* Layout Container */
+.rpg-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: 24px;
+}
+
+@media (max-width: 1024px) {
+  .rpg-container {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Panels */
+.rpg-panel {
+  background-color: var(--rpg-panel-bg);
+  border: 2px solid var(--rpg-border);
+  border-radius: 8px;
+  box-shadow:
+    0 8px 24px rgba(0, 0, 0, 0.5),
+    inset 0 0 15px rgba(139, 107, 67, 0.15);
+  position: relative;
+  overflow: hidden;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.rpg-panel:hover {
+  border-color: var(--rpg-border-glow);
+  box-shadow:
+    0 8px 24px rgba(0, 0, 0, 0.6),
+    0 0 12px rgba(197, 160, 89, 0.15),
+    inset 0 0 15px rgba(197, 160, 89, 0.1);
+}
+
+.rpg-panel-header {
+  background-color: var(--rpg-panel-header-bg);
+  border-bottom: 1px solid var(--rpg-border);
+  padding: 10px 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.rpg-panel-content {
+  padding: 16px;
+}
+
+/* Inputs & Textareas */
+input[type="text"],
+input[type="number"],
+textarea,
+select {
+  background-color: var(--rpg-input-bg);
+  border: 1px solid var(--rpg-border);
+  border-radius: 4px;
+  color: var(--rpg-text-primary);
+  font-family: 'Crimson Pro', serif;
+  font-size: 0.95rem;
+  font-weight: 600;
+  padding: 6px 10px;
+  transition: all 0.2s ease;
+}
+
+input[type="text"],
+input[type="number"],
+select {
+  overflow: hidden;
+}
+
+input::-webkit-scrollbar,
+select::-webkit-scrollbar {
+  display: none !important;
+}
+
+/* Hide spin buttons for Chrome, Safari, Edge, Opera */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  appearance: none;
+  margin: 0;
+}
+
+/* Hide spin buttons for Firefox */
+input[type=number] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+input[readonly],
+textarea[readonly],
+select[disabled] {
+  background-color: transparent;
+  border-color: transparent;
+  padding-left: 4px;
+  cursor: default;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  outline: none;
+  border-color: var(--rpg-border-glow);
+  background-color: var(--rpg-input-focus);
+  box-shadow: 0 0 8px rgba(197, 160, 89, 0.3);
+}
+
+.editable-input.edit-active {
+  background-color: var(--rpg-input-bg) !important;
+  border: 1px solid var(--rpg-border-glow) !important;
+  box-shadow: 0 0 8px rgba(197, 160, 89, 0.3) !important;
+  cursor: text;
+}
+
+/* Buttons */
+.rpg-btn {
+  font-family: 'Cinzel', serif;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 8px 16px;
+  border-radius: 4px;
+  border: 2px solid var(--rpg-border-glow);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.4);
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.rpg-btn-primary {
+  background: linear-gradient(to bottom, #8b6b43, #5c472d);
+  color: #f5ebd3;
+}
+
+.rpg-btn-primary:hover {
+  background: linear-gradient(to bottom, #a37e50, #735938);
+  box-shadow: 0 0 10px rgba(197, 160, 89, 0.5);
+}
+
+.rpg-btn-danger {
+  background: linear-gradient(to bottom, #9e2a2b, #6e1d1e);
+  color: #f5ebd3;
+  border-color: #c94c4c;
+}
+
+.rpg-btn-danger:hover {
+  background: linear-gradient(to bottom, #bd3a3c, #8c2527);
+  box-shadow: 0 0 10px rgba(158, 42, 43, 0.5);
+}
+
+.rpg-btn-success {
+  background: linear-gradient(to bottom, #2d6a4f, #1b4332);
+  color: #f5ebd3;
+  border-color: #52b788;
+}
+
+.rpg-btn-success:hover {
+  background: linear-gradient(to bottom, #40916c, #2d6a4f);
+  box-shadow: 0 0 10px rgba(45, 106, 79, 0.5);
+}
+
+.rpg-btn-secondary {
+  background: linear-gradient(to bottom, #495057, #343a40);
+  color: #f5ebd3;
+  border-color: #6c757d;
+}
+
+.rpg-btn-secondary:hover {
+  background: linear-gradient(to bottom, #6c757d, #495057);
+}
+
+/* Tabs Navigation */
+.rpg-tabs {
+  display: flex;
+  gap: 8px;
+  border-bottom: 2px solid var(--rpg-border);
+  margin-bottom: 20px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+.rpg-tab-btn {
+  font-family: 'Cinzel', serif;
+  font-weight: 600;
+  text-transform: uppercase;
+  background-color: var(--rpg-panel-header-bg);
+  border: 1px solid var(--rpg-border);
+  border-bottom: none;
+  border-radius: 6px 6px 0 0;
+  color: var(--rpg-text-secondary);
+  padding: 10px 20px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.rpg-tab-btn:hover {
+  color: var(--rpg-text-primary);
+  background-color: rgba(139, 107, 67, 0.1);
+}
+
+.rpg-tab-btn.active {
+  color: var(--rpg-text-primary);
+  background-color: var(--rpg-panel-bg);
+  border-color: var(--rpg-border-glow);
+  border-bottom: 2px solid var(--rpg-panel-bg);
+  margin-bottom: -2px;
+  box-shadow: 0 -4px 10px rgba(197, 160, 89, 0.15);
+}
+
+.rpg-tab-content {
+  display: none;
+}
+
+.rpg-tab-content.active {
+  display: block;
+}
+
+/* Character Sidebar specific styles */
+.rpg-portrait-container {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1;
+  border-bottom: 2px solid var(--rpg-border);
+  overflow: hidden;
+}
+
+.rpg-portrait {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: sepia(0.1) contrast(1.05);
+}
+
+.rpg-portrait-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(to top, rgba(20, 22, 31, 0.95) 0%, rgba(20, 22, 31, 0) 100%);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* Health Bar */
+.rpg-hp-bar-container {
+  background-color: rgba(0, 0, 0, 0.5);
+  border: 1px solid var(--rpg-border);
+  border-radius: 4px;
+  height: 20px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.rpg-hp-bar {
+  background: linear-gradient(to right, var(--rpg-accent-crimson), #c94c4c);
+  height: 100%;
+  width: 100%;
+  transition: width 0.3s ease;
+  box-shadow: 0 0 8px rgba(158, 42, 43, 0.6);
+}
+
+.rpg-hp-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 0.75rem;
+  font-weight: bold;
+  color: #fff;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9);
+}
+
+/* Ability Scores Grid */
+.rpg-abilities-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 16px;
+}
+
+.rpg-ability-card {
+  background-color: var(--rpg-panel-header-bg);
+  border: 1px solid var(--rpg-border);
+  border-radius: 6px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.3);
+}
+
+.rpg-ability-card:hover {
+  border-color: var(--rpg-border-glow);
+  box-shadow:
+    0 4px 12px rgba(0, 0, 0, 0.2),
+    inset 0 0 10px rgba(197, 160, 89, 0.1);
+}
+
+.rpg-ability-score {
+  font-family: 'Cinzel', serif;
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--rpg-text-primary);
+  line-height: 1.2;
+}
+
+.rpg-ability-mod {
+  background-color: var(--rpg-panel-bg);
+  border: 1px solid var(--rpg-border);
+  border-radius: 50%;
+  width: 38px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Cinzel', serif;
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--rpg-border-glow);
+  position: absolute;
+  bottom: -16px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+}
+
+/* Combat Stats Row */
+.rpg-combat-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  text-align: center;
+}
+
+.rpg-combat-stat-box {
+  background-color: var(--rpg-panel-header-bg);
+  border: 1px solid var(--rpg-border);
+  border-radius: 6px;
+  padding: 10px 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-shadow: inset 0 0 8px rgba(0, 0, 0, 0.3);
+}
+
+.rpg-combat-stat-value {
+  font-family: 'Cinzel', serif;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--rpg-border-glow);
+}
+
+/* Bubbles (Proficiency / Inspiration / Death Saves) */
+.bubble {
+  border: 2px solid var(--rpg-border);
+  background-color: rgba(0, 0, 0, 0.4);
+  border-radius: 50%;
+  width: 14px;
+  height: 14px;
+  display: inline-block;
+  margin-right: 6px;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.5);
+}
+
+.bubble.filled {
+  background-color: var(--rpg-border-glow);
+  border-color: #fff;
+  box-shadow:
+    0 0 8px var(--rpg-border-glow),
+    inset 0 0 4px rgba(255, 255, 255, 0.8);
+}
+
+/* Skills & Saves Rows */
+.skill-row {
+  display: flex;
+  align-items: center;
+  padding: 6px 8px;
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
+}
+
+.skill-row:hover {
+  background-color: rgba(197, 160, 89, 0.05);
+}
+
+.skill-row span {
+  font-size: 0.9rem;
+}
+
+/* Equipment List & Features List */
+.equipment-item,
+.feature-item {
+  background-color: var(--rpg-panel-header-bg);
+  border: 1px solid var(--rpg-border);
+  border-radius: 6px;
+  padding: 10px 12px;
+  margin-bottom: 8px;
+  box-shadow: inset 0 0 8px rgba(0, 0, 0, 0.2);
+}
+
+.equipment-delete,
+.feature-delete {
+  color: var(--rpg-accent-crimson);
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 1.1rem;
+  transition: color 0.2s ease;
+}
+
+.equipment-delete:hover,
+.feature-delete:hover {
+  color: #ff4d4d;
+  text-shadow: 0 0 5px rgba(255, 77, 77, 0.5);
+}
+
+/* Currency Grid */
+.rpg-currency-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+}
+
+.rpg-currency-box {
+  background-color: var(--rpg-panel-header-bg);
+  border: 1px solid var(--rpg-border);
+  border-radius: 6px;
+  padding: 8px 4px;
+  text-align: center;
+  box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
+}
+
+.rpg-currency-label {
+  font-family: 'Cinzel', serif;
+  font-size: 0.65rem;
+  font-weight: bold;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.rpg-currency-box.cp .rpg-currency-label {
+  color: #b87333;
+}
+
+.rpg-currency-box.sp .rpg-currency-label {
+  color: #c0c0c0;
+}
+
+.rpg-currency-box.ep .rpg-currency-label {
+  color: #e5e4e2;
+}
+
+.rpg-currency-box.gp .rpg-currency-label {
+  color: #ffd700;
+}
+
+.rpg-currency-box.pp .rpg-currency-label {
+  color: #e5e4e2;
+  text-shadow: 0 0 2px #fff;
+}
+
+/* Grimoire Spellbook styling */
+.rpg-spell-level-section {
+  border: 1px solid var(--rpg-border);
+  border-radius: 6px;
+  margin-bottom: 16px;
+  overflow: hidden;
+}
+
+.rpg-spell-level-header {
+  background-color: var(--rpg-panel-header-bg);
+  border-bottom: 1px solid var(--rpg-border);
+  padding: 8px 12px;
+  font-family: 'Cinzel', serif;
+  font-weight: bold;
+  color: var(--rpg-border-glow);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.3);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--rpg-border);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--rpg-border-glow);
+}
+
+/* Tooltip Styles */
+.rpg-tooltip-trigger {
+  color: var(--rpg-border-glow);
+  border-bottom: 1px dashed var(--rpg-border-glow);
+  cursor: pointer;
+  font-weight: 600;
+  transition: color 0.2s ease;
+}
+
+.rpg-tooltip-trigger:hover {
+  color: #fff;
+  border-bottom-color: #fff;
+  text-shadow: 0 0 5px rgba(197, 160, 89, 0.5);
+}
+
+.rpg-tooltip {
+  position: absolute;
+  z-index: 1000;
+  max-width: 320px;
+  background-color: var(--rpg-panel-bg);
+  border: 2px solid var(--rpg-border);
+  border-radius: 6px;
+  padding: 12px;
+  box-shadow:
+    0 10px 25px rgba(0, 0, 0, 0.7),
+    inset 0 0 10px rgba(139, 107, 67, 0.2);
+  color: var(--rpg-text-primary);
+  font-size: 0.85rem;
+  pointer-events: none;
+  font-family: 'Crimson Pro', serif;
+  transition: opacity 0.15s ease;
+}
+
+.rpg-tooltip-title {
+  font-family: 'Cinzel', serif;
+  font-weight: bold;
+  color: var(--rpg-border-glow);
+  border-bottom: 1px solid var(--rpg-border);
+  padding-bottom: 4px;
+  margin-bottom: 6px;
+  font-size: 0.95rem;
+}
+
+.rpg-tooltip-meta {
+  font-size: 0.75rem;
+  color: var(--rpg-text-secondary);
+  margin-bottom: 6px;
+  font-style: italic;
+}
+
+.rpg-tooltip-desc {
+  line-height: 1.4;
+}
+
+.rpg-tooltip-desc p {
+  margin-bottom: 6px;
+}
+
+.rpg-tooltip-desc p:last-child {
+  margin-bottom: 0;
+}
+
+/* Print Overrides */
+@media print {
+  body {
+    background: white !important;
+    color: black !important;
+    padding: 0 !important;
+  }
+
+  .rpg-container {
+    display: block !important;
+  }
+
+  .rpg-panel {
+    border: 1px solid black !important;
+    background: white !important;
+    color: black !important;
+    box-shadow: none !important;
+    margin-bottom: 20px;
+    page-break-inside: avoid;
+  }
+
+  .rpg-panel-header {
+    background: #eee !important;
+    border-bottom: 1px solid black !important;
+  }
+
+  .no-print,
+  .rpg-tabs,
+  .rpg-btn {
+    display: none !important;
+  }
+
+  input,
+  textarea,
+  select {
+    border: none !important;
+    background: transparent !important;
+    color: black !important;
+  }
+}
