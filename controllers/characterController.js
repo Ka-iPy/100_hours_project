@@ -185,6 +185,7 @@ export default {
         "passivePerception",
         "spellSaveDC",
         "spellAttackBonus",
+        "portrait",
       ];
       simpleFields.forEach((field) => {
         if (updates.hasOwnProperty(field)) {
@@ -399,7 +400,7 @@ export default {
     }
   },
 
-  printPDF: async (req, res) => {
+  downloadMarkdown: async (req, res) => {
     try {
       await loader.loadAll();
       const { id } = req.params;
@@ -410,189 +411,173 @@ export default {
 
       const helpers = buildCharacterViewHelpers(character);
 
-      // --- Load the fillable PDF template ---
-      const templateBytes = readFileSync(TEMPLATE_PATH);
-      const pdfDoc = await PDFDocument.load(templateBytes);
-      const form = pdfDoc.getForm();
-
-      // Helper: safely set a text field
-      const setText = (name, value) => {
+      let portraitBase64 = character.portrait;
+      if (!portraitBase64) {
         try {
-          const field = form.getTextField(name);
-          field.setText(String(value ?? ""));
-        } catch { /* field not found – skip */ }
-      };
-
-      // Helper: safely check a checkbox
-      const setCheck = (name, checked) => {
-        try {
-          const field = form.getCheckBox(name);
-          if (checked) field.check();
-          else field.uncheck();
-        } catch { /* skip */ }
-      };
-
-      // --- Header ---
-      setText("CharacterName", character.name);
-      setText("PlayerName", character.player);
-      setText("Class(subclass)andLvl", helpers.classStr);
-      setText("Exp", character.experience || 0);
-      setText("Race", helpers.raceDisplay);
-      setText("Alignment", character.alignment);
-      setText("Background", helpers.bgStr);
-
-      // --- Core stats ---
-      setCheck("Inspiration", character.inspiration);
-      setText("Profeciency", helpers.profBonusStr);
-
-      const initVal = character.initiative?.calculate
-        ? character.initiative.calculate()
-        : character.initiative?.baseValue ?? helpers.abilityData.find(a => a.name === "dexterity")?.mod ?? 0;
-      setText("Initiative", helpers.fmt(initVal));
-
-      const speedVal = character.speed?.calculate
-        ? character.speed.calculate()
-        : character.speed?.baseValue ?? 30;
-      setText("Speed", speedVal + " ft");
-
-      // --- Ability scores ---
-      const abilityFieldMap = {
-        strength: { score: "StrScore", mod: "StrMod" },
-        dexterity: { score: "DexScore", mod: "DexMod" },
-        constitution: { score: "ConScore", mod: "ConMod" },
-        intelligence: { score: "IntScore", mod: "Copy of Textfield6680 (4)" },
-        wisdom: { score: "WisScore", mod: "WisMod" },
-        charisma: { score: "ChaScore", mod: "ChaMod" },
-      };
-      for (const ab of helpers.abilityData) {
-        const m = abilityFieldMap[ab.name];
-        if (m) {
-          setText(m.score, ab.score);
-          setText(m.mod, ab.modStr);
+          const defaultPortraitPath = join(__dirname, "..", "public", "images", "aasimar_artificer.png");
+          const imageBuffer = readFileSync(defaultPortraitPath);
+          portraitBase64 = `data:image/png;base64,${imageBuffer.toString("base64")}`;
+        } catch (err) {
+          console.error("Error reading default portrait:", err);
         }
       }
 
-      // --- Saving throws ---
-      const saveFieldMap = {
-        strength: { mod: "StrSavingThrowMod" },
-        dexterity: { mod: "DexSavingThrowMod" },
-        constitution: { mod: "ConSavingThrowMod" },
-        intelligence: { mod: "IntSavingThrowMod" },
-        wisdom: { mod: "WisSavingThrowMod" },
-        charisma: { mod: "CharSavingThrowMod" },
-      };
-      for (const st of helpers.savingThrows) {
-        const m = saveFieldMap[st.name];
-        if (m) {
-          setText(m.mod, st.modStr);
-        }
-      }
+      // Format ability scores table
+      const abilityRows = helpers.abilityData.map(a =>
+        `| **${a.name.charAt(0).toUpperCase() + a.name.slice(1)} (${a.abbr})** | ${a.score} | ${a.modStr} |`
+      ).join("\n");
 
-      // --- Skills ---
-      const skillFieldMap = {
-        acrobatics: "AcrobaticsMod",
-        "animal handling": "AnimalHandelingMod",
-        arcana: "ArcanaMod",
-        athletics: "AthleticsMod",
-        deception: "DeceptionMod",
-        history: "HistoryMod",
-        insight: "InsightMod",
-        intimidation: "IntimidationMod",
-        investigation: "InvestigationMod",
-        medicine: "MedicineMod",
-        nature: "NatureMod",
-        perception: "PerceptionMod",
-        performance: "PerformaneMod",
-        persuasion: "PersuasionMod",
-        religion: "ReligionMod",
-        "sleight of hand": "SleightOfHandMod",
-        stealth: "StealthMod",
-        survival: "SurvivalMod",
-      };
-      for (const sk of helpers.skills) {
-        const field = skillFieldMap[sk.name];
-        if (field) setText(field, sk.modStr);
-      }
+      // Format saving throws list
+      const savingThrowsList = helpers.savingThrows.map(st =>
+        `- [${st.proficient ? "x" : " "}] ${st.label}: ${st.modStr}`
+      ).join("\n");
 
-      // --- Combat ---
-      const acVal = character.armorClass?.calculate
-        ? character.armorClass.calculate()
-        : character.armorClass?.baseValue ?? 10;
-      setText("ArmorClass", acVal);
-      setText("MaxHP", character.maxHitPoints || 0);
-      setText("CurrentHP", character.currentHitPoints ?? character.maxHitPoints ?? 0);
-      setText("HitPoints", character.tempHitPoints || 0);
-      setText("HitDiceMax", helpers.hitDieStr);
-      setText("HitDiceCurrent", helpers.hitDieStr);
+      // Format skills list
+      const skillsList = helpers.skills.map(sk =>
+        `- [${sk.proficient ? "x" : " "}] ${sk.label} (${sk.ability}): ${sk.modStr}`
+      ).join("\n");
 
-      // --- Weapons ---
-      for (let i = 0; i < 3; i++) {
-        const w = helpers.weapons[i];
-        if (w) {
-          setText(`WeaponName(${i + 1})`, w.name);
-          setText(`Weapon(${i + 1})AtkModifier`, w.atkBonusStr);
-          setText(`Weapon(${i + 1})OnHitEffect`, w.damage);
-        }
-      }
+      // Format weapons table
+      const weaponRows = helpers.weapons.map(w =>
+        `| ${w.name} | ${w.atkBonusStr} | ${w.damage} |`
+      ).join("\n");
 
-      // --- Death saves ---
-      setCheck("DeathSaveSuccess(1)", character.deathSaveSuccess1);
-      setCheck("DeathSaveSuccess(2)", character.deathSaveSuccess2);
-      setCheck("DeathSaveSuccess(3)", character.deathSaveSuccess3);
-      setCheck("DeathSaveFail(1)", character.deathSaveFail1);
-      setCheck("DeathSaveFail(2)", character.deathSaveFail2);
-      setCheck("DeathSaveFail(3)", character.deathSaveFail3);
+      // Format equipment list
+      const equipmentList = helpers.equipment.map(e =>
+        `- ${e.name} (Qty: ${e.quantity})`
+      ).join("\n");
 
-      // --- Traits ---
-      setText("Personality", character.traits?.personality || "");
-      setText("Ideals", character.traits?.ideals || "");
-      setText("Bonds", character.traits?.bonds || "");
-      setText("Flaws", character.traits?.flaws || "");
+      // Format currency
+      const cur = character.currency || { cp: 0, sp: 0, ep: 0, gp: 0, pp: 0 };
+      const currencyStr = `**CP:** ${cur.cp} | **SP:** ${cur.sp} | **EP:** ${cur.ep} | **GP:** ${cur.gp} | **PP:** ${cur.pp}`;
 
-      // --- Features & Proficiencies ---
-      const featText = helpers.features.map(f => `${f.name}: ${f.description}`).join("\n\n");
-      setText("FeaturesAndTraits", featText);
-      setText("ProfecienciesAndLanguages", helpers.otherProfs.join("\n"));
+      // Format features list
+      const featuresList = helpers.features.map(f =>
+        `### ${f.name}\n${f.description || "*No description.*"}`
+      ).join("\n\n");
 
-      // --- Spells (header fields in the template) ---
+      // Format spellbook
+      let spellbookStr = "*This character does not have a spellbook.*";
       if (helpers.spellData) {
         const sd = helpers.spellData;
-        setText("SpellcasterClasses", sd.className);
-        setText("SpellAbilityMod", sd.ability);
-        setText("SpellSaveDC", sd.saveDC);
-        setText("SpellAttackMod", sd.attackBonusStr);
-        setText("CantripsAmount", sd.cantrips?.length || 0);
-        setText("KnownOrPreparedSpells",
-          Object.values(sd.spellsByLevel).flat().length + (sd.cantrips?.length || 0)
-        );
+        const cantripsList = sd.cantrips.map(c => `- ${c.name}`).join("\n") || "*No cantrips known.*";
 
+        let leveledSpellsStr = "";
         for (let lvl = 1; lvl <= 9; lvl++) {
-          const slot = sd.slots[lvl];
-          if (slot) {
-            setText(`TotalLvl${lvl}SpellSlots`, slot.max || 0);
-            setText(`Lvl${lvl}UsedSpellSlots`, slot.used || 0);
+          const spells = sd.spellsByLevel[lvl] || [];
+          const slot = sd.slots[lvl] || { max: 0, used: 0 };
+          if (spells.length > 0 || slot.max > 0) {
+            const spellList = spells.map(s => `- ${s.name}`).join("\n") || "*No spells known.*";
+            leveledSpellsStr += `#### Level ${lvl} Spells (Slots: ${slot.max - slot.used} / ${slot.max} available)\n${spellList}\n\n`;
           }
         }
+
+        spellbookStr = `
+### Spellcasting Stats
+- **Spellcasting Class:** ${sd.className}
+- **Spellcasting Ability:** ${sd.ability}
+- **Spell Save DC:** ${sd.saveDC}
+- **Spell Attack Bonus:** ${sd.attackBonusStr}
+
+### Cantrips
+${cantripsList}
+
+${leveledSpellsStr}
+        `.trim();
       }
 
-      // --- Flatten the form so the fields render as static text ---
-      form.flatten();
+      const markdownContent = `
+# ${character.name}
 
-      // --- Generate spell card pages and append them ---
-      if (helpers.spellData) {
-        await appendSpellCardPages(pdfDoc, helpers.spellData, loader);
-      }
+## Core Information
+- **Player:** ${character.player || "Unknown"}
+- **Class & Level:** ${helpers.classStr}
+- **Race:** ${helpers.raceDisplay}
+- **Background:** ${helpers.bgStr}
+- **Alignment:** ${character.alignment || "True Neutral"}
+- **Experience:** ${character.experience || 0} XP
 
-      // --- Serialize and send ---
-      const pdfBytes = await pdfDoc.save();
-      res.setHeader("Content-Type", "application/pdf");
+---
+
+## Portrait
+${portraitBase64 ? `![Character Portrait](${portraitBase64})` : "*No portrait available.*"}
+
+---
+
+## Ability Scores
+| Ability | Score | Modifier |
+| --- | --- | --- |
+${abilityRows}
+
+---
+
+## Combat Attributes
+- **Armor Class (AC):** ${character.armorClass?.baseValue || 10}
+- **Initiative:** ${helpers.fmt(character.initiative?.baseValue || 0)}
+- **Speed:** ${character.speed?.baseValue || 30} ft
+- **Hit Points:** ${character.currentHitPoints ?? character.maxHitPoints ?? 0} / ${character.maxHitPoints || 0} HP (Temp HP: ${character.tempHitPoints || 0})
+- **Hit Dice:** ${helpers.hitDieStr || "—"}
+- **Passive Perception:** ${character.passivePerception || 10}
+
+### Death Saves
+- **Successes:** ${[character.deathSaveSuccess1, character.deathSaveSuccess2, character.deathSaveSuccess3].filter(Boolean).length} / 3
+- **Failures:** ${[character.deathSaveFail1, character.deathSaveFail2, character.deathSaveFail3].filter(Boolean).length} / 3
+
+---
+
+## Saving Throws
+${savingThrowsList}
+
+---
+
+## Skills
+${skillsList}
+
+---
+
+## Weapons & Attacks
+| Weapon Name | Attack Bonus | Damage / Type |
+| --- | --- | --- |
+${weaponRows || "| — | — | — |"}
+
+---
+
+## Equipment & Gear
+${equipmentList || "*No equipment.*"}
+
+### Currency
+${currencyStr}
+
+---
+
+## Features & Traits
+${featuresList || "*No features.*"}
+
+### Other Proficiencies & Languages
+${helpers.otherProfs.join("\n") || "*None.*"}
+
+---
+
+## Personality & Biography
+- **Personality Traits:** ${character.traits?.personalityTrait || "—"}
+- **Ideals:** ${character.traits?.ideal || "—"}
+- **Bonds:** ${character.traits?.bond || "—"}
+- **Flaws:** ${character.traits?.flaw || "—"}
+
+---
+
+## Spellbook
+${spellbookStr}
+      `.trim();
+
+      res.setHeader("Content-Type", "text/markdown");
       res.setHeader(
         "Content-Disposition",
-        `attachment; filename="${character.name.replace(/[^a-z0-9]/gi, "_")}_Character_Sheet.pdf"`,
+        `attachment; filename="${character.name.replace(/[^a-z0-9]/gi, "_")}_Character_Sheet.md"`,
       );
-      res.send(Buffer.from(pdfBytes));
+      res.send(markdownContent);
     } catch (err) {
-      console.error("Error generating PDF:", err);
+      console.error("Error generating Markdown:", err);
       res.status(500).json({ error: err.message });
     }
   },

@@ -12,6 +12,32 @@ document.addEventListener('DOMContentLoaded', () => {
     let featureCount = window.initialFeatureCount || 0;
     let isEditing = false;
 
+    // Portrait upload logic
+    const portraitContainer = document.getElementById('portrait-container');
+    const portraitUpload = document.getElementById('portrait-upload');
+    const portraitImg = document.getElementById('portrait-img');
+    const portraitData = document.getElementById('portrait-data');
+
+    if (portraitContainer && portraitUpload) {
+        portraitContainer.addEventListener('click', () => {
+            if (isEditing) {
+                portraitUpload.click();
+            }
+        });
+
+        portraitUpload.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    portraitImg.src = event.target.result;
+                    portraitData.value = event.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    }
+
     // Tab switching
     window.switchTab = function (tabId) {
         document.querySelectorAll('.rpg-tab-btn').forEach(btn => {
@@ -98,6 +124,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 description: item.querySelector('[name$="[description]"]').value
             });
         });
+        originalValues.portrait = document.getElementById('portrait-data') ? document.getElementById('portrait-data').value : '';
+        originalValues.portraitSrc = document.getElementById('portrait-img') ? document.getElementById('portrait-img').src : '';
     }
 
     function enableEditing() {
@@ -119,6 +147,11 @@ document.addEventListener('DOMContentLoaded', () => {
             select.removeAttribute('disabled');
             select.classList.add('edit-active');
         });
+
+        const portraitContainerEl = document.getElementById('portrait-container');
+        if (portraitContainerEl) {
+            portraitContainerEl.classList.add('edit-active');
+        }
 
         addEquipmentBtn.classList.add('visible');
         showFeatureDeleteButtons();
@@ -150,6 +183,11 @@ document.addEventListener('DOMContentLoaded', () => {
             select.setAttribute('disabled', '');
             select.classList.remove('edit-active');
         });
+
+        const portraitContainerEl = document.getElementById('portrait-container');
+        if (portraitContainerEl) {
+            portraitContainerEl.classList.remove('edit-active');
+        }
 
         addEquipmentBtn.classList.remove('visible');
         hideFeatureDeleteButtons();
@@ -206,6 +244,13 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             featureCount = originalValues.features.length;
         }
+        if (document.getElementById('portrait-data')) {
+            document.getElementById('portrait-data').value = originalValues.portrait || '';
+        }
+        if (document.getElementById('portrait-img')) {
+            document.getElementById('portrait-img').src = originalValues.portraitSrc || '/images/aasimar_artificer.png';
+        }
+
         updatePreviews();
     }
 

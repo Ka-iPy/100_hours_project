@@ -272,6 +272,36 @@ select:focus {
   aspect-ratio: 1;
   border-bottom: 2px solid var(--rpg-border);
   overflow: hidden;
+  transition: border-color 0.3s ease;
+}
+
+.rpg-portrait-container.edit-active {
+  border: 2px dashed var(--rpg-border-glow);
+  cursor: pointer;
+}
+
+.rpg-portrait-container.edit-active::after {
+  content: "Click to upload photo";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  color: var(--rpg-border-glow);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Cinzel', serif;
+  font-size: 0.9rem;
+  font-weight: bold;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  pointer-events: none;
+}
+
+.rpg-portrait-container.edit-active:hover::after {
+  opacity: 1;
 }
 
 .rpg-portrait {

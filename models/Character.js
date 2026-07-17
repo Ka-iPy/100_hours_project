@@ -596,6 +596,7 @@ export class Character {
     this.deathSaveFail2 = false;
     this.deathSaveFail3 = false;
     this.otherProficiencies = [];
+    this.portrait = "";
   }
 
   getTotalLevel() {
@@ -828,6 +829,7 @@ export class Character {
       deathSaveFail2: this.deathSaveFail2,
       deathSaveFail3: this.deathSaveFail3,
       otherProficiencies: [...this.otherProficiencies],
+      portrait: this.portrait,
     };
   }
 
@@ -888,6 +890,7 @@ export class Character {
     char.deathSaveFail2 = !!json.deathSaveFail2;
     char.deathSaveFail3 = !!json.deathSaveFail3;
     char.otherProficiencies = json.otherProficiencies || [];
+    char.portrait = json.portrait || "";
     return char;
   }
 

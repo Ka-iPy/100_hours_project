@@ -241,6 +241,9 @@
     classSelect.addEventListener('change', () => { updateSubclassUI(); loadEquipment(); loadSpellContext(); });
     levelInput.addEventListener('input', () => { updateSubclassUI(); loadSpellContext(); });
     subclassSelect.addEventListener('change', loadSpellContext);
+    document.querySelectorAll('input[name^="stats["]').forEach(input => {
+      input.addEventListener('input', updateSpellCounter);
+    });
 
     // --- Equipment Loading ---
     async function loadEquipment() {
@@ -464,7 +467,25 @@
       if (spellContext.acquisitionType === 'known') {
         el.textContent = `(${selectedSpells.length} / ${spellContext.numSpells} known)`;
       } else {
-        el.textContent = `(${selectedSpells.length} selected — prepare ${spellContext.preparedFormula || spellContext.numSpells} per day)`;
+        const level = parseInt(levelInput.value) || 1;
+        const ability = spellContext.spellcastingAbility || 'intelligence';
+        const scoreInput = document.getElementById('stat_' + ability.toLowerCase());
+        const score = scoreInput ? (parseInt(scoreInput.value) || 10) : 10;
+        const abilityMod = Math.floor((score - 10) / 2);
+
+        let maxPrepared = spellContext.numSpells;
+        if (spellContext.preparedFormula) {
+          const result = spellContext.preparedFormula
+            .replace(/<\$level\$>/g, String(level))
+            .replace(/<\$(?:int|wis|cha|str|dex|con)_mod\$>/g, String(abilityMod));
+          try {
+            const num = Function(`"use strict"; return (${result})`)();
+            maxPrepared = Math.max(1, Math.floor(num));
+          } catch (e) {
+            maxPrepared = Math.max(1, level + abilityMod);
+          }
+        }
+        el.textContent = `(${selectedSpells.length} selected — prepare ${maxPrepared} per day)`;
       }
     }
 

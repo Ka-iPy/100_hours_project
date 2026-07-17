@@ -13,16 +13,15 @@
 
 <body>
 
-  <!-- Print PDF Button -->
-  <a href="/character/<%= character.id %>/pdf"
+  <!-- Save Markdown Button -->
+  <a href="/character/<%= character.id %>/markdown"
     class="fixed top-4 left-4 z-50 px-4 py-2 bg-indigo-600 text-white rounded-lg shadow-lg hover:bg-indigo-700 transition flex items-center gap-2 no-print"
-    title="Download PDF">
+    title="Save Markdown">
     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-        d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 11v6m0 0l-3-3m3 3l3-3" />
+        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
     </svg>
-    <span>Print PDF</span>
+    <span>Save Markdown</span>
   </a>
 
   <form id="character-form" method="POST" action="/character/<%= character.id %>?_method=PUT">
@@ -55,8 +54,9 @@
 
         <!-- Portrait & Core Info -->
         <div class="rpg-panel">
-          <div class="rpg-portrait-container">
-            <img src="/images/aasimar_artificer.png" alt="Character Portrait" class="rpg-portrait">
+          <div class="rpg-portrait-container" id="portrait-container">
+            <img src="<%= character.portrait || '/images/aasimar_artificer.png' %>" alt="Character Portrait"
+              class="rpg-portrait" id="portrait-img">
             <div class="rpg-portrait-overlay">
               <input name="name"
                 class="rpg-title text-2xl font-bold bg-transparent border-none focus:ring-0 editable-input" type="text"
@@ -224,6 +224,8 @@
         <input type="checkbox" name="deathSaveFail2" class="hidden" <%=character.deathSaveFail2 ? 'checked' : '' %>/>
         <input type="checkbox" name="deathSaveFail3" class="hidden" <%=character.deathSaveFail3 ? 'checked' : '' %>/>
         <input name="player" type="hidden" value="<%= character.player || '' %>" />
+        <input type="hidden" name="portrait" id="portrait-data" value="<%= character.portrait || '' %>" />
+        <input type="file" id="portrait-upload" accept="image/*" class="hidden" />
 
       </aside>
 
