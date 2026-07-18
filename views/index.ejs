@@ -1,9 +1,14 @@
 <%- include('partials/header') %>
 
-<main>
-    <h1>To the next adventure</h1>
-    <a href="/login">login</a>
-    <a href="/signup">signup</a>
-</main>
+    <main class="landing-page">
+        <div class="landing-hero">
+            <h1>To the Next Adventure</h1>
+            <p class="landing-subtitle">Forge your legend, one character at a time.</p>
+            <div class="landing-actions">
+                <a href="/login" class="rpg-btn rpg-btn-primary">Login</a>
+                <a href="/signup" class="rpg-btn rpg-btn-secondary">Sign Up</a>
+            </div>
+        </div>
+    </main>
 
-<%- include('partials/footer') %>
+    <%- include('partials/footer') %>

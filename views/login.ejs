@@ -1,19 +1,32 @@
 <%- include('partials/header') %>
 
-<main>
-    <% if (messages.error) { %>
-        <p style="color: red;"><%= messages.error %></p>
-    <% } %>
-    <% if (messages.success) { %>
-        <p style="color: green;"><%= messages.success %></p>
-    <% } %>
+    <main class="auth-page">
+        <div class="auth-card">
+            <div class="auth-card-header">
+                <h1>Login</h1>
+            </div>
+            <div class="auth-card-body">
+                <% if (messages.error) { %>
+                    <div class="flash-msg error">
+                        <%= messages.error %>
+                    </div>
+                    <% } %>
+                        <% if (messages.success) { %>
+                            <div class="flash-msg success">
+                                <%= messages.success %>
+                            </div>
+                            <% } %>
 
-    <form action="/login" method="POST">
-        <input type="text" name="username" placeholder="Username" required>
-        <input type="password" name="password" placeholder="Password" required>
-        <button type="submit">Login</button>
-    </form>
-    <p>Don't have an account? <a href="/signup">Sign up</a></p>
-</main>
+                                <form action="/login" method="POST" class="auth-form">
+                                    <input type="text" name="username" placeholder="Username" required>
+                                    <input type="password" name="password" placeholder="Password" required>
+                                    <button type="submit">Login</button>
+                                </form>
+            </div>
+            <div class="auth-footer">
+                <p>Don't have an account? <a href="/signup">Sign up</a></p>
+            </div>
+        </div>
+    </main>
 
-<%- include('partials/footer') %>
+    <%- include('partials/footer') %>

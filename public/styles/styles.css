@@ -643,6 +643,614 @@ select:focus {
   margin-bottom: 0;
 }
 
+/* ========== Auth Pages (Login / Signup) ========== */
+.auth-page {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 80vh;
+}
+
+.auth-card {
+  background-color: var(--rpg-panel-bg);
+  border: 2px solid var(--rpg-border);
+  border-radius: 8px;
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.6),
+    inset 0 0 20px rgba(139, 107, 67, 0.12);
+  width: 100%;
+  max-width: 420px;
+  overflow: hidden;
+}
+
+.auth-card-header {
+  background-color: var(--rpg-panel-header-bg);
+  border-bottom: 1px solid var(--rpg-border);
+  padding: 20px 24px;
+  text-align: center;
+}
+
+.auth-card-header h1 {
+  font-family: 'Cinzel Decorative', serif;
+  font-size: 1.6rem;
+  color: var(--rpg-border-glow);
+  text-shadow: 0 0 12px rgba(197, 160, 89, 0.3);
+  margin: 0;
+}
+
+.auth-card-body {
+  padding: 24px;
+}
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.auth-form input[type="text"],
+.auth-form input[type="password"] {
+  width: 100%;
+  padding: 10px 14px;
+  font-size: 1rem;
+  box-sizing: border-box;
+}
+
+.auth-form button[type="submit"] {
+  font-family: 'Cinzel', serif;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 10px 16px;
+  border-radius: 4px;
+  border: 2px solid var(--rpg-border-glow);
+  background: linear-gradient(to bottom, #8b6b43, #5c472d);
+  color: #f5ebd3;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.4);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  width: 100%;
+  font-size: 0.95rem;
+}
+
+.auth-form button[type="submit"]:hover {
+  background: linear-gradient(to bottom, #a37e50, #735938);
+  box-shadow: 0 0 10px rgba(197, 160, 89, 0.5);
+}
+
+.auth-footer {
+  text-align: center;
+  padding: 16px 24px;
+  border-top: 1px solid rgba(139, 107, 67, 0.2);
+  font-size: 0.9rem;
+  color: var(--rpg-text-secondary);
+}
+
+.auth-footer a {
+  color: var(--rpg-border-glow);
+  text-decoration: none;
+  font-weight: 600;
+  transition: color 0.2s ease, text-shadow 0.2s ease;
+}
+
+.auth-footer a:hover {
+  color: #fff;
+  text-shadow: 0 0 8px rgba(197, 160, 89, 0.5);
+}
+
+/* Flash messages */
+.flash-msg {
+  padding: 10px 14px;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-bottom: 16px;
+  border: 1px solid;
+}
+
+.flash-msg.error {
+  background-color: rgba(158, 42, 43, 0.15);
+  border-color: var(--rpg-accent-crimson);
+  color: #ff7b7b;
+}
+
+.flash-msg.success {
+  background-color: rgba(45, 106, 79, 0.15);
+  border-color: #52b788;
+  color: #95d5b2;
+}
+
+/* ========== Landing Page ========== */
+.landing-page {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 80vh;
+  text-align: center;
+}
+
+.landing-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.landing-hero h1 {
+  font-family: 'Cinzel Decorative', serif;
+  font-size: 2.2rem;
+  color: var(--rpg-border-glow);
+  text-shadow: 0 0 14px rgba(197, 160, 89, 0.4);
+  margin: 0 0 8px;
+}
+
+.landing-hero .landing-subtitle {
+  font-size: 1.1rem;
+  color: var(--rpg-text-secondary);
+  margin-bottom: 16px;
+  font-style: italic;
+}
+
+.landing-actions {
+  display: flex;
+  gap: 16px;
+  margin-top: 8px;
+}
+
+/* ========== Hall Page ========== */
+.hall-page {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.hall-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 28px;
+  border-bottom: 2px solid var(--rpg-border);
+  padding-bottom: 16px;
+}
+
+.hall-header h1 {
+  font-family: 'Cinzel Decorative', serif;
+  font-size: 1.6rem;
+  color: var(--rpg-border-glow);
+  text-shadow: 0 0 10px rgba(197, 160, 89, 0.3);
+  margin: 0;
+}
+
+.hall-nav {
+  display: flex;
+  gap: 10px;
+}
+
+.hall-nav a {
+  text-decoration: none;
+}
+
+.hall-section-title {
+  font-family: 'Cinzel', serif;
+  font-size: 1.1rem;
+  color: var(--rpg-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 16px;
+}
+
+.hall-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 16px;
+}
+
+.hall-card {
+  background-color: var(--rpg-panel-bg);
+  border: 2px solid var(--rpg-border);
+  border-radius: 8px;
+  box-shadow:
+    0 4px 16px rgba(0, 0, 0, 0.5),
+    inset 0 0 12px rgba(139, 107, 67, 0.1);
+  overflow: hidden;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease, transform 0.2s ease;
+}
+
+.hall-card:hover {
+  border-color: var(--rpg-border-glow);
+  box-shadow:
+    0 6px 20px rgba(0, 0, 0, 0.6),
+    0 0 14px rgba(197, 160, 89, 0.2),
+    inset 0 0 12px rgba(197, 160, 89, 0.08);
+  transform: translateY(-2px);
+}
+
+.hall-card-link {
+  display: block;
+  padding: 16px;
+  text-decoration: none;
+  color: inherit;
+  border-bottom: 1px solid rgba(139, 107, 67, 0.2);
+  transition: background-color 0.2s ease;
+}
+
+.hall-card-link:hover {
+  background-color: rgba(197, 160, 89, 0.05);
+}
+
+.hall-card-name {
+  font-family: 'Cinzel', serif;
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: var(--rpg-border-glow);
+  margin-bottom: 4px;
+}
+
+.hall-card-meta {
+  font-size: 0.85rem;
+  color: var(--rpg-text-secondary);
+}
+
+.hall-card-actions {
+  padding: 10px 16px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.hall-empty {
+  text-align: center;
+  padding: 40px 20px;
+  background-color: var(--rpg-panel-bg);
+  border: 2px dashed var(--rpg-border);
+  border-radius: 8px;
+  color: var(--rpg-text-secondary);
+  font-style: italic;
+  font-size: 1.05rem;
+}
+
+/* ========== Character Creator ========== */
+.creator-page {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.creator-page>h1 {
+  font-family: 'Cinzel Decorative', serif;
+  font-size: 1.8rem;
+  color: var(--rpg-border-glow);
+  text-shadow: 0 0 12px rgba(197, 160, 89, 0.3);
+  margin: 0 0 24px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid var(--rpg-border);
+}
+
+.creator-form {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.creator-section {
+  background-color: var(--rpg-panel-bg);
+  border: 2px solid var(--rpg-border);
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow:
+    0 4px 16px rgba(0, 0, 0, 0.4),
+    inset 0 0 12px rgba(139, 107, 67, 0.1);
+}
+
+.creator-section-header {
+  background-color: var(--rpg-panel-header-bg);
+  border-bottom: 1px solid var(--rpg-border);
+  padding: 10px 16px;
+}
+
+.creator-section-header h2 {
+  font-family: 'Cinzel', serif;
+  font-weight: 700;
+  font-size: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--rpg-border-glow);
+  margin: 0;
+}
+
+.creator-section-body {
+  padding: 16px;
+}
+
+.creator-row {
+  display: grid;
+  gap: 16px;
+}
+
+.creator-row.cols-2 {
+  grid-template-columns: 1fr 1fr;
+}
+
+.creator-row.cols-3 {
+  grid-template-columns: 1fr 1fr 1fr;
+}
+
+.creator-row.cols-6 {
+  grid-template-columns: repeat(6, 1fr);
+}
+
+@media (max-width: 640px) {
+
+  .creator-row.cols-2,
+  .creator-row.cols-3 {
+    grid-template-columns: 1fr;
+  }
+
+  .creator-row.cols-6 {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.creator-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.creator-field label {
+  font-family: 'Cinzel', serif;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--rpg-text-secondary);
+  letter-spacing: 0.08em;
+}
+
+.creator-field input,
+.creator-field select {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Ability score cards in creator */
+.creator-ability-card {
+  background-color: var(--rpg-panel-header-bg);
+  border: 1px solid var(--rpg-border);
+  border-radius: 6px;
+  padding: 12px 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  text-align: center;
+  box-shadow: inset 0 0 8px rgba(0, 0, 0, 0.3);
+  transition: border-color 0.2s ease;
+}
+
+.creator-ability-card:hover {
+  border-color: var(--rpg-border-glow);
+}
+
+.creator-ability-card label {
+  font-family: 'Cinzel', serif;
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--rpg-text-secondary);
+  letter-spacing: 0.08em;
+}
+
+.creator-ability-card input {
+  width: 56px;
+  text-align: center;
+  font-family: 'Cinzel', serif;
+  font-size: 1.4rem;
+  font-weight: 700;
+  padding: 4px;
+}
+
+/* Spell info banner */
+.creator-spell-info {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 8px;
+  background-color: var(--rpg-panel-header-bg);
+  border: 1px solid var(--rpg-border);
+  border-radius: 6px;
+  padding: 12px;
+  margin-bottom: 12px;
+  font-size: 0.85rem;
+}
+
+.creator-spell-info strong {
+  color: var(--rpg-border-glow);
+}
+
+/* Spell/cantrip/equipment pick grids */
+.creator-pick-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 6px;
+  max-height: 280px;
+  overflow-y: auto;
+  padding: 8px;
+  border: 1px solid var(--rpg-border);
+  border-radius: 6px;
+  background-color: rgba(0, 0, 0, 0.2);
+}
+
+.creator-pick-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border: 1px solid var(--rpg-border);
+  border-radius: 4px;
+  background-color: var(--rpg-panel-header-bg);
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+
+.creator-pick-item:hover {
+  border-color: var(--rpg-border-glow);
+  background-color: rgba(197, 160, 89, 0.08);
+}
+
+/* Filter buttons for spell levels */
+.creator-filter-bar {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+
+.creator-filter-btn {
+  font-family: 'Cinzel', serif;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: 4px;
+  border: 1px solid var(--rpg-border);
+  background-color: var(--rpg-panel-header-bg);
+  color: var(--rpg-text-secondary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.creator-filter-btn:hover {
+  border-color: var(--rpg-border-glow);
+  color: var(--rpg-text-primary);
+}
+
+.creator-filter-btn.active {
+  background: linear-gradient(to bottom, #8b6b43, #5c472d);
+  border-color: var(--rpg-border-glow);
+  color: #f5ebd3;
+}
+
+/* Equipment choice groups */
+.creator-eq-group {
+  background-color: rgba(0, 0, 0, 0.15);
+  border: 1px solid var(--rpg-border);
+  border-radius: 6px;
+  padding: 12px;
+  margin-bottom: 8px;
+}
+
+.creator-eq-group .creator-eq-label {
+  font-family: 'Cinzel', serif;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--rpg-text-secondary);
+  margin-bottom: 6px;
+}
+
+.creator-eq-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: background-color 0.2s ease;
+}
+
+.creator-eq-option:hover {
+  background-color: rgba(197, 160, 89, 0.06);
+}
+
+/* Counter text */
+.creator-counter {
+  font-size: 0.8rem;
+  color: var(--rpg-text-secondary);
+  font-style: italic;
+}
+
+/* Submit button */
+.creator-submit {
+  font-family: 'Cinzel', serif;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-size: 1rem;
+  padding: 12px 16px;
+  border-radius: 6px;
+  border: 2px solid var(--rpg-border-glow);
+  background: linear-gradient(to bottom, #8b6b43, #5c472d);
+  color: #f5ebd3;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+  cursor: pointer;
+  transition: all 0.25s ease;
+  width: 100%;
+}
+
+.creator-submit:hover {
+  background: linear-gradient(to bottom, #a37e50, #735938);
+  box-shadow:
+    0 0 16px rgba(197, 160, 89, 0.4),
+    0 4px 10px rgba(0, 0, 0, 0.5);
+}
+
+/* Preview panel */
+.creator-preview {
+  background-color: var(--rpg-panel-bg);
+  border: 2px solid var(--rpg-border);
+  border-radius: 8px;
+  padding: 16px;
+  margin-top: 24px;
+  display: none;
+}
+
+.creator-preview.visible {
+  display: block;
+}
+
+.creator-preview h2 {
+  font-family: 'Cinzel', serif;
+  font-weight: 700;
+  color: var(--rpg-border-glow);
+  margin-bottom: 8px;
+}
+
+.creator-preview pre {
+  font-size: 0.8rem;
+  overflow: auto;
+  color: var(--rpg-text-secondary);
+}
+
+/* Concentration/Ritual badges */
+.spell-badge {
+  font-size: 0.6rem;
+  font-weight: 700;
+  padding: 1px 4px;
+  border-radius: 2px;
+  margin-left: 4px;
+}
+
+.spell-badge.conc {
+  background-color: rgba(255, 165, 0, 0.2);
+  color: #ffb347;
+  border: 1px solid rgba(255, 165, 0, 0.4);
+}
+
+.spell-badge.ritual {
+  background-color: rgba(147, 112, 219, 0.2);
+  color: #b19cd9;
+  border: 1px solid rgba(147, 112, 219, 0.4);
+}
+
+/* Gold alternative text */
+.creator-gold-alt {
+  font-size: 0.85rem;
+  color: var(--rpg-text-secondary);
+  font-style: italic;
+  margin-top: 8px;
+}
+
 /* Print Overrides */
 @media print {
   body {

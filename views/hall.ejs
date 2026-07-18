@@ -1,55 +1,68 @@
 <% include('partials/header.ejs') %>
-<main>
-  <h1>
-      Greetings, <%= username %>!
-  </h1>
-  <a href="/logout">Logout</a>
-  <a href="/createCharacter">Create a Character</a>
 
-  <h2>Your Characters</h2>
-  <% if (characters && characters.length > 0) { %>
-    <ul>
-      <% characters.forEach(function(char) { %>
-        <li>
-          <a href="/character/<%= char.id %>">
-            <%= char.name %> — Level <%= char.getTotalLevel() %> <%= char.classes.length > 0 ? char.classes[0].className : '' %>
-          </a>
-          <button type="button" id="delete-btn" onclick='confirmDelete(<%- JSON.stringify({
-            id: char.id,
-            name: char.name
-          }) %>)'
-            class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition">
-            Delete Character
-          </button>
-        </li>
-      <% }); %>
-    </ul>
-  <% } else { %>
-    <p>You haven't created any characters yet.</p>
-  <% } %>
-</main>
-<script>
-  async function confirmDelete(char) {
-    const charName = char.name;
+  <main class="hall-page">
+    <div class="hall-header">
+      <h1>Greetings, <%= username %>!</h1>
+      <div class="hall-nav">
+        <a href="/createCharacter" class="rpg-btn rpg-btn-primary">Create a Character</a>
+        <a href="/logout" class="rpg-btn rpg-btn-secondary">Logout</a>
+      </div>
+    </div>
 
-    if (confirm(`Are you sure you want to delete ${charName}? This action cannot be undone.`)) {
-      try {
-        const response = await fetch(`/character/${char.id}`, {
-          method: 'DELETE',
-        });
+    <h2 class="hall-section-title">Your Characters</h2>
 
-        if (response.redirected) {
-          window.location.href = response.url;
-        } else if (response.ok) {
-          window.location.href = '/hall';
-        } else {
-          const error = await response.json();
-          alert('Error deleting: ' + (error.error || 'Unknown error'));
+    <% if (characters && characters.length> 0) { %>
+      <div class="hall-grid">
+        <% characters.forEach(function(char) { %>
+          <div class="hall-card">
+            <a href="/character/<%= char.id %>" class="hall-card-link">
+              <div class="hall-card-name">
+                <%= char.name %>
+              </div>
+              <div class="hall-card-meta">
+                Level <%= char.getTotalLevel() %>
+                  <%= char.classes.length> 0 ? char.classes[0].className : '' %>
+              </div>
+            </a>
+            <div class="hall-card-actions">
+              <button type="button" onclick='confirmDelete(<%- JSON.stringify({ id: char.id, name: char.name }) %>)'
+                class="rpg-btn rpg-btn-danger" style="font-size: 0.75rem; padding: 5px 10px;">
+                Delete
+              </button>
+            </div>
+          </div>
+          <% }); %>
+      </div>
+      <% } else { %>
+        <div class="hall-empty">
+          <p>You haven't created any characters yet. Embark on a new adventure!</p>
+        </div>
+        <% } %>
+  </main>
+
+  <script>
+    async function confirmDelete(char) {
+      const charName = char.name;
+
+      if (confirm(`Are you sure you want to delete ${charName}? This action cannot be undone.`)) {
+        try {
+          const response = await fetch(`/character/${char.id}`, {
+            method: 'DELETE',
+          });
+
+          if (response.redirected) {
+            window.location.href = response.url;
+          } else if (response.ok) {
+            window.location.href = '/hall';
+          } else {
+            const error = await response.json();
+            alert('Error deleting: ' + (error.error || 'Unknown error'));
+          }
+        } catch (err) {
+          alert('Error deleting: ' + err.message);
         }
-      } catch (err) {
-        alert('Error deleting: ' + err.message);
       }
     }
-  }
-</script>
-<% include('partials/footer.ejs') %>
+  </script>
+
+  <% include('partials/footer.ejs') %>

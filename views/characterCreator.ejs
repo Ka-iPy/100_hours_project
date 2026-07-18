@@ -1,183 +1,213 @@
 <% include('partials/header.ejs') %>
 
-  <main class="max-w-4xl mx-auto p-6 bg-white shadow-lg rounded-lg my-8">
-    <h1 class="text-3xl font-bold mb-6 text-gray-800 border-b pb-2">Create a Character</h1>
+  <main class="creator-page">
+    <h1>Create a Character</h1>
 
-    <form id="characterForm" action="/createCharacter" method="POST" class="space-y-8">
+    <form id="characterForm" action="/createCharacter" method="POST" class="creator-form">
+
       <!-- Basic Info -->
-      <section>
-        <h2 class="text-xl font-semibold mb-3">Basic Info</h2>
-        <div class="flex flex-col">
-          <label for="name" class="font-medium text-gray-700">Character Name:</label>
-          <input type="text" id="name" name="name" required
-            class="mt-1 p-2 border rounded focus:ring-2 focus:ring-blue-500">
+      <div class="creator-section">
+        <div class="creator-section-header">
+          <h2>Basic Info</h2>
         </div>
-      </section>
+        <div class="creator-section-body">
+          <div class="creator-field">
+            <label for="name">Character Name</label>
+            <input type="text" id="name" name="name" required>
+          </div>
+        </div>
+      </div>
 
       <!-- Race & Heritage -->
-      <section>
-        <h2 class="text-xl font-semibold mb-3">Race & Heritage</h2>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div class="flex flex-col">
-            <label for="race" class="font-medium text-gray-700">Race:</label>
-            <select id="race" name="race" required class="mt-1 p-2 border rounded">
-              <option value="">Select a race...</option>
-              <% races.forEach(race=> {
-                const r = JSON.parse(race); %>
-                <option value="<%= race %>">
-                  <%= `${r.name} (${r.source})` %>
-                </option>
-                <% }) %>
-            </select>
-          </div>
+      <div class="creator-section">
+        <div class="creator-section-header">
+          <h2>Race & Heritage</h2>
+        </div>
+        <div class="creator-section-body">
+          <div class="creator-row cols-2">
+            <div class="creator-field">
+              <label for="race">Race</label>
+              <select id="race" name="race" required>
+                <option value="">Select a race...</option>
+                <% races.forEach(race=> {
+                  const r = JSON.parse(race); %>
+                  <option value="<%= race %>">
+                    <%= `${r.name} (${r.source})` %>
+                  </option>
+                  <% }) %>
+              </select>
+            </div>
 
-          <div class="flex flex-col" id="subraceContainer" style="display: none;">
-            <label for="subrace" class="font-medium text-gray-700">Subrace:</label>
-            <select id="subrace" name="subrace" class="mt-1 p-2 border rounded">
-              <option value="">None</option>
-              <% subraces.forEach(sub=> {
-                const sr = JSON.parse(sub); %>
-                <option value="<%= sub %>" data-parent="<%= sr.raceName %>" data-race-source="<%= sr.raceSource %>">
-                  <%= `${sr.name} (${sr.source})` %>
-                </option>
-                <% }) %>
-            </select>
+            <div class="creator-field" id="subraceContainer" style="display: none;">
+              <label for="subrace">Subrace</label>
+              <select id="subrace" name="subrace">
+                <option value="">None</option>
+                <% subraces.forEach(sub=> {
+                  const sr = JSON.parse(sub); %>
+                  <option value="<%= sub %>" data-parent="<%= sr.raceName %>" data-race-source="<%= sr.raceSource %>">
+                    <%= `${sr.name} (${sr.source})` %>
+                  </option>
+                  <% }) %>
+              </select>
+            </div>
           </div>
         </div>
-      </section>
+      </div>
 
       <!-- Class & Level -->
-      <section>
-        <h2 class="text-xl font-semibold mb-3">Class & Level</h2>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div class="flex flex-col">
-            <label for="className" class="font-medium text-gray-700">Class:</label>
-            <select id="className" name="className" required class="mt-1 p-2 border rounded">
-              <option value="">Select a class...</option>
-              <% classes.forEach(cls=> {
-                const c = JSON.parse(cls); %>
-                <option value="<%= cls %>">
-                  <%= `${c.name} (${c.source})` %>
-                </option>
-                <% }) %>
-            </select>
-          </div>
+      <div class="creator-section">
+        <div class="creator-section-header">
+          <h2>Class & Level</h2>
+        </div>
+        <div class="creator-section-body">
+          <div class="creator-row cols-3">
+            <div class="creator-field">
+              <label for="className">Class</label>
+              <select id="className" name="className" required>
+                <option value="">Select a class...</option>
+                <% classes.forEach(cls=> {
+                  const c = JSON.parse(cls); %>
+                  <option value="<%= cls %>">
+                    <%= `${c.name} (${c.source})` %>
+                  </option>
+                  <% }) %>
+              </select>
+            </div>
 
-          <div class="flex flex-col">
-            <label for="level" class="font-medium text-gray-700">Level:</label>
-            <input type="number" id="level" name="level" min="1" max="20" value="1" required
-              class="mt-1 p-2 border rounded">
-          </div>
+            <div class="creator-field">
+              <label for="level">Level</label>
+              <input type="number" id="level" name="level" min="1" max="20" value="1" required>
+            </div>
 
-          <div id="subclassContainer" class="flex flex-col" style="display: none;">
-            <label for="subclass" class="font-medium text-gray-700">Subclass:</label>
-            <select id="subclass" name="subclass" class="mt-1 p-2 border rounded">
-              <option value="">None</option>
-              <% subclasses.forEach(sc=> {
-                const s = JSON.parse(sc); %>
-                <option value="<%= sc %>" data-class="<%= s.className %>">
-                  <%= `${s.name} (${s.source})` %>
-                </option>
-                <% }) %>
-            </select>
+            <div id="subclassContainer" class="creator-field" style="display: none;">
+              <label for="subclass">Subclass</label>
+              <select id="subclass" name="subclass">
+                <option value="">None</option>
+                <% subclasses.forEach(sc=> {
+                  const s = JSON.parse(sc); %>
+                  <option value="<%= sc %>" data-class="<%= s.className %>">
+                    <%= `${s.name} (${s.source})` %>
+                  </option>
+                  <% }) %>
+              </select>
+            </div>
           </div>
         </div>
-      </section>
+      </div>
 
       <!-- Ability Scores -->
-      <section>
-        <h2 class="text-xl font-semibold mb-3">Ability Scores</h2>
-        <div class="grid grid-cols-2 md:grid-cols-6 gap-4">
-          <% abilities.forEach(ability=> {
-            const displayName = ability.charAt(0).toUpperCase() + ability.slice(1); %>
-            <div class="flex flex-col">
-              <label for="stat_<%= ability %>" class="text-sm font-medium">
-                <%= displayName %>
-              </label>
-              <input type="number" id="stat_<%= ability %>" name="stats[<%= ability %>]" min="1" max="20" value="10"
-                class="p-2 border rounded">
-            </div>
-            <% }) %>
+      <div class="creator-section">
+        <div class="creator-section-header">
+          <h2>Ability Scores</h2>
         </div>
-      </section>
+        <div class="creator-section-body">
+          <div class="creator-row cols-6">
+            <% abilities.forEach(ability=> {
+              const displayName = ability.charAt(0).toUpperCase() + ability.slice(1); %>
+              <div class="creator-ability-card">
+                <label for="stat_<%= ability %>">
+                  <%= displayName %>
+                </label>
+                <input type="number" id="stat_<%= ability %>" name="stats[<%= ability %>]" min="1" max="20" value="10">
+              </div>
+              <% }) %>
+          </div>
+        </div>
+      </div>
 
       <!-- Background & Alignment -->
-      <section class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <h2 class="text-xl font-semibold mb-3">Background</h2>
-          <select id="background" name="background" required class="w-full p-2 border rounded">
-            <option value="">Select a background...</option>
-            <% backgrounds.forEach(bg=> {
-              const b = JSON.parse(bg); %>
-              <option value="<%= bg %>">
-                <%= `${b.name} (${b.source})` %>
-              </option>
-              <% }) %>
-          </select>
+      <div class="creator-section">
+        <div class="creator-section-header">
+          <h2>Background & Alignment</h2>
         </div>
-        <div>
-          <h2 class="text-xl font-semibold mb-3">Alignment</h2>
-          <select id="alignment" name="alignment" class="w-full p-2 border rounded">
-            <% alignments.forEach(align=> { %>
-              <option value="<%= align %>">
-                <%= align %>
-              </option>
-              <% }) %>
-          </select>
+        <div class="creator-section-body">
+          <div class="creator-row cols-2">
+            <div class="creator-field">
+              <label for="background">Background</label>
+              <select id="background" name="background" required>
+                <option value="">Select a background...</option>
+                <% backgrounds.forEach(bg=> {
+                  const b = JSON.parse(bg); %>
+                  <option value="<%= bg %>">
+                    <%= `${b.name} (${b.source})` %>
+                  </option>
+                  <% }) %>
+              </select>
+            </div>
+            <div class="creator-field">
+              <label for="alignment">Alignment</label>
+              <select id="alignment" name="alignment">
+                <% alignments.forEach(align=> { %>
+                  <option value="<%= align %>">
+                    <%= align %>
+                  </option>
+                  <% }) %>
+              </select>
+            </div>
+          </div>
         </div>
-      </section>
+      </div>
 
       <!-- Feats -->
-      <section>
-        <h2 class="text-xl font-semibold mb-3">Feats (Optional)</h2>
-        <select id="feats" name="feats" multiple size="5" class="w-full p-2 border rounded">
-          <% feats.forEach(feat=> {
-            const f = JSON.parse(feat); %>
-            <option value="<%= feat %>">
-              <%= `${f.name} (${f.source})` %>
-            </option>
-            <% }) %>
-        </select>
-      </section>
+      <div class="creator-section">
+        <div class="creator-section-header">
+          <h2>Feats (Optional)</h2>
+        </div>
+        <div class="creator-section-body">
+          <div class="creator-field">
+            <select id="feats" name="feats" multiple size="5">
+              <% feats.forEach(feat=> {
+                const f = JSON.parse(feat); %>
+                <option value="<%= feat %>">
+                  <%= `${f.name} (${f.source})` %>
+                </option>
+                <% }) %>
+            </select>
+          </div>
+        </div>
+      </div>
 
       <!-- Starting Equipment (dynamically loaded) -->
-      <section id="equipmentSection" style="display: none;">
-        <h2 class="text-xl font-semibold mb-3">Starting Equipment</h2>
-        <div id="equipmentChoices" class="space-y-4"></div>
-        <div id="equipmentGoldAlt" class="mt-2 text-sm text-gray-500"></div>
-      </section>
+      <div id="equipmentSection" class="creator-section" style="display: none;">
+        <div class="creator-section-header">
+          <h2>Starting Equipment</h2>
+        </div>
+        <div class="creator-section-body">
+          <div id="equipmentChoices"></div>
+          <div id="equipmentGoldAlt" class="creator-gold-alt"></div>
+        </div>
+      </div>
 
       <!-- Spell Selection (dynamically loaded) -->
-      <section id="spellSection" style="display: none;">
-        <h2 class="text-xl font-semibold mb-3">Spellcasting</h2>
-        <div id="spellInfo" class="text-sm text-gray-600 mb-4"></div>
-
-        <!-- Cantrips -->
-        <div id="cantripSection" style="display: none;">
-          <h3 class="text-lg font-semibold mb-2">Cantrips <span id="cantripCounter"
-              class="text-sm font-normal text-gray-500"></span></h3>
-          <div id="cantripList"
-            class="grid grid-cols-2 md:grid-cols-3 gap-2 max-h-64 overflow-y-auto border rounded p-3 bg-gray-50"></div>
+      <div id="spellSection" class="creator-section" style="display: none;">
+        <div class="creator-section-header">
+          <h2>Spellcasting</h2>
         </div>
+        <div class="creator-section-body">
+          <div id="spellInfo"></div>
 
-        <!-- Spells -->
-        <div id="spellPickSection" class="mt-4" style="display: none;">
-          <h3 class="text-lg font-semibold mb-2">Spells <span id="spellCounter"
-              class="text-sm font-normal text-gray-500"></span></h3>
-          <div id="spellLevelFilter" class="flex gap-2 mb-2 flex-wrap"></div>
-          <div id="spellList"
-            class="grid grid-cols-1 md:grid-cols-2 gap-2 max-h-80 overflow-y-auto border rounded p-3 bg-gray-50"></div>
+          <!-- Cantrips -->
+          <div id="cantripSection" style="display: none;">
+            <h3 class="hall-section-title" style="margin-top: 12px;">Cantrips <span id="cantripCounter"
+                class="creator-counter"></span></h3>
+            <div id="cantripList" class="creator-pick-grid"></div>
+          </div>
+
+          <!-- Spells -->
+          <div id="spellPickSection" style="display: none; margin-top: 16px;">
+            <h3 class="hall-section-title">Spells <span id="spellCounter" class="creator-counter"></span></h3>
+            <div id="spellLevelFilter" class="creator-filter-bar"></div>
+            <div id="spellList" class="creator-pick-grid"></div>
+          </div>
         </div>
-      </section>
+      </div>
 
-      <button type="submit"
-        class="w-full bg-blue-600 text-white font-bold py-3 rounded hover:bg-blue-700 transition">Create
-        Character</button>
+      <button type="submit" class="creator-submit">Create Character</button>
     </form>
 
-    <div id="characterPreview" class="mt-8 p-4 bg-gray-100 rounded border hidden">
-      <h2 class="text-lg font-bold mb-2">Character Preview</h2>
-      <pre id="characterJson" class="text-sm overflow-auto"></pre>
+    <div id="characterPreview" class="creator-preview">
+      <h2>Character Preview</h2>
+      <pre id="characterJson"></pre>
     </div>
   </main>
 
@@ -263,20 +293,20 @@
         container.innerHTML = '';
         eq.choices.forEach((choice, idx) => {
           const div = document.createElement('div');
-          div.className = 'border rounded p-3 bg-gray-50';
+          div.className = 'creator-eq-group';
 
           if (choice.isAutomatic) {
             const items = choice.options[0].items.map(i => i.data?.name || i.name).join(', ');
-            div.innerHTML = `<div class="text-sm"><span class="font-medium">Included:</span> ${items}</div>
-            <input type="hidden" name="equipmentChoices_group" value="${idx}" data-key="_">`;
+            div.innerHTML = `<div class="creator-eq-label">Included</div>
+          <div style="font-size: 0.85rem;">${items}</div>
+          <input type="hidden" name="equipmentChoices_group" value="${idx}" data-key="_">`;
           } else {
-            let html = `<div class="text-sm font-medium mb-2">Choose one:</div>`;
+            let html = `<div class="creator-eq-label">Choose one</div>`;
             choice.options.forEach(opt => {
               const items = opt.items.map(i => i.data?.name || i.name).join(', ');
-              const id = `eq_${idx}_${opt.key}`;
-              html += `<label class="flex items-center gap-2 p-1 hover:bg-gray-100 rounded cursor-pointer">
+              html += `<label class="creator-eq-option">
               <input type="radio" name="eq_choice_${idx}" value="${opt.key}" data-group="${idx}" class="eq-radio">
-              <span class="text-sm">(${opt.key}) ${items}</span>
+              <span>(${opt.key}) ${items}</span>
             </label>`;
             });
             div.innerHTML = html;
@@ -330,12 +360,12 @@
         const typeLabel = spellContext.acquisitionType === 'prepared' ? 'Prepared' : 'Known';
         const formulaNote = spellContext.preparedFormula ? ` (${spellContext.preparedFormula})` : '';
         spellInfo.innerHTML = `
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-2 bg-blue-50 p-3 rounded">
-          <div><strong>Caster Type:</strong> ${spellContext.casterProgression}</div>
-          <div><strong>Spell Type:</strong> ${typeLabel}</div>
-          <div><strong>Max Spell Level:</strong> ${spellContext.maxSpellLevel}</div>
-          <div><strong>Spell Slots:</strong> ${spellContext.spellSlots.filter(s => s > 0).join(' / ')}</div>
-        </div>`;
+      <div class="creator-spell-info">
+        <div><strong>Caster Type:</strong> ${spellContext.casterProgression}</div>
+        <div><strong>Spell Type:</strong> ${typeLabel}</div>
+        <div><strong>Max Level:</strong> ${spellContext.maxSpellLevel}</div>
+        <div><strong>Slots:</strong> ${spellContext.spellSlots.filter(s => s > 0).join(' / ')}</div>
+      </div>`;
 
         // Cantrips
         if (spellContext.numCantrips > 0 && spellContext.cantrips.length > 0) {
@@ -346,9 +376,9 @@
           spellContext.cantrips.forEach(c => {
             const id = `cantrip_${c.name.replace(/\s+/g, '_')}`;
             const label = document.createElement('label');
-            label.className = 'flex items-center gap-2 p-1.5 border rounded bg-white hover:bg-blue-50 cursor-pointer text-sm';
+            label.className = 'creator-pick-item';
             label.innerHTML = `<input type="checkbox" id="${id}" class="cantrip-cb" data-name="${c.name}" data-source="${c.source}">
-            <span>${c.name}</span>`;
+          <span>${c.name}</span>`;
             cantripList.appendChild(label);
           });
           cantripList.addEventListener('change', handleCantripChange);
@@ -367,14 +397,14 @@
           const levels = [...new Set(spellContext.spells.map(s => s.level))].sort();
           const allBtn = document.createElement('button');
           allBtn.type = 'button';
-          allBtn.className = 'px-3 py-1 text-sm rounded bg-blue-600 text-white';
+          allBtn.className = 'creator-filter-btn active';
           allBtn.textContent = 'All';
           allBtn.onclick = () => filterSpells(0, allBtn);
           filterDiv.appendChild(allBtn);
           levels.forEach(lvl => {
             const btn = document.createElement('button');
             btn.type = 'button';
-            btn.className = 'px-3 py-1 text-sm rounded bg-gray-200 hover:bg-gray-300';
+            btn.className = 'creator-filter-btn';
             btn.textContent = 'Level ' + lvl;
             btn.onclick = () => filterSpells(lvl, btn);
             filterDiv.appendChild(btn);
@@ -416,9 +446,9 @@
 
     function filterSpells(level, activeBtn) {
       document.querySelectorAll('#spellLevelFilter button').forEach(b => {
-        b.className = 'px-3 py-1 text-sm rounded bg-gray-200 hover:bg-gray-300';
+        b.className = 'creator-filter-btn';
       });
-      activeBtn.className = 'px-3 py-1 text-sm rounded bg-blue-600 text-white';
+      activeBtn.className = 'creator-filter-btn active';
       renderSpellList(level);
     }
 
@@ -431,11 +461,11 @@
         const id = `spell_${s.name.replace(/\s+/g, '_')}`;
         const checked = selectedSpells.some(sp => sp.name === s.name) ? 'checked' : '';
         const label = document.createElement('label');
-        label.className = 'flex items-center gap-2 p-1.5 border rounded bg-white hover:bg-blue-50 cursor-pointer text-sm';
-        const concStr = s.concentration ? ' <span class="text-orange-500 text-xs font-bold">C</span>' : '';
-        const ritStr = s.ritual ? ' <span class="text-purple-500 text-xs font-bold">R</span>' : '';
+        label.className = 'creator-pick-item';
+        const concStr = s.concentration ? ' <span class="spell-badge conc">C</span>' : '';
+        const ritStr = s.ritual ? ' <span class="spell-badge ritual">R</span>' : '';
         label.innerHTML = `<input type="checkbox" id="${id}" class="spell-cb" data-name="${s.name}" data-source="${s.source}" ${checked}>
-        <span>L${s.level} ${s.name}${concStr}${ritStr}</span>`;
+      <span>L${s.level} ${s.name}${concStr}${ritStr}</span>`;
         spellList.appendChild(label);
       });
 
@@ -449,7 +479,6 @@
       const source = e.target.dataset.source;
 
       if (e.target.checked) {
-        // For known casters, enforce the limit. For prepared casters, let them pick freely.
         if (spellContext.acquisitionType === 'known' && selectedSpells.length >= spellContext.numSpells) {
           e.target.checked = false;
           return;
@@ -557,7 +586,7 @@
 
         const result = await response.json();
         if (response.ok) {
-          preview.classList.remove('hidden');
+          preview.classList.add('visible');
           jsonDisplay.textContent = JSON.stringify(result, null, 2);
           if (result.id) setTimeout(() => window.location.href = `/character/${result.id}`, 1500);
         } else {
