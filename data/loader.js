@@ -307,7 +307,7 @@ class DataLoader {
       return this.subraces.find(
         (sr) =>
           `${sr.name}|${sr.source}`.toLowerCase() ===
-            `${name}|${source}`.toLowerCase() || sr.name.toLowerCase() === key,
+          `${name}|${source}`.toLowerCase() || sr.name.toLowerCase() === key,
       );
     }
     return null;
@@ -342,20 +342,21 @@ class DataLoader {
           sc.className?.toLowerCase() === className.toLowerCase() &&
           (sc.name?.toLowerCase() === subclassName.toLowerCase() ||
             sc.subclassShortName?.toLowerCase() ===
-              subclassName.toLowerCase()) &&
+            subclassName.toLowerCase()) &&
           sc.source?.toLowerCase() === source.toLowerCase(),
       ) || null
     );
   }
 
   getFeat(name, source = null) {
+    const lowerName = name.toLowerCase();
     if (source) {
       const key = `${name}|${source}`.toLowerCase();
-      return this.feats.find(
+      const exact = this.feats.find(
         (f) => `${f.name}|${f.source}`.toLowerCase() === key,
       );
+      if (exact) return exact;
     }
-    const lowerName = name.toLowerCase();
     return this.feats.find((f) => f.name.toLowerCase() === lowerName) || null;
   }
 
@@ -407,13 +408,14 @@ class DataLoader {
   }
 
   getItem(name, source = null) {
+    const lowerName = name.toLowerCase();
     if (source) {
       const key = `${name}|${source}`.toLowerCase();
-      return this.items.find(
+      const exact = this.items.find(
         (i) => `${i.name}|${i.source}`.toLowerCase() === key,
       );
+      if (exact) return exact;
     }
-    const lowerName = name.toLowerCase();
     return this.items.find((i) => i.name.toLowerCase() === lowerName) || null;
   }
 
@@ -423,13 +425,14 @@ class DataLoader {
   }
 
   getSpell(name, source = null) {
+    const lowerName = name.toLowerCase();
     if (source) {
       const key = `${name}|${source}`.toLowerCase();
-      return this.spells.find(
+      const exact = this.spells.find(
         (s) => `${s.name}|${s.source}`.toLowerCase() === key,
       );
+      if (exact) return exact;
     }
-    const lowerName = name.toLowerCase();
     return this.spells.find((s) => s.name.toLowerCase() === lowerName) || null;
   }
 

@@ -203,12 +203,28 @@ export function lookupEntity(req, res) {
   switch (type.toLowerCase()) {
     case "spell":
       data = loader.getSpell(cleanName, cleanSource);
+      // XPHB spells are Foundry stubs without entries/level/school — fall back to a content-rich version
+      if (data && !data.entries) {
+        const lowerName = cleanName.toLowerCase();
+        const richVersion = loader.spells.find(
+          (s) => s.name.toLowerCase() === lowerName && s.entries && s.source !== data.source,
+        );
+        if (richVersion) data = richVersion;
+      }
       break;
     case "item":
       data = loader.getItem(cleanName, cleanSource);
       break;
     case "feat":
       data = loader.getFeat(cleanName, cleanSource);
+      // Same stub-detection for feats
+      if (data && !data.entries) {
+        const lowerName = cleanName.toLowerCase();
+        const richVersion = loader.feats.find(
+          (f) => f.name.toLowerCase() === lowerName && f.entries && f.source !== data.source,
+        );
+        if (richVersion) data = richVersion;
+      }
       break;
     case "race":
       data = loader.getRace(cleanName, cleanSource);
