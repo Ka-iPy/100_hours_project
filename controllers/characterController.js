@@ -47,7 +47,11 @@ export default {
     });
 
     const feats = loader.getFeats().map((feat) => {
-      return JSON.stringify({ name: feat.name, source: feat.source });
+      return JSON.stringify({
+        name: feat.name,
+        source: feat.source,
+        category: feat.category || null,
+      });
     });
 
     const alignments = [

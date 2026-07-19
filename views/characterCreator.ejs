@@ -1,4 +1,4 @@
-<% include('partials/header.ejs') %>
+<%- include('partials/header.ejs') %>
 
   <main class="creator-page">
     <h1>Create a Character</h1>
@@ -149,20 +149,13 @@
       </div>
 
       <!-- Feats -->
-      <div class="creator-section">
+      <div class="creator-section" id="featsSection" style="display: none;">
         <div class="creator-section-header">
-          <h2>Feats (Optional)</h2>
+          <h2>Feats <span id="featsCounter" class="creator-counter"></span></h2>
         </div>
         <div class="creator-section-body">
-          <div class="creator-field">
-            <select id="feats" name="feats" multiple size="5">
-              <% feats.forEach(feat=> {
-                const f = JSON.parse(feat); %>
-                <option value="<%= feat %>">
-                  <%= `${f.name} (${f.source})` %>
-                </option>
-                <% }) %>
-            </select>
+          <div id="featSlotsContainer" class="creator-eq-choices">
+            <!-- Dynamic feat slots will be rendered here -->
           </div>
         </div>
       </div>
@@ -212,6 +205,11 @@
   </main>
 
   <script>
+    const allFeats = [
+      <% feats.forEach(feat => { %>
+        <%- feat %>,
+      <% }) %>
+    ];
     const form = document.getElementById('characterForm');
     const preview = document.getElementById('characterPreview');
     const jsonDisplay = document.getElementById('characterJson');
@@ -235,6 +233,271 @@
       try { return JSON.parse(val); } catch (e) { return null; }
     }
 
+    // --- Feat Slot Logic ---
+    let selectedRaceData = null;
+    let selectedBgData = null;
+
+    function findFeat(key) {
+      const [namePart, sourcePart] = key.split('|');
+      const cleanName = namePart.trim().toLowerCase();
+      const cleanSource = sourcePart ? sourcePart.trim().toLowerCase() : null;
+      return allFeats.find(f => {
+        const nameMatch = f.name.toLowerCase() === cleanName;
+        const sourceMatch = !cleanSource || f.source.toLowerCase() === cleanSource;
+        return nameMatch && sourceMatch;
+      });
+    }
+
+    function getSubVersions(featName) {
+      const prefix = featName.toLowerCase() + ';';
+      return allFeats.filter(f => f.name.toLowerCase().startsWith(prefix));
+    }
+
+    function populateFeatSelect(selectEl, filterType, allowedKeys = null) {
+      selectEl.innerHTML = '<option value="">Select a feat...</option>';
+
+      let filtered = allFeats;
+
+      if (allowedKeys) {
+        filtered = allFeats.filter(f => {
+          return allowedKeys.some(key => {
+            const [namePart, sourcePart] = key.split('|');
+            const cleanName = namePart.trim().toLowerCase();
+            const cleanSource = sourcePart ? sourcePart.trim().toLowerCase() : null;
+            return f.name.toLowerCase() === cleanName && (!cleanSource || f.source.toLowerCase() === cleanSource);
+          });
+        });
+      } else if (filterType === 'O') {
+        filtered = allFeats.filter(f => f.category === 'O');
+      }
+
+      // Sort alphabetically
+      filtered.sort((a, b) => a.name.localeCompare(b.name));
+
+      filtered.forEach(f => {
+        const option = document.createElement('option');
+        option.value = JSON.stringify(f);
+        option.textContent = `${f.name} (${f.source})`;
+        selectEl.appendChild(option);
+      });
+    }
+
+    function handleFeatSelectionChange() {
+      const selects = Array.from(document.querySelectorAll('.feat-slot-select'));
+      const selectedValues = selects.map(s => s.value).filter(val => val !== "");
+
+      selects.forEach(currentSelect => {
+        const currentValue = currentSelect.value;
+        Array.from(currentSelect.options).forEach(option => {
+          if (option.value === "") return;
+          const isSelectedElsewhere = selectedValues.includes(option.value) && option.value !== currentValue;
+          option.disabled = isSelectedElsewhere;
+        });
+      });
+    }
+
+    function renderFeatSlots(classVal, level) {
+      const container = document.getElementById('featSlotsContainer');
+      const section = document.getElementById('featsSection');
+      const counter = document.getElementById('featsCounter');
+
+      container.innerHTML = '';
+
+      const slots = [];
+
+      // 1. Background Feats
+      if (selectedBgData && selectedBgData.feats) {
+        if (selectedBgData.feats.length > 1) {
+          const keys = selectedBgData.feats.map(f => Object.keys(f)[0]);
+          slots.push({
+            label: `Background Feat Choice (${selectedBgData.name})`,
+            type: 'choice',
+            allowedKeys: keys
+          });
+        } else if (selectedBgData.feats.length === 1) {
+          const key = Object.keys(selectedBgData.feats[0])[0];
+          const feat = findFeat(key);
+          if (feat) {
+            const subVersions = getSubVersions(feat.name);
+            if (subVersions.length > 0) {
+              slots.push({
+                label: `Background Feat Choice (${selectedBgData.name} - ${feat.name})`,
+                type: 'choice',
+                allowedKeys: subVersions.map(sv => `${sv.name}|${sv.source}`)
+              });
+            } else {
+              slots.push({
+                label: `Background Feat (${selectedBgData.name})`,
+                type: 'fixed',
+                feat: feat
+              });
+            }
+          }
+        }
+      }
+
+      // 2. Race Feats
+      if (selectedRaceData && selectedRaceData.feats) {
+        selectedRaceData.feats.forEach(f => {
+          if (f.any) {
+            slots.push({
+              label: `Race Feat Choice (${selectedRaceData.name})`,
+              type: 'choice',
+              filter: 'any'
+            });
+          } else if (f.anyFromCategory) {
+            slots.push({
+              label: `Race Feat Choice (${selectedRaceData.name})`,
+              type: 'choice',
+              filter: f.anyFromCategory.category[0]
+            });
+          } else {
+            const key = Object.keys(f)[0];
+            const feat = findFeat(key);
+            if (feat) {
+              const subVersions = getSubVersions(feat.name);
+              if (subVersions.length > 0) {
+                slots.push({
+                  label: `Race Feat Choice (${selectedRaceData.name} - ${feat.name})`,
+                  type: 'choice',
+                  allowedKeys: subVersions.map(sv => `${sv.name}|${sv.source}`)
+                });
+              } else {
+                slots.push({
+                  label: `Race Feat (${selectedRaceData.name})`,
+                  type: 'fixed',
+                  feat: feat
+                });
+              }
+            }
+          }
+        });
+      }
+
+      // 3. Subrace Feats (Variant Human)
+      const subraceVal = safeParse(subraceSelect.value);
+      if (subraceVal && subraceVal.name.toLowerCase() === 'variant') {
+        slots.push({
+          label: `Variant Human Feat`,
+          type: 'choice',
+          filter: 'any'
+        });
+      }
+
+      // 4. Class Feats (ASIs)
+      if (classVal) {
+        const classNameLower = classVal.name.toLowerCase();
+        let asiLevels = [4, 8, 12, 16, 19];
+        if (classNameLower === 'fighter') {
+          asiLevels = [4, 6, 8, 12, 14, 16, 19];
+        } else if (classNameLower === 'rogue') {
+          asiLevels = [4, 8, 10, 12, 16, 19];
+        }
+
+        asiLevels.forEach(lvl => {
+          if (level >= lvl) {
+            slots.push({
+              label: `Class Level ${lvl} Feat / ASI`,
+              type: 'choice',
+              filter: 'any'
+            });
+          }
+        });
+      }
+
+      if (slots.length === 0) {
+        section.style.display = 'none';
+        return;
+      }
+
+      section.style.display = 'block';
+      counter.textContent = `(${slots.length} Available)`;
+
+      slots.forEach(slot => {
+        const div = document.createElement('div');
+        div.className = 'creator-field';
+        div.style.marginBottom = '12px';
+
+        const label = document.createElement('label');
+        label.className = 'creator-eq-label';
+        label.textContent = slot.label;
+        div.appendChild(label);
+
+        if (slot.type === 'fixed') {
+          const inputGroup = document.createElement('div');
+          inputGroup.style.display = 'flex';
+          inputGroup.style.alignItems = 'center';
+          inputGroup.style.gap = '8px';
+
+          const textSpan = document.createElement('span');
+          textSpan.className = 'rpg-panel';
+          textSpan.style.padding = '6px 12px';
+          textSpan.style.display = 'inline-block';
+          textSpan.style.border = '1px solid var(--rpg-border)';
+          textSpan.style.borderRadius = '4px';
+          textSpan.style.backgroundColor = 'rgba(255, 255, 255, 0.03)';
+          textSpan.textContent = `${slot.feat.name} (${slot.feat.source})`;
+
+          const hiddenInput = document.createElement('input');
+          hiddenInput.type = 'hidden';
+          hiddenInput.name = 'feats';
+          hiddenInput.value = JSON.stringify(slot.feat);
+
+          inputGroup.appendChild(textSpan);
+          inputGroup.appendChild(hiddenInput);
+          div.appendChild(inputGroup);
+        } else {
+          const select = document.createElement('select');
+          select.name = 'feats';
+          select.className = 'feat-slot-select';
+          populateFeatSelect(select, slot.filter, slot.allowedKeys);
+          select.addEventListener('change', handleFeatSelectionChange);
+          div.appendChild(select);
+        }
+
+        container.appendChild(div);
+      });
+
+      handleFeatSelectionChange();
+    }
+
+    async function updateFeatSlots() {
+      const raceVal = safeParse(raceSelect.value);
+      const bgVal = safeParse(document.getElementById('background').value);
+      const classVal = safeParse(classSelect.value);
+      const level = parseInt(levelInput.value) || 1;
+
+      if (raceVal) {
+        if (!selectedRaceData || selectedRaceData.name !== raceVal.name || selectedRaceData.source !== raceVal.source) {
+          try {
+            const res = await fetch(`/api/lookup?type=race&name=${encodeURIComponent(raceVal.name)}&source=${encodeURIComponent(raceVal.source)}`);
+            selectedRaceData = await res.json();
+          } catch (e) {
+            console.error(e);
+            selectedRaceData = null;
+          }
+        }
+      } else {
+        selectedRaceData = null;
+      }
+
+      if (bgVal) {
+        if (!selectedBgData || selectedBgData.name !== bgVal.name || selectedBgData.source !== bgVal.source) {
+          try {
+            const res = await fetch(`/api/lookup?type=background&name=${encodeURIComponent(bgVal.name)}&source=${encodeURIComponent(bgVal.source)}`);
+            selectedBgData = await res.json();
+          } catch (e) {
+            console.error(e);
+            selectedBgData = null;
+          }
+        }
+      } else {
+        selectedBgData = null;
+      }
+
+      renderFeatSlots(classVal, level);
+    }
+
     // --- Race / Subrace filtering ---
     raceSelect.addEventListener('change', () => {
       const data = safeParse(raceSelect.value);
@@ -249,7 +512,11 @@
       });
       subraceContainer.style.display = count > 0 ? 'block' : 'none';
       subraceSelect.value = "";
+      updateFeatSlots();
     });
+
+    subraceSelect.addEventListener('change', updateFeatSlots);
+    document.getElementById('background').addEventListener('change', updateFeatSlots);
 
     // --- Subclass filtering ---
     function updateSubclassUI() {
@@ -268,8 +535,8 @@
       });
       subclassContainer.style.display = (shouldShow && count > 0) ? 'block' : 'none';
     }
-    classSelect.addEventListener('change', () => { updateSubclassUI(); loadEquipment(); loadSpellContext(); });
-    levelInput.addEventListener('input', () => { updateSubclassUI(); loadSpellContext(); });
+    classSelect.addEventListener('change', () => { updateSubclassUI(); loadEquipment(); loadSpellContext(); updateFeatSlots(); });
+    levelInput.addEventListener('input', () => { updateSubclassUI(); loadSpellContext(); updateFeatSlots(); });
     subclassSelect.addEventListener('change', loadSpellContext);
     document.querySelectorAll('input[name^="stats["]').forEach(input => {
       input.addEventListener('input', updateSpellCounter);
@@ -598,6 +865,8 @@
       }
     });
 
+    // Initialize feat slots on page load
+    updateFeatSlots();
   </script>
 
-  <% include('partials/footer.ejs') %>
+  <%- include('partials/footer.ejs') %>

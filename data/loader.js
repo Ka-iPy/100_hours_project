@@ -56,7 +56,18 @@ class DataLoader {
       const featsPath = path.join(this.dataDir, "feats.json");
       if (fs.existsSync(featsPath)) {
         const featsData = JSON.parse(fs.readFileSync(featsPath, "utf8"));
-        this.feats = featsData.feat || [];
+        const rawFeats = featsData.feat || [];
+        this.feats = [];
+        rawFeats.forEach((f) => {
+          this.feats.push(f);
+          if (f._versions) {
+            f._versions.forEach((v) => {
+              const merged = { ...f, ...v };
+              delete merged._versions;
+              this.feats.push(merged);
+            });
+          }
+        });
       }
 
       // Load optional features
@@ -315,23 +326,27 @@ class DataLoader {
 
   getBackground(name, source = "PHB") {
     const key = `${name}|${source}`.toLowerCase();
+    const exactMatch = this.backgrounds.find(
+      (b) => `${b.name}|${b.source}`.toLowerCase() === key,
+    );
+    if (exactMatch) return exactMatch;
+
     return (
-      this.backgrounds.find(
-        (b) =>
-          `${b.name}|${b.source}`.toLowerCase() === key ||
-          b.name.toLowerCase() === name.toLowerCase(),
-      ) || null
+      this.backgrounds.find((b) => b.name.toLowerCase() === name.toLowerCase()) ||
+      null
     );
   }
 
   getClass(name, source = "PHB") {
     const key = `${name}|${source}`.toLowerCase();
+    const exactMatch = this.classes.find(
+      (c) => `${c.name}|${c.source}`.toLowerCase() === key,
+    );
+    if (exactMatch) return exactMatch;
+
     return (
-      this.classes.find(
-        (c) =>
-          `${c.name}|${c.source}`.toLowerCase() === key ||
-          c.name.toLowerCase() === name.toLowerCase(),
-      ) || null
+      this.classes.find((c) => c.name.toLowerCase() === name.toLowerCase()) ||
+      null
     );
   }
 

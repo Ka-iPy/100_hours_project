@@ -111,6 +111,11 @@ select {
   transition: all 0.2s ease;
 }
 
+select option {
+  background-color: #14161f;
+  color: #e6dfcc;
+}
+
 input[type="text"],
 input[type="number"],
 select {
