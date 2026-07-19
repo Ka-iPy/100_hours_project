@@ -22,7 +22,7 @@ export default {
 
     const subraces = loader.getSubraces().map((sr) => {
       return JSON.stringify({
-        name: sr.name,
+        name: sr.name || sr.raceName || "Standard",
         source: sr.source,
         raceName: sr.raceName || sr._copy?.raceName,
         raceSource: sr.raceSource || sr._copy?.raceSource,
@@ -1123,7 +1123,7 @@ function buildCharacterViewHelpers(c) {
   const bgStr = (c.backgrounds || []).map((b) => b.sourceName).join(", ");
   const raceDisplay =
     (c.subrace?.sourceName ? c.subrace.sourceName + " " : "") +
-    (c.race?.sourceName || "");
+    (c.race?.sourceName || "Unknown Race");
   const totalLevel = c.getTotalLevel
     ? c.getTotalLevel()
     : (c.classes || []).reduce((s, cl) => s + cl.level, 0);

@@ -204,7 +204,8 @@ class DataLoader {
       const raceSource = sr.raceSource || (sr._copy && sr._copy.raceSource);
 
       if (raceName && raceSource) {
-        const key = `${sr.name}|${raceName}|${raceSource}`.toLowerCase();
+        const srName = sr.name || raceName || "Standard";
+        const key = `${srName}|${raceName}|${raceSource}`.toLowerCase();
         if (!this.subraceParents.has(key)) {
           this.subraceParents.set(key, {
             raceName: raceName,
@@ -314,12 +315,14 @@ class DataLoader {
 
   getSubrace(name, source = null) {
     const key = name.toLowerCase();
-    if (this.subrace) {
-      return this.subraces.find(
-        (sr) =>
-          `${sr.name}|${sr.source}`.toLowerCase() ===
-          `${name}|${source}`.toLowerCase() || sr.name.toLowerCase() === key,
-      );
+    if (this.subraces) {
+      return this.subraces.find((sr) => {
+        const srName = sr.name || sr.raceName || "Standard";
+        return (
+          `${srName}|${sr.source}`.toLowerCase() === `${name}|${source}`.toLowerCase() ||
+          srName.toLowerCase() === key
+        );
+      });
     }
     return null;
   }
@@ -351,14 +354,24 @@ class DataLoader {
   }
 
   getSubclass(className, subclassName, source = "PHB") {
+    const exact = this.subclasses.find(
+      (sc) =>
+        sc.className?.toLowerCase() === className.toLowerCase() &&
+        (sc.name?.toLowerCase() === subclassName.toLowerCase() ||
+          sc.subclassShortName?.toLowerCase() ===
+          subclassName.toLowerCase()) &&
+        sc.source?.toLowerCase() === source.toLowerCase(),
+    );
+    if (exact) return exact;
+
+    // Fallback: match by className + subclassName only (ignore source)
     return (
       this.subclasses.find(
         (sc) =>
           sc.className?.toLowerCase() === className.toLowerCase() &&
           (sc.name?.toLowerCase() === subclassName.toLowerCase() ||
             sc.subclassShortName?.toLowerCase() ===
-            subclassName.toLowerCase()) &&
-          sc.source?.toLowerCase() === source.toLowerCase(),
+            subclassName.toLowerCase()),
       ) || null
     );
   }
@@ -398,7 +411,7 @@ class DataLoader {
     const features = this.classFeatures.filter(
       (f) =>
         f.className?.toLowerCase() === className.toLowerCase() &&
-        f.classSource?.toLowerCase() === classSource.toLowerCase() &&
+        f.classSource?.toLowerCase() === (classSource || "").toLowerCase() &&
         f.level <= maxLevel,
     );
     return features.sort((a, b) => a.level - b.level);
@@ -414,7 +427,7 @@ class DataLoader {
     const features = this.subclassFeatures.filter(
       (f) =>
         f.className?.toLowerCase() === className.toLowerCase() &&
-        f.source?.toLowerCase() === subclassSource.toLowerCase() &&
+        f.source?.toLowerCase() === (subclassSource || "").toLowerCase() &&
         (f.subclassShortName?.toLowerCase() === subclassName.toLowerCase() ||
           f.subclassName?.toLowerCase() === subclassName.toLowerCase()) &&
         f.level <= maxLevel,

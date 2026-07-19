@@ -139,7 +139,7 @@ export class CharacterBuilder {
 
   applySubrace(character, subraceData, subraceSource, parentRace) {
     character.subrace = SourceReference.subrace(
-      subraceData.name,
+      subraceData.name || subraceData.raceName || "Standard",
       subraceSource,
       parentRace.name,
     );
@@ -645,10 +645,10 @@ export class CharacterBuilder {
 
     const subclassData = mainClass.subclass
       ? this.loader.getSubclass(
-          mainClass.name,
-          mainClass.subclass,
-          mainClass.subclassSource || mainClass.source,
-        )
+        mainClass.name,
+        mainClass.subclass,
+        mainClass.subclassSource || mainClass.source,
+      )
       : null;
 
     const casterProg =
@@ -874,6 +874,28 @@ export class CharacterBuilder {
       [4, 3, 3, 3, 2],
       [4, 3, 3, 3, 2],
     ];
+    const PACT = [
+      [1, 0, 0, 0, 0, 0, 0, 0, 0],
+      [2, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 2, 0, 0, 0, 0, 0, 0, 0],
+      [0, 2, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 2, 0, 0, 0, 0, 0, 0],
+      [0, 0, 2, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 2, 0, 0, 0, 0, 0],
+      [0, 0, 0, 2, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 2, 0, 0, 0, 0],
+      [0, 0, 0, 0, 2, 0, 0, 0, 0],
+      [0, 0, 0, 0, 3, 0, 0, 0, 0],
+      [0, 0, 0, 0, 3, 0, 0, 0, 0],
+      [0, 0, 0, 0, 3, 0, 0, 0, 0],
+      [0, 0, 0, 0, 3, 0, 0, 0, 0],
+      [0, 0, 0, 0, 3, 0, 0, 0, 0],
+      [0, 0, 0, 0, 3, 0, 0, 0, 0],
+      [0, 0, 0, 0, 4, 0, 0, 0, 0],
+      [0, 0, 0, 0, 4, 0, 0, 0, 0],
+      [0, 0, 0, 0, 4, 0, 0, 0, 0],
+      [0, 0, 0, 0, 4, 0, 0, 0, 0],
+    ];
     const idx = Math.min(Math.max(level, 1), 20) - 1;
     switch (casterProgression) {
       case "full":
@@ -884,6 +906,8 @@ export class CharacterBuilder {
         return THIRD[idx] || [];
       case "artificer":
         return ART[idx] || [];
+      case "pact":
+        return PACT[idx] || [];
       default:
         return [];
     }
