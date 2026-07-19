@@ -239,7 +239,7 @@
           <button type="button" class="rpg-tab-btn" onclick="switchTab('tab-inventory')">Inventory & Equipment</button>
           <button type="button" class="rpg-tab-btn" onclick="switchTab('tab-features')">Features & Biography</button>
           <% if (spellData) { %>
-            <button type="button" class="rpg-tab-btn" onclick="switchTab('tab-spellbook')">Spellbook</button>
+            <button type="button" class="rpg-tab-btn" onclick="switchTab('tab-spellbook')">Spells</button>
             <% } %>
         </nav>
 
@@ -547,18 +547,29 @@
               <div class="rpg-spell-level-section">
                 <div class="rpg-spell-level-header">
                   <span>Cantrips (Level 0)</span>
+                  <div class="spell-add text-blue-400 cursor-pointer text-xs hover:underline hidden"
+                    onclick="addCantrip()">+ Add Cantrip</div>
                 </div>
-                <div class="p-3 space-y-2 bg-slate-900/40">
-                  <% spellData.cantrips.forEach(function(s) { %>
-                    <div class="py-1 px-2 border-b border-gray-800 text-sm text-gray-200">
-                      <span class="rpg-tooltip-trigger" data-type="spell" data-name="<%= s.name %>"
-                        data-source="<%= s.source %>">
-                        <%= s.name %>
-                      </span>
+                <div id="cantrips-list" class="p-3 space-y-2 bg-slate-900/40">
+                  <% spellData.cantrips.forEach(function(s, idx) { %>
+                    <div
+                      class="cantrip-item flex items-center justify-between gap-2 py-1 px-2 border-b border-gray-800 text-sm text-gray-200"
+                      data-index="<%= idx %>">
+                      <div class="flex items-center gap-2 flex-grow">
+                        <span class="spell-delete hidden cursor-pointer text-red-500 font-bold"
+                          onclick="removeCantrip('<%= idx %>')">&times;</span>
+                        <span class="rpg-tooltip-trigger cantrip-name-preview" data-type="spell"
+                          data-name="<%= s.name %>" data-source="<%= s.source %>">
+                          <%= s.name %>
+                        </span>
+                        <input type="text" name="cantrips[<%= idx %>][name]" value="<%= s.name %>" readonly
+                          class="w-full bg-transparent border-none p-0 text-sm text-gray-200 editable-input hidden"
+                          placeholder="Cantrip name" />
+                      </div>
                     </div>
                     <% }); %>
                       <% if (spellData.cantrips.length===0) { %>
-                        <div class="text-gray-500 italic text-sm">None</div>
+                        <div class="text-gray-500 italic text-sm cantrip-empty-msg">None</div>
                         <% } %>
                 </div>
               </div>
@@ -571,6 +582,8 @@
                     <div class="rpg-spell-level-header">
                       <span>Level <%= lvl %> Spells</span>
                       <div class="flex items-center gap-2 text-xs">
+                        <div class="spell-add text-blue-400 cursor-pointer text-xs hover:underline hidden"
+                          onclick="addSpell(<%= lvl %>)">+ Add Spell</div>
                         <span>Slots:</span>
                         <input name="spellSlots[<%= lvl %>][max]"
                           class="w-8 text-center bg-transparent border-none p-0 font-bold text-yellow-500 editable-input"
@@ -583,18 +596,29 @@
                           min="0" />
                       </div>
                     </div>
-                    <div class="p-3 space-y-2 bg-slate-900/40">
-                      <% (spellData.spellsByLevel[lvl] || []).forEach(function(s) { %>
-                        <div class="flex items-center gap-2 py-1 px-2 border-b border-gray-800 text-sm text-gray-200">
-                          <div class="bubble spell-checkbox"></div>
-                          <span class="rpg-tooltip-trigger" data-type="spell" data-name="<%= s.name %>"
-                            data-source="<%= s.source %>">
-                            <%= s.name %>
-                          </span>
+                    <div id="spells-list-<%= lvl %>" class="p-3 space-y-2 bg-slate-900/40">
+                      <% (spellData.spellsByLevel[lvl] || []).forEach(function(s, idx) { %>
+                        <div
+                          class="spell-item flex items-center justify-between gap-2 py-1 px-2 border-b border-gray-800 text-sm text-gray-200"
+                          data-index="<%= s.name %>-<%= idx %>">
+                          <div class="flex items-center gap-2 flex-grow">
+                            <span class="spell-delete hidden cursor-pointer text-red-500 font-bold"
+                              onclick="removeSpell(this)">&times;</span>
+                            <div class="bubble spell-checkbox"></div>
+                            <span class="rpg-tooltip-trigger spell-name-preview" data-type="spell"
+                              data-name="<%= s.name %>" data-source="<%= s.source %>">
+                              <%= s.name %>
+                            </span>
+                            <input type="text" name="spells[<%= lvl %>][<%= idx %>][name]" value="<%= s.name %>"
+                              readonly
+                              class="w-full bg-transparent border-none p-0 text-sm text-gray-200 editable-input hidden spell-name-input"
+                              placeholder="Spell name" />
+                            <input type="hidden" class="spell-level-input" value="<%= lvl %>" />
+                          </div>
                         </div>
                         <% }); %>
                           <% if (!(spellData.spellsByLevel[lvl] || []).length) { %>
-                            <div class="text-gray-500 italic text-sm">No spells known.</div>
+                            <div class="text-gray-500 italic text-sm spell-empty-msg">No spells known.</div>
                             <% } %>
                     </div>
                   </div>

@@ -1,5 +1,5 @@
 import { CharacterBuilder } from "../models/CharacterBuilder.js";
-import { Character, Equipment, TracedFeature } from "../models/Character.js";
+import { Character, Equipment, TracedFeature, Spellbook } from "../models/Character.js";
 import loader from "../data/loader.js";
 import { PDFDocument, rgb, StandardFonts } from "pdf-lib";
 import { readFileSync } from "fs";
@@ -323,6 +323,48 @@ export default {
               }
             });
           }
+        }
+      }
+
+      if (updates.cantrips || updates.spells) {
+        let sbKeys = Object.keys(character.spellbooks || {});
+        if (sbKeys.length === 0) {
+          character.spellbooks["Custom"] = new Spellbook();
+          sbKeys = ["Custom"];
+        }
+        const mainSB = character.spellbooks[sbKeys[0]];
+
+        if (updates.cantrips) {
+          mainSB.cantripsKnown = [];
+          updates.cantrips.forEach(c => {
+            if (c.name) {
+              const spellData = loader.getSpell(c.name);
+              mainSB.cantripsKnown.push({
+                name: c.name,
+                source: spellData ? spellData.source : null,
+                level: 0,
+                school: spellData ? spellData.school : null,
+              });
+            }
+          });
+        }
+
+        if (updates.spells) {
+          mainSB.known = [];
+          mainSB.prepared = [];
+          updates.spells.forEach(s => {
+            if (s.name) {
+              const spellData = loader.getSpell(s.name);
+              const spellInfo = {
+                name: s.name,
+                source: spellData ? spellData.source : null,
+                level: spellData ? spellData.level : (parseInt(s.level) || 1),
+                school: spellData ? spellData.school : null,
+              };
+              mainSB.known.push(spellInfo);
+              mainSB.prepared.push(spellInfo);
+            }
+          });
         }
       }
 
@@ -1191,6 +1233,28 @@ function buildCharacterViewHelpers(c) {
       cantrips,
       spellsByLevel,
       slots,
+    };
+  } else {
+    // Provide empty spellData so the Spellbook tab is always available for manual additions
+    spellData = {
+      className: "Custom",
+      ability: "",
+      saveDC: 0,
+      attackBonus: 0,
+      attackBonusStr: "+0",
+      cantrips: [],
+      spellsByLevel: {},
+      slots: {
+        1: { max: 0, used: 0 },
+        2: { max: 0, used: 0 },
+        3: { max: 0, used: 0 },
+        4: { max: 0, used: 0 },
+        5: { max: 0, used: 0 },
+        6: { max: 0, used: 0 },
+        7: { max: 0, used: 0 },
+        8: { max: 0, used: 0 },
+        9: { max: 0, used: 0 },
+      },
     };
   }
 

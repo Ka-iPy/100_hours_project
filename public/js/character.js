@@ -155,6 +155,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
         addEquipmentBtn.classList.add('visible');
         showFeatureDeleteButtons();
+
+        document.querySelectorAll('.spell-add').forEach(btn => btn.classList.remove('hidden'));
+        document.querySelectorAll('.spell-delete').forEach(btn => btn.classList.remove('hidden'));
+        document.querySelectorAll('.cantrip-name-preview, .spell-name-preview').forEach(el => el.classList.add('hidden'));
+        document.querySelectorAll('.cantrip-item input[type="text"], .spell-item input[type="text"]').forEach(input => {
+            input.classList.remove('hidden');
+            input.removeAttribute('readonly');
+            input.classList.add('edit-active');
+        });
+        document.querySelectorAll('.cantrip-empty-msg, .spell-empty-msg').forEach(el => el.classList.add('hidden'));
+
         editToggle.classList.add('hidden');
         cancelEdit.classList.remove('hidden');
         saveBtn.classList.remove('hidden');
@@ -191,6 +202,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
         addEquipmentBtn.classList.remove('visible');
         hideFeatureDeleteButtons();
+
+        document.querySelectorAll('.spell-add').forEach(btn => btn.classList.add('hidden'));
+        document.querySelectorAll('.spell-delete').forEach(btn => btn.classList.add('hidden'));
+        document.querySelectorAll('.cantrip-name-preview, .spell-name-preview').forEach(el => el.classList.remove('hidden'));
+        document.querySelectorAll('.cantrip-item input[type="text"], .spell-item input[type="text"]').forEach(input => {
+            input.classList.add('hidden');
+            input.setAttribute('readonly', '');
+            input.classList.remove('edit-active');
+        });
+        document.querySelectorAll('.cantrip-empty-msg, .spell-empty-msg').forEach(el => {
+            if (el.parentElement.querySelectorAll('.cantrip-item, .spell-item').length === 0) {
+                el.classList.remove('hidden');
+            }
+        });
+
         editToggle.classList.remove('hidden');
         cancelEdit.classList.add('hidden');
         saveBtn.classList.add('hidden');
@@ -363,6 +389,82 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    window.addCantrip = function () {
+        const list = document.getElementById('cantrips-list');
+        const idx = list.querySelectorAll('.cantrip-item').length;
+        const div = document.createElement('div');
+        div.className = 'cantrip-item flex items-center justify-between gap-2 py-1 px-2 border-b border-gray-800 text-sm text-gray-200';
+        div.dataset.index = idx;
+        div.innerHTML = `
+            <div class="flex items-center gap-2 flex-grow">
+                <span class="spell-delete cursor-pointer text-red-500 font-bold" onclick="removeCantrip(${idx})">&times;</span>
+                <span class="rpg-tooltip-trigger cantrip-name-preview hidden" data-type="spell" data-name=""></span>
+                <input type="text" name="cantrips[${idx}][name]" value="" 
+                    class="w-full bg-white border-2 border-blue-400 p-0 text-sm text-gray-600 edit-active"
+                    placeholder="Cantrip name" />
+            </div>
+        `;
+        list.appendChild(div);
+        list.querySelector('.cantrip-empty-msg')?.classList.add('hidden');
+    };
+
+    window.removeCantrip = function (idx) {
+        if (!isEditing) return;
+        const list = document.getElementById('cantrips-list');
+        const item = list.querySelector(`[data-index="${idx}"]`);
+        if (item) {
+            item.remove();
+            const items = list.querySelectorAll('.cantrip-item');
+            items.forEach((it, i) => {
+                it.dataset.index = i;
+                it.querySelector('input').name = `cantrips[${i}][name]`;
+                it.querySelector('.spell-delete').setAttribute('onclick', `removeCantrip(${i})`);
+            });
+            if (items.length === 0) {
+                list.querySelector('.cantrip-empty-msg')?.classList.remove('hidden');
+            }
+        }
+    };
+
+    window.addSpell = function (lvl) {
+        const list = document.getElementById(`spells-list-${lvl}`);
+        const idx = list.querySelectorAll('.spell-item').length;
+        const div = document.createElement('div');
+        div.className = 'spell-item flex items-center justify-between gap-2 py-1 px-2 border-b border-gray-800 text-sm text-gray-200';
+        div.dataset.index = `new-${idx}`;
+        div.innerHTML = `
+            <div class="flex items-center gap-2 flex-grow">
+                <span class="spell-delete cursor-pointer text-red-500 font-bold" onclick="removeSpell(this)">&times;</span>
+                <div class="bubble spell-checkbox"></div>
+                <span class="rpg-tooltip-trigger spell-name-preview hidden" data-type="spell" data-name=""></span>
+                <input type="text" name="spells[${lvl}][${idx}][name]" value="" 
+                    class="w-full bg-white border-2 border-blue-400 p-0 text-sm text-gray-600 edit-active spell-name-input"
+                    placeholder="Spell name" />
+                <input type="hidden" class="spell-level-input" value="${lvl}" />
+            </div>
+        `;
+        list.appendChild(div);
+        list.querySelector('.spell-empty-msg')?.classList.add('hidden');
+    };
+
+    window.removeSpell = function (btn) {
+        if (!isEditing) return;
+        const item = btn.closest('.spell-item');
+        const list = item.parentElement;
+        if (item) {
+            item.remove();
+            const items = list.querySelectorAll('.spell-item');
+            const lvl = list.id.replace('spells-list-', '');
+            items.forEach((it, i) => {
+                it.dataset.index = `new-${i}`;
+                it.querySelector('.spell-name-input').name = `spells[${lvl}][${i}][name]`;
+            });
+            if (items.length === 0) {
+                list.querySelector('.spell-empty-msg')?.classList.remove('hidden');
+            }
+        }
+    };
+
     editToggle.addEventListener('click', () => {
         enableEditing();
     });
@@ -444,6 +546,19 @@ document.addEventListener('DOMContentLoaded', () => {
             if (name) {
                 data.features.push({ name, description });
             }
+        });
+
+        data.cantrips = [];
+        document.querySelectorAll('.cantrip-item').forEach(item => {
+            const name = item.querySelector('input[type="text"]').value;
+            if (name) data.cantrips.push({ name });
+        });
+
+        data.spells = [];
+        document.querySelectorAll('.spell-item').forEach(item => {
+            const name = item.querySelector('.spell-name-input').value;
+            const level = item.querySelector('.spell-level-input').value;
+            if (name) data.spells.push({ name, level });
         });
 
         try {
