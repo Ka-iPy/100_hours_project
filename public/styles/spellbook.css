@@ -1,0 +1,531 @@
+/* ========== Spellbook Modal ========== */
+@import url('https://fonts.googleapis.com/css2?family=MedievalSharp&display=swap');
+
+.spellbook-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(6px);
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    animation: sbFadeIn 0.3s ease;
+}
+
+.spellbook-overlay.active {
+    display: flex;
+}
+
+@keyframes sbFadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+/* Header bar with search + filters */
+.spellbook-controls {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-bottom: 18px;
+    max-width: 1060px;
+    width: 90vw;
+}
+
+.spellbook-controls .sb-close-btn {
+    background: linear-gradient(to bottom, #9e2a2b, #6e1d1e);
+    border: 2px solid #c94c4c;
+    color: #f5ebd3;
+    font-family: 'Cinzel', serif;
+    font-weight: 700;
+    font-size: 0.8rem;
+    padding: 7px 14px;
+    border-radius: 4px;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    transition: all 0.2s ease;
+    margin-left: auto;
+}
+
+.spellbook-controls .sb-close-btn:hover {
+    background: linear-gradient(to bottom, #bd3a3c, #8c2527);
+    box-shadow: 0 0 10px rgba(158, 42, 43, 0.5);
+}
+
+.spellbook-search {
+    flex: 1;
+    min-width: 180px;
+    background-color: rgba(8, 9, 13, 0.7);
+    border: 1px solid #8b6b43;
+    border-radius: 4px;
+    color: #e6dfcc;
+    font-family: 'Crimson Pro', serif;
+    font-size: 0.95rem;
+    padding: 8px 12px;
+    transition: all 0.2s ease;
+}
+
+.spellbook-search:focus {
+    outline: none;
+    border-color: #c5a059;
+    background-color: rgba(197, 160, 89, 0.15);
+    box-shadow: 0 0 8px rgba(197, 160, 89, 0.3);
+}
+
+.spellbook-search::placeholder {
+    color: #6a6150;
+    font-style: italic;
+}
+
+.spellbook-filter {
+    background-color: rgba(8, 9, 13, 0.7);
+    border: 1px solid #8b6b43;
+    border-radius: 4px;
+    color: #e6dfcc;
+    font-family: 'Crimson Pro', serif;
+    font-size: 0.85rem;
+    padding: 7px 10px;
+    cursor: pointer;
+    min-width: 110px;
+}
+
+.spellbook-filter:focus {
+    outline: none;
+    border-color: #c5a059;
+    box-shadow: 0 0 8px rgba(197, 160, 89, 0.3);
+}
+
+.spellbook-filter option {
+    background-color: #14161f;
+    color: #e6dfcc;
+}
+
+/* Loading indicator */
+.spellbook-loading {
+    font-family: 'Cinzel', serif;
+    color: #c5a059;
+    font-size: 1.2rem;
+    text-shadow: 0 0 10px rgba(197, 160, 89, 0.4);
+}
+
+/* Info bar */
+.spellbook-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 1060px;
+    width: 90vw;
+    margin-bottom: 6px;
+    font-family: 'Cinzel', serif;
+    font-size: 0.75rem;
+    color: #b0a284;
+    letter-spacing: 0.05em;
+}
+
+/* The flipbook container */
+.spellbook-container {
+    position: relative;
+    max-width: 1060px;
+    width: 90vw;
+}
+
+.spellbook-flipbook {
+    width: 1000px;
+    height: 600px;
+    margin: 0 auto;
+    position: relative;
+}
+
+/* Hard covers */
+.spellbook-flipbook .hard {
+    background-color: #0d0a1c !important;
+    background:
+        radial-gradient(circle at center, rgba(94, 53, 177, 0.4) 0%, rgba(13, 10, 28, 0.95) 80%),
+        radial-gradient(1px 1px at 20px 30px, #fff, transparent),
+        radial-gradient(1.5px 1.5px at 150px 50px, #fff, transparent),
+        radial-gradient(1px 1px at 80px 120px, #fff, transparent),
+        radial-gradient(2px 2px at 220px 190px, #fff, transparent),
+        radial-gradient(1.5px 1.5px at 120px 250px, #fff, transparent),
+        radial-gradient(1px 1px at 280px 80px, #fff, transparent),
+        url('/images/ancient_leather.png') center/cover no-repeat !important;
+    border: 2px solid #d4af37 !important;
+    box-shadow: inset 0 0 50px rgba(0, 0, 0, 0.95), 0 10px 30px rgba(0, 0, 0, 0.8) !important;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #ffd700;
+    position: relative;
+    overflow: hidden;
+}
+
+.spellbook-flipbook .hard::before {
+    content: '';
+    position: absolute;
+    inset: 16px;
+    border: 2px solid #d4af37;
+    border-radius: 4px;
+    box-shadow: 0 0 10px rgba(212, 175, 55, 0.3);
+    pointer-events: none;
+}
+
+.spellbook-flipbook .hard::after {
+    display: none;
+}
+
+.sb-cover-title {
+    font-family: 'MedievalSharp', 'Cinzel Decorative', serif;
+    font-size: 3rem;
+    color: #ffd700;
+    text-shadow: 0 0 15px rgba(255, 215, 0, 0.6), 2px 2px 4px rgba(0, 0, 0, 0.8);
+    letter-spacing: 0.15em;
+    text-align: center;
+    text-transform: uppercase;
+    z-index: 1;
+    margin-bottom: 10px;
+}
+
+.sb-cover-subtitle {
+    font-family: 'Cinzel', serif;
+    font-size: 1.1rem;
+    color: #e6c280;
+    margin-top: 12px;
+    font-style: italic;
+    text-shadow: 0 0 8px rgba(230, 194, 128, 0.4), 1px 1px 2px rgba(0, 0, 0, 0.8);
+    z-index: 1;
+    letter-spacing: 0.05em;
+}
+
+.sb-arcane-circle {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 300px;
+    height: 300px;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='50' cy='50' r='48' fill='none' stroke='%23d4af37' stroke-width='1'/%3E%3Ccircle cx='50' cy='50' r='44' fill='none' stroke='%23d4af37' stroke-width='0.5'/%3E%3Cpolygon points='50,6 90,75 10,75' fill='none' stroke='%23d4af37' stroke-width='0.5'/%3E%3Cpolygon points='50,94 10,25 90,25' fill='none' stroke='%23d4af37' stroke-width='0.5'/%3E%3Ccircle cx='50' cy='50' r='25' fill='none' stroke='%23d4af37' stroke-width='0.5'/%3E%3Ccircle cx='50' cy='50' r='15' fill='none' stroke='%23d4af37' stroke-width='0.8'/%3E%3Cpath d='M 50 6 L 50 94 M 6 50 L 94 50' stroke='%23d4af37' stroke-width='0.3' stroke-dasharray='2,2'/%3E%3C/svg%3E");
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    opacity: 0.6;
+    pointer-events: none;
+    filter: drop-shadow(0 0 8px rgba(212, 175, 55, 0.4));
+    z-index: 0;
+}
+
+/* Interior pages */
+.spellbook-flipbook .page,
+.spellbook-flipbook .sb-page {
+    background-color: #0b0818 !important;
+    background-image:
+        /* Star field */
+        radial-gradient(circle at 20% 30%, rgba(255, 255, 255, 0.8) 1px, transparent 1px),
+        radial-gradient(circle at 75% 40%, rgba(255, 255, 255, 0.9) 1px, transparent 1px),
+        radial-gradient(circle at 50% 80%, rgba(255, 255, 255, 0.7) 1px, transparent 1px),
+        radial-gradient(circle at 10% 85%, rgba(255, 255, 255, 0.6) 1.5px, transparent 1.5px),
+        radial-gradient(circle at 90% 15%, rgba(255, 255, 255, 0.8) 1.2px, transparent 1.2px),
+        radial-gradient(circle at 30% 70%, rgba(255, 255, 255, 0.5) 1px, transparent 1px),
+        radial-gradient(circle at 60% 20%, rgba(255, 255, 255, 0.7) 1px, transparent 1px),
+        /* Nebula glow */
+        radial-gradient(circle at 50% 50%, rgba(103, 58, 183, 0.15) 0%, transparent 70%),
+        radial-gradient(circle at 20% 80%, rgba(0, 150, 136, 0.1) 0%, transparent 60%),
+        /* Subtle page shading */
+        linear-gradient(to right, rgba(0, 0, 0, 0.4), transparent 8%, transparent 92%, rgba(0, 0, 0, 0.4)),
+        linear-gradient(to bottom, rgba(0, 0, 0, 0.3), transparent 5%, transparent 95%, rgba(0, 0, 0, 0.3)) !important;
+    border: 1px solid rgba(212, 175, 55, 0.25) !important;
+    border-radius: 4px !important;
+    box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.85) !important;
+    padding: 0 !important;
+    overflow: hidden;
+    width: 100%;
+    height: 100%;
+    position: relative;
+}
+
+.spellbook-flipbook .page::before,
+.spellbook-flipbook .sb-page::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.8);
+    z-index: 10;
+}
+
+/* Edge shadow for page depth */
+.spellbook-flipbook .even>div:not(.hard) {
+    box-shadow: inset 7px 0 15px -7px rgba(0, 0, 0, 0.4);
+}
+
+.spellbook-flipbook .odd>div:not(.hard) {
+    box-shadow: inset -7px 0 15px -7px rgba(0, 0, 0, 0.4);
+}
+
+/* Spell page inner content */
+.sb-page-inner {
+    padding: 24px 28px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.sb-page-header {
+    font-family: 'MedievalSharp', 'Cinzel', serif;
+    font-size: 0.75rem;
+    color: #d4af37;
+    text-shadow: 0 0 5px rgba(212, 175, 55, 0.3);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    border-bottom: 1px solid rgba(212, 175, 55, 0.25);
+    padding-bottom: 6px;
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: space-between;
+}
+
+.sb-spell-list {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    overflow: hidden;
+}
+
+/* Individual spell card on page */
+.sb-spell-card {
+    border: 1px solid rgba(212, 175, 55, 0.15);
+    border-radius: 4px;
+    padding: 8px 10px;
+    background: rgba(20, 15, 38, 0.6);
+    transition: all 0.2s ease;
+}
+
+.sb-spell-card:hover {
+    border-color: rgba(212, 175, 55, 0.4);
+    background: rgba(30, 22, 58, 0.8);
+    box-shadow: 0 0 10px rgba(212, 175, 55, 0.15);
+}
+
+.sb-spell-card.highlighted {
+    background: rgba(212, 175, 55, 0.15);
+    border-color: #d4af37;
+    box-shadow: 0 0 12px rgba(212, 175, 55, 0.3);
+}
+
+.sb-spell-name {
+    font-family: 'MedievalSharp', 'Cinzel', serif;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #ffd700;
+    text-shadow: 0 0 5px rgba(255, 215, 0, 0.3);
+    margin-bottom: 2px;
+}
+
+.sb-spell-meta {
+    font-size: 0.7rem;
+    color: #b0a284;
+    font-style: italic;
+    margin-bottom: 3px;
+}
+
+.sb-spell-stats {
+    display: flex;
+    gap: 12px;
+    font-size: 0.65rem;
+    color: #d4c5a3;
+    flex-wrap: wrap;
+    margin-bottom: 3px;
+}
+
+.sb-spell-stats span {
+    white-space: nowrap;
+}
+
+.sb-spell-stats strong {
+    color: #ffd700;
+}
+
+.sb-spell-desc {
+    font-family: 'Crimson Pro', serif;
+    font-size: 0.75rem;
+    color: #e6dfcc;
+    line-height: 1.35;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+    -webkit-box-orient: vertical;
+}
+
+/* Page number */
+.sb-page-number {
+    text-align: center;
+    font-family: 'Cinzel', serif;
+    font-size: 0.65rem;
+    color: #d4af37;
+    margin-top: auto;
+    padding-top: 6px;
+}
+
+/* Spell detail page (when a single spell is focused) */
+.sb-spell-detail {
+    padding: 24px 28px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+}
+
+.sb-detail-name {
+    font-family: 'MedievalSharp', 'Cinzel Decorative', serif;
+    font-size: 1.6rem;
+    color: #ffd700;
+    text-shadow: 0 0 8px rgba(255, 215, 0, 0.4);
+    margin-bottom: 4px;
+    border-bottom: 2px solid rgba(212, 175, 55, 0.3);
+    padding-bottom: 6px;
+}
+
+.sb-detail-type {
+    font-family: 'Cinzel', serif;
+    font-size: 0.85rem;
+    color: #b0a284;
+    font-style: italic;
+    margin-bottom: 12px;
+}
+
+.sb-detail-grid {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 4px 12px;
+    font-size: 0.8rem;
+    margin-bottom: 14px;
+    color: #e6dfcc;
+}
+
+.sb-detail-grid dt {
+    font-family: 'Cinzel', serif;
+    font-weight: 700;
+    color: #ffd700;
+    font-size: 0.75rem;
+}
+
+.sb-detail-grid dd {
+    margin: 0;
+    font-family: 'Crimson Pro', serif;
+}
+
+.sb-detail-divider {
+    border: none;
+    border-top: 1px solid rgba(212, 175, 55, 0.2);
+    margin: 8px 0;
+}
+
+.sb-detail-description {
+    font-family: 'Crimson Pro', serif;
+    font-size: 0.88rem;
+    color: #e6dfcc;
+    line-height: 1.5;
+    flex: 1;
+    overflow-y: auto;
+}
+
+.sb-detail-description p {
+    margin-bottom: 8px;
+}
+
+.sb-detail-higher {
+    margin-top: 10px;
+    padding-top: 8px;
+    border-top: 1px solid rgba(212, 175, 55, 0.2);
+}
+
+.sb-detail-higher-title {
+    font-family: 'Cinzel', serif;
+    font-weight: 700;
+    font-size: 0.78rem;
+    color: #ffd700;
+    margin-bottom: 4px;
+}
+
+/* Hall page spellbook button */
+.hall-spellbook-btn {
+    background: linear-gradient(to bottom, #4a2d1a, #2c1810);
+    color: #c5a059;
+    border: 2px solid #8b6b43;
+    font-family: 'Cinzel', serif;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.4);
+    font-size: 0.8rem;
+}
+
+.hall-spellbook-btn:hover {
+    background: linear-gradient(to bottom, #5c3820, #3d2415);
+    border-color: #c5a059;
+    box-shadow: 0 0 12px rgba(197, 160, 89, 0.4);
+    color: #f5ebd3;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .spellbook-controls {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .spellbook-controls .sb-close-btn {
+        margin-left: 0;
+    }
+
+    .sb-page-inner {
+        padding: 12px 14px;
+    }
+
+    .sb-spell-name {
+        font-size: 0.82rem;
+    }
+
+    .sb-spell-desc {
+        -webkit-line-clamp: 2;
+        line-clamp: 2;
+    }
+}
+
+/* Custom scrollbars for spell detail view */
+.sb-spell-detail::-webkit-scrollbar,
+.sb-detail-description::-webkit-scrollbar {
+    width: 6px;
+}
+
+.sb-spell-detail::-webkit-scrollbar-track,
+.sb-detail-description::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 3px;
+}
+
+.sb-spell-detail::-webkit-scrollbar-thumb,
+.sb-detail-description::-webkit-scrollbar-thumb {
+    background: rgba(212, 175, 55, 0.3);
+    border-radius: 3px;
+}
+
+.sb-spell-detail::-webkit-scrollbar-thumb:hover,
+.sb-detail-description::-webkit-scrollbar-thumb:hover {
+    background: rgba(212, 175, 55, 0.6);
+}

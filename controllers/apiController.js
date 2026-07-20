@@ -44,6 +44,210 @@ export function getCollection(req, res) {
   res.json(data);
 }
 
+const SCHOOL_NAMES = {
+  A: "Abjuration",
+  C: "Conjuration",
+  D: "Divination",
+  E: "Enchantment",
+  V: "Evocation",
+  I: "Illusion",
+  N: "Necromancy",
+  T: "Transmutation",
+};
+
+/**
+ * Helper to flatten complex spell entries into a string
+ */
+function flattenEntriesToString(entries) {
+  if (!entries || !Array.isArray(entries)) return "";
+  let text = "";
+  for (const e of entries) {
+    if (typeof e === "string") {
+      text += e + "\n\n";
+    } else if (e.type === "list") {
+      for (const item of e.items) {
+        if (typeof item === "string") {
+          text += "• " + item + "\n";
+        } else if (item.name) {
+          text += "• " + item.name + ". " + flattenEntriesToString(item.entries || [item.entry]) + "\n";
+        }
+      }
+      text += "\n";
+    } else if (e.type === "entries") {
+      text += (e.name ? e.name + ". " : "") + flattenEntriesToString(e.entries) + "\n\n";
+    }
+  }
+  return text.trim();
+}
+
+/**
+ * GET /api/spellbook
+ * Returns all spells formatted for the spellbook viewer.
+ * Merges filteredSpells (class membership + descriptions) with raw spells (source).
+ * Query params: name, source, school, class, level
+ */
+export function getSpellbook(req, res) {
+  const { name, source, school, class: className, level } = req.query;
+
+  // Build a lookup from filteredSpells for class membership and descriptions
+  const filteredMap = new Map();
+  for (const fs of loader.filteredSpells || []) {
+    filteredMap.set(fs.name.toLowerCase(), fs);
+  }
+
+  // Deduplicate raw spells by name (prefer entries-rich versions)
+  const spellMap = new Map();
+  for (const s of loader.spells) {
+    const key = s.name.toLowerCase();
+    const existing = spellMap.get(key);
+    if (!existing || (!existing.entries && s.entries)) {
+      spellMap.set(key, s);
+    }
+  }
+
+  let spells = [];
+  for (const [key, raw] of spellMap) {
+    const filtered = filteredMap.get(key);
+
+    // Build a clean spell entry
+    const schoolCode = raw.school || "";
+    const schoolName = SCHOOL_NAMES[schoolCode] || schoolCode;
+    const lvl = raw.level ?? (filtered ? (filtered.level === "cantrip" ? 0 : parseInt(filtered.level)) : 0);
+    const classes = filtered ? filtered.classes : [];
+
+    // Extract description from raw entries or filtered description
+    let description = "";
+    if (raw.entries && raw.entries.length > 0) {
+      description = flattenEntriesToString(raw.entries);
+    } else if (filtered && filtered.description) {
+      description = filtered.description;
+    }
+
+    let higherLevels = "";
+    if (filtered && filtered.higher_levels) {
+      higherLevels = filtered.higher_levels;
+    } else if (raw.entriesHigherLevel) {
+      for (const hl of raw.entriesHigherLevel) {
+        if (hl.entries) {
+          higherLevels += hl.entries.filter((e) => typeof e === "string").join("\n");
+        }
+      }
+    }
+
+    // Build casting time
+    let castingTime = "";
+    if (filtered && filtered.casting_time) {
+      castingTime = filtered.casting_time;
+    } else if (raw.time && raw.time.length > 0) {
+      const t = raw.time[0];
+      castingTime = `${t.number} ${t.unit}`;
+    }
+
+    // Build range
+    let range = "";
+    if (filtered && filtered.range) {
+      range = filtered.range;
+    } else if (raw.range) {
+      if (raw.range.distance) {
+        if (raw.range.distance.type === "self") range = "Self";
+        else if (raw.range.distance.type === "touch") range = "Touch";
+        else range = `${raw.range.distance.amount} ${raw.range.distance.type}`;
+      }
+    }
+
+    // Build duration
+    let duration = "";
+    if (filtered && filtered.duration) {
+      duration = filtered.duration;
+    } else if (raw.duration && raw.duration.length > 0) {
+      const d = raw.duration[0];
+      if (d.type === "instant") duration = "Instantaneous";
+      else if (d.type === "permanent") duration = "Until dispelled";
+      else if (d.duration) {
+        duration = `${d.concentration ? "Concentration, up to " : ""}${d.duration.amount} ${d.duration.type}${d.duration.amount > 1 ? "s" : ""}`;
+      }
+    }
+
+    // Build components
+    let components = "";
+    if (filtered && filtered.components && filtered.components.raw) {
+      components = filtered.components.raw;
+    } else if (raw.components) {
+      const parts = [];
+      if (raw.components.v) parts.push("V");
+      if (raw.components.s) parts.push("S");
+      if (raw.components.m) {
+        const mat = typeof raw.components.m === "string" ? raw.components.m : raw.components.m.text || "";
+        parts.push(mat ? `M (${mat})` : "M");
+      }
+      components = parts.join(", ");
+    }
+
+    const isRitual = filtered ? filtered.ritual : (raw.meta && raw.meta.ritual) || false;
+    const isConcentration = raw.duration ? raw.duration.some((d) => d.concentration) : false;
+
+    spells.push({
+      name: raw.name,
+      source: raw.source || "Unknown",
+      level: lvl,
+      school: schoolName,
+      classes,
+      castingTime,
+      range,
+      duration,
+      components,
+      description,
+      higherLevels,
+      ritual: isRitual,
+      concentration: isConcentration,
+      type: filtered ? filtered.type : `${lvl === 0 ? schoolName + " cantrip" : `${ordinal(lvl)}-level ${schoolName.toLowerCase()}`}`,
+    });
+  }
+
+  // Apply filters
+  if (name) {
+    const q = name.toLowerCase();
+    spells = spells.filter((s) => s.name.toLowerCase().includes(q));
+  }
+  if (source) {
+    spells = spells.filter((s) => s.source === source);
+  }
+  if (school) {
+    const q = school.toLowerCase();
+    spells = spells.filter((s) => s.school.toLowerCase() === q);
+  }
+  if (className) {
+    const q = className.toLowerCase();
+    spells = spells.filter((s) => s.classes.includes(q));
+  }
+  if (level !== undefined && level !== "") {
+    const lvlNum = level === "cantrip" ? 0 : parseInt(level);
+    if (!isNaN(lvlNum)) {
+      spells = spells.filter((s) => s.level === lvlNum);
+    }
+  }
+
+  // Sort alphabetically
+  spells.sort((a, b) => a.name.localeCompare(b.name));
+
+  // Collect unique filter values for dropdowns
+  const allSources = [...new Set(spells.map((s) => s.source))].sort();
+  const allSchools = [...new Set(spells.map((s) => s.school))].sort();
+  const allClasses = [...new Set(spells.flatMap((s) => s.classes))].sort();
+  const allLevels = [...new Set(spells.map((s) => s.level))].sort((a, b) => a - b);
+
+  res.json({
+    spells,
+    meta: { sources: allSources, schools: allSchools, classes: allClasses, levels: allLevels },
+  });
+}
+
+function ordinal(n) {
+  const suffixes = ["th", "st", "nd", "rd"];
+  const v = n % 100;
+  return n + (suffixes[(v - 20) % 10] || suffixes[v] || suffixes[0]);
+}
+
 export function getFeatOrigin(req, res) {
   const origin = loader.getFeatOrigin(req.params.name);
   if (!origin) return res.status(404).json({ error: "Origin not found" });

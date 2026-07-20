@@ -1,0 +1,7 @@
+{
+    "ignore": [
+        "data/generated/*",
+        "sessions.db",
+        "sessions.db-journal"
+    ]
+}

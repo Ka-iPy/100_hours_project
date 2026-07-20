@@ -5,6 +5,7 @@ import characterController from "../controllers/characterController.js";
 const router = express.Router();
 
 router.get("/spells/context/:className/:level", apiController.getSpellContext);
+router.get("/spellbook", apiController.getSpellbook);
 router.get("/equipment/class/:className", apiController.getStartingEquipment);
 
 router.get("/lookup", apiController.lookupEntity);

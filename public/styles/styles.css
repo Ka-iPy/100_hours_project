@@ -601,9 +601,13 @@ select:focus {
   text-shadow: 0 0 5px rgba(197, 160, 89, 0.5);
 }
 
+.hidden {
+  display: none !important;
+}
+
 .rpg-tooltip {
   position: absolute;
-  z-index: 1000;
+  z-index: 10005;
   max-width: 320px;
   background-color: var(--rpg-panel-bg);
   border: 2px solid var(--rpg-border);

@@ -1,9 +1,11 @@
 <%- include('partials/header.ejs') %>
+  <link rel="stylesheet" href="/styles/spellbook.css">
 
   <main class="hall-page">
     <div class="hall-header">
       <h1>Greetings, <%= username %>!</h1>
       <div class="hall-nav">
+        <button class="hall-spellbook-btn" onclick="openSpellbook()">📖 Spellbook</button>
         <a href="/createCharacter" class="rpg-btn rpg-btn-primary">Create a Character</a>
         <a href="/logout" class="rpg-btn rpg-btn-secondary">Logout</a>
       </div>
@@ -40,6 +42,28 @@
         <% } %>
   </main>
 
+  <!-- ========== Spellbook Modal ========== -->
+  <div id="spellbook-overlay" class="spellbook-overlay">
+    <div class="spellbook-controls">
+      <input type="text" id="sb-search" class="spellbook-search" placeholder="Search spell name...">
+      <select id="sb-filter-school" class="spellbook-filter"></select>
+      <select id="sb-filter-class" class="spellbook-filter"></select>
+      <select id="sb-filter-level" class="spellbook-filter"></select>
+      <select id="sb-filter-source" class="spellbook-filter"></select>
+      <button class="sb-close-btn" onclick="closeSpellbook()">✕ Close</button>
+    </div>
+    <div class="spellbook-info">
+      <span id="sb-spell-count"></span>
+      <span id="sb-page-count"></span>
+    </div>
+    <div class="spellbook-container">
+      <div id="sb-loading" class="spellbook-loading" style="display:none; text-align:center; padding:40px;">
+        Loading spells...
+      </div>
+      <div id="spellbook-flipbook" class="spellbook-flipbook" style="display:none;"></div>
+    </div>
+  </div>
+
   <script>
     async function confirmDelete(char) {
       const charName = char.name;
@@ -64,5 +88,8 @@
       }
     }
   </script>
+  <script src="/js/jquery.min.js"></script>
+  <script src="/js/turn.min.js"></script>
+  <script src="/js/spellbook.js"></script>
 
   <%- include('partials/footer.ejs') %>

@@ -725,16 +725,41 @@ document.addEventListener('DOMContentLoaded', () => {
         tooltip.classList.remove('hidden');
 
         // Position the tooltip
-        const rect = trigger.getBoundingClientRect();
-        let left = rect.left + window.scrollX;
-        let top = rect.bottom + window.scrollY + 8;
+        const updatePosition = () => {
+            const rect = trigger.getBoundingClientRect();
+            const tooltipWidth = tooltip.offsetWidth || 320;
+            const tooltipHeight = tooltip.offsetHeight || 100;
 
-        const tooltipWidth = 320;
-        if (left + tooltipWidth > window.innerWidth) {
-            left = window.innerWidth - tooltipWidth - 20;
-        }
-        tooltip.style.left = `${Math.max(10, left)}px`;
-        tooltip.style.top = `${top}px`;
+            let left = rect.left + window.scrollX;
+            let top = rect.bottom + window.scrollY + 8;
+
+            // Smart positioning
+            if (left + tooltipWidth > window.innerWidth + window.scrollX) {
+                left = window.innerWidth + window.scrollX - tooltipWidth - 20;
+            }
+            if (left < window.scrollX + 10) {
+                left = window.scrollX + 10;
+            }
+
+            if (top + tooltipHeight > window.innerHeight + window.scrollY) {
+                // Not enough space below, put it above
+                top = rect.top + window.scrollY - tooltipHeight - 8;
+                if (top < window.scrollY + 10) {
+                    // Not enough space above either, put it to the right
+                    top = rect.top + window.scrollY;
+                    left = rect.right + window.scrollX + 8;
+                    if (left + tooltipWidth > window.innerWidth + window.scrollX) {
+                        // Not enough space to the right, put it to the left
+                        left = rect.left + window.scrollX - tooltipWidth - 8;
+                    }
+                }
+            }
+
+            tooltip.style.left = `${Math.max(10, left)}px`;
+            tooltip.style.top = `${Math.max(10, top)}px`;
+        };
+
+        updatePosition();
 
         try {
             const res = await fetch(`/api/lookup?type=${encodeURIComponent(type)}&name=${encodeURIComponent(name)}&source=${encodeURIComponent(source)}`);
@@ -773,10 +798,12 @@ document.addEventListener('DOMContentLoaded', () => {
             tooltip.innerHTML = `
         <div class="rpg-tooltip-title">${title}</div>
         ${meta ? `<div class="rpg-tooltip-meta">${meta}</div>` : ''}
-        <div class="rpg-tooltip-desc">${desc}</div>
+        <div class="rpg-tooltip-desc">${parseDndTags(desc)}</div>
       `;
+            updatePosition();
         } catch (err) {
             tooltip.innerHTML = `<div class="rpg-tooltip-title">${name}</div><div class="rpg-tooltip-desc">No additional details found.</div>`;
+            updatePosition();
         }
     });
 
