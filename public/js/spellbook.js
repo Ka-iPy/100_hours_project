@@ -198,7 +198,9 @@
                     className: "sb-spell-card",
                     "data-spell-name": spell.name.toLowerCase(),
                 });
+                const schoolName = spell.school || "Magic";
                 card.innerHTML = `
+          <div class="sb-school-logo" title="${schoolName} School">${getSchoolLogoSvg(spell.school)}</div>
           <div class="sb-spell-name">${spell.name}</div>
           <div class="sb-spell-meta">${spell.type || ""}${spell.ritual ? " (Ritual)" : ""}${spell.concentration ? " • Concentration" : ""}</div>
           <div class="sb-spell-stats">
@@ -338,6 +340,7 @@
 
         const classStr = (spell.classes || []).map(capitalize).join(", ");
 
+        const schoolName = spell.school || "Magic";
         detailEl.innerHTML = `
       <div style="
         width: 480px; max-height: 85vh;
@@ -349,12 +352,8 @@
         padding: 0;
         position: relative;
       ">
-        <button onclick="document.getElementById('sb-spell-detail-overlay').remove()" style="
-          position: absolute; top: 8px; right: 10px;
-          background: none; border: none; cursor: pointer;
-          font-size: 1.3rem; color: #d4af37; font-weight: bold;
-        ">✕</button>
         <div class="sb-spell-detail">
+          <div class="sb-detail-school-logo" title="${schoolName} School">${getSchoolLogoSvg(spell.school)}</div>
           <div class="sb-detail-name">${spell.name}</div>
           <div class="sb-detail-type">${spell.type || ""}${spell.ritual ? " (Ritual)" : ""}</div>
           <dl class="sb-detail-grid">
@@ -414,6 +413,154 @@
     };
 
     // ─── Helpers ───
+    const SCHOOL_SVG_MAP = {
+        abjuration: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="50" cy="50" r="46" stroke-width="1" stroke-dasharray="2,3"/>
+          <circle cx="50" cy="50" r="42" stroke-width="1.5"/>
+          <circle cx="50" cy="50" r="37" stroke-width="1" stroke-dasharray="6,3"/>
+          <polygon points="50,6 81,19 94,50 81,81 50,94 19,81 6,50 19,19" stroke-width="1" stroke-opacity="0.6"/>
+          <path d="M50 14 L78 28 V52 C78 72 50 86 50 86 C50 86 22 72 22 52 V28 Z" stroke-width="2.5"/>
+          <path d="M50 19 L73 31 V50 C73 67 50 79 50 79 C50 79 27 67 27 50 V31 Z" stroke-width="1.2" stroke-opacity="0.8"/>
+          <line x1="50" y1="19" x2="50" y2="79" stroke-width="1.5"/>
+          <line x1="27" y1="42" x2="73" y2="42" stroke-width="1.5"/>
+          <polygon points="50,34 54,42 62,42 55,47 58,55 50,50 42,55 45,47 38,42 46,42" fill="currentColor" fill-opacity="0.3" stroke-width="1.5"/>
+          <circle cx="50" cy="10" r="2" fill="currentColor"/>
+          <circle cx="90" cy="50" r="2" fill="currentColor"/>
+          <circle cx="50" cy="90" r="2" fill="currentColor"/>
+          <circle cx="10" cy="50" r="2" fill="currentColor"/>
+        </svg>`,
+
+        conjuration: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="50" cy="50" r="46" stroke-width="1.5"/>
+          <circle cx="50" cy="50" r="41" stroke-width="1" stroke-dasharray="2,4"/>
+          <path d="M50 4 V10 M50 90 V96 M4 50 H10 M90 50 H96 M17 17 L22 22 M78 78 L83 83 M17 83 L22 78 M78 22 L83 17" stroke-width="1.5"/>
+          <circle cx="50" cy="50" r="33" stroke-width="2"/>
+          <circle cx="50" cy="50" r="21" stroke-width="1.2"/>
+          <polygon points="50,17 58,42 82,30 67,52 80,74 55,70 50,95 45,70 20,74 33,52 18,30 42,42" stroke-width="1.8"/>
+          <path d="M50 29 A21 21 0 0 1 71 50 A21 21 0 0 1 50 71 A21 21 0 0 1 29 50 Z" stroke-width="1"/>
+          <circle cx="50" cy="50" r="9" stroke-width="1.5" stroke-dasharray="3,2"/>
+          <polygon points="50,44 54,50 50,56 46,50" fill="currentColor" fill-opacity="0.4"/>
+          <circle cx="50" cy="50" r="3" fill="currentColor"/>
+        </svg>`,
+
+        divination: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="50" cy="50" r="46" stroke-width="1" stroke-dasharray="3,3"/>
+          <circle cx="50" cy="50" r="42" stroke-width="1.5"/>
+          <path d="M50 4 V12 M50 88 V96 M4 50 H12 M88 50 H96 M18 18 L24 24 M76 76 L82 82 M18 82 L24 76 M76 24 L82 18" stroke-width="1.5"/>
+          <path d="M22 26 Q50 10 78 26" stroke-width="1.8"/>
+          <path d="M22 74 Q50 90 78 74" stroke-width="1.8"/>
+          <path d="M10 50 Q50 14 90 50 Q50 86 10 50 Z" stroke-width="2.5"/>
+          <path d="M18 50 Q50 22 82 50 Q50 78 18 50 Z" stroke-width="1.2" stroke-opacity="0.7"/>
+          <circle cx="50" cy="50" r="22" stroke-width="2"/>
+          <circle cx="50" cy="50" r="16" stroke-width="1" stroke-dasharray="4,2"/>
+          <circle cx="50" cy="50" r="11" stroke-width="1.8"/>
+          <polygon points="50,39 55,50 50,61 45,50" fill="currentColor" fill-opacity="0.5"/>
+          <circle cx="50" cy="50" r="4" fill="currentColor"/>
+          <line x1="50" y1="28" x2="50" y2="34" stroke-width="1.5"/>
+          <line x1="50" y1="66" x2="50" y2="72" stroke-width="1.5"/>
+          <line x1="28" y1="50" x2="34" y2="50" stroke-width="1.5"/>
+          <line x1="66" y1="50" x2="72" y2="50" stroke-width="1.5"/>
+        </svg>`,
+
+        enchantment: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="50" cy="50" r="46" stroke-width="1" stroke-dasharray="2,4"/>
+          <circle cx="50" cy="50" r="41" stroke-width="1.5"/>
+          <path d="M50 4 L53 10 L50 16 M50 84 L47 90 L50 96 M4 50 L10 53 L16 50 M84 50 L90 47 L96 50" stroke-width="1.2"/>
+          <circle cx="50" cy="50" r="32" stroke-width="1.8" stroke-dasharray="8,4"/>
+          <path d="M50 84 C20 64 8 42 22 25 C31 14 45 17 50 28 C55 17 69 14 78 25 C92 42 80 64 50 84 Z" stroke-width="2.5"/>
+          <path d="M50 77 C25 59 15 40 27 26 C34 18 45 20 50 29 C55 20 66 18 73 26 C85 40 75 59 50 77 Z" stroke-width="1.2" stroke-opacity="0.6"/>
+          <path d="M34 24 L38 12 L50 20 L62 12 L66 24 Z" stroke-width="1.8" fill="currentColor" fill-opacity="0.2"/>
+          <circle cx="38" cy="11" r="1.5" fill="currentColor"/>
+          <circle cx="50" cy="18" r="1.5" fill="currentColor"/>
+          <circle cx="62" cy="11" r="1.5" fill="currentColor"/>
+          <polygon points="50,38 56,48 50,58 44,48" fill="currentColor" fill-opacity="0.4" stroke-width="1.5"/>
+          <circle cx="50" cy="48" r="3" fill="currentColor"/>
+        </svg>`,
+
+        evocation: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polygon points="50,4 61,19 79,9 74,28 92,34 78,48 94,60 76,68 84,86 66,82 60,96 48,84 34,94 36,76 18,78 26,62 8,52 24,44 10,28 28,28 26,8 42,16" stroke-width="1.2" stroke-opacity="0.7"/>
+          <circle cx="50" cy="50" r="41" stroke-width="1.8"/>
+          <circle cx="50" cy="50" r="34" stroke-width="1" stroke-dasharray="3,3"/>
+          <circle cx="50" cy="50" r="26" stroke-width="1.5"/>
+          <path d="M48 10 L64 36 L50 36 L62 62 L40 62 L56 90 L44 54 L56 54 Z" stroke-width="2.5" fill="currentColor" fill-opacity="0.25"/>
+          <path d="M52 14 L36 40 L50 40 L38 66 L60 66 L44 86" stroke-width="1.2" stroke-opacity="0.8"/>
+          <line x1="50" y1="4" x2="50" y2="10" stroke-width="2"/>
+          <line x1="50" y1="90" x2="50" y2="96" stroke-width="2"/>
+          <line x1="4" y1="50" x2="10" y2="50" stroke-width="2"/>
+          <line x1="90" y1="50" x2="96" y2="50" stroke-width="2"/>
+          <polygon points="50,44 54,50 50,56 46,50" fill="currentColor"/>
+        </svg>`,
+
+        illusion: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="50" cy="50" r="46" stroke-width="1" stroke-dasharray="4,4"/>
+          <circle cx="48" cy="48" r="42" stroke-width="1" stroke-opacity="0.5"/>
+          <circle cx="52" cy="52" r="42" stroke-width="1" stroke-opacity="0.5"/>
+          <circle cx="50" cy="50" r="40" stroke-width="1.8"/>
+          <polygon points="50,10 86,50 50,90 14,50" stroke-width="2.2"/>
+          <polygon points="50,18 78,50 50,82 22,50" stroke-width="1.2" stroke-opacity="0.7"/>
+          <line x1="50" y1="10" x2="50" y2="90" stroke-width="1.5"/>
+          <line x1="14" y1="50" x2="86" y2="50" stroke-width="1.5"/>
+          <path d="M18 50 A 32 32 0 0 0 82 50 A 32 32 0 0 1 18 50 Z" stroke-width="1.5" fill="currentColor" fill-opacity="0.15"/>
+          <path d="M82 50 A 32 32 0 0 0 18 50 A 32 32 0 0 1 82 50 Z" stroke-width="1.5" fill="currentColor" fill-opacity="0.15"/>
+          <circle cx="50" cy="50" r="14" stroke-width="2"/>
+          <circle cx="50" cy="50" r="8" stroke-width="1" stroke-dasharray="2,2"/>
+          <circle cx="50" cy="50" r="4" fill="currentColor"/>
+        </svg>`,
+
+        necromancy: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="50" cy="50" r="46" stroke-width="1.5"/>
+          <path d="M50 4 L53 10 L50 14 M50 96 L47 90 L50 86 M4 50 L10 47 L14 50 M96 50 L90 53 L86 50 M17 17 L23 21 M83 83 L77 79 M17 83 L23 79 M83 17 L77 21" stroke-width="1.5"/>
+          <circle cx="50" cy="50" r="38" stroke-width="1" stroke-dasharray="3,3"/>
+          <path d="M14 70 Q50 96 86 70 Q50 82 14 70 Z" stroke-width="2" fill="currentColor" fill-opacity="0.2"/>
+          <path d="M32 32 C32 18 40 12 50 12 C60 12 68 18 68 32 C68 44 64 48 61 56 H39 C36 48 32 44 32 32 Z" stroke-width="2.5"/>
+          <path d="M36 32 C36 22 42 16 50 16 C58 16 64 22 64 32 C64 41 61 45 58 52 H42 C39 45 36 41 36 32 Z" stroke-width="1" stroke-opacity="0.6"/>
+          <polygon points="37,28 46,31 44,40 37,38" stroke-width="1.8" fill="currentColor" fill-opacity="0.4"/>
+          <polygon points="63,28 54,31 56,40 63,38" stroke-width="1.8" fill="currentColor" fill-opacity="0.4"/>
+          <circle cx="42" cy="34" r="2" fill="currentColor"/>
+          <circle cx="58" cy="34" r="2" fill="currentColor"/>
+          <polygon points="50,42 46,49 54,49" fill="currentColor"/>
+          <line x1="39" y1="56" x2="61" y2="56" stroke-width="2"/>
+          <line x1="39" y1="64" x2="61" y2="64" stroke-width="2"/>
+          <line x1="44" y1="56" x2="44" y2="64" stroke-width="1.5"/>
+          <line x1="50" y1="56" x2="50" y2="64" stroke-width="1.5"/>
+          <line x1="56" y1="56" x2="56" y2="64" stroke-width="1.5"/>
+        </svg>`,
+
+        transmutation: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="50" cy="50" r="46" stroke-width="1.5"/>
+          <circle cx="50" cy="50" r="41" stroke-width="1" stroke-dasharray="2,3"/>
+          <polygon points="50,6 54,12 46,12" fill="currentColor"/>
+          <polygon points="50,94 54,88 46,88" stroke-width="1"/>
+          <polygon points="6,50 12,46 12,54" fill="currentColor"/>
+          <polygon points="94,50 88,46 88,54" stroke-width="1"/>
+          <circle cx="50" cy="50" r="33" stroke-width="2"/>
+          <polygon points="50,17 81,71 19,71" stroke-width="2.2"/>
+          <polygon points="50,83 81,29 19,29" stroke-width="2.2"/>
+          <circle cx="50" cy="50" r="18" stroke-width="1.8"/>
+          <circle cx="50" cy="50" r="12" stroke-width="1" stroke-dasharray="3,2"/>
+          <polygon points="50,42 57,50 50,58 43,50" fill="currentColor" fill-opacity="0.3" stroke-width="1.5"/>
+          <circle cx="50" cy="50" r="3" fill="currentColor"/>
+        </svg>`,
+
+        default: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="50" cy="50" r="46" stroke-width="1.5"/>
+          <circle cx="50" cy="50" r="42" stroke-width="1" stroke-dasharray="3,3"/>
+          <circle cx="50" cy="50" r="36" stroke-width="1.8"/>
+          <polygon points="50,14 60,34 82,24 72,46 92,50 72,54 82,76 60,66 50,86 40,66 18,76 28,54 8,50 28,46 18,24 40,34" stroke-width="2"/>
+          <rect x="29" y="29" width="42" height="42" stroke-width="1.2" stroke-opacity="0.7"/>
+          <rect x="29" y="29" width="42" height="42" transform="rotate(45 50 50)" stroke-width="1.2" stroke-opacity="0.7"/>
+          <circle cx="50" cy="50" r="14" stroke-width="1.8"/>
+          <polygon points="50,40 57,50 50,60 43,50" fill="currentColor" fill-opacity="0.4" stroke-width="1.5"/>
+          <circle cx="50" cy="50" r="3" fill="currentColor"/>
+        </svg>`
+    };
+
+    function getSchoolLogoSvg(schoolName) {
+        if (!schoolName) return SCHOOL_SVG_MAP.default;
+        const key = schoolName.trim().toLowerCase();
+        return SCHOOL_SVG_MAP[key] || SCHOOL_SVG_MAP.default;
+    }
+
     function doc(tag, attrs) {
         const el = document.createElement(tag);
         if (attrs) {
