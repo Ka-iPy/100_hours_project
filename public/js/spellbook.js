@@ -165,9 +165,9 @@
         // Inside front cover (hard)
         const insideFront = doc("div", { className: "hard" });
         insideFront.innerHTML = `
-      <div style="color:#1a0f0a; font-family:'Cinzel',serif; font-size:0.9rem; text-align:center; padding:40px; text-shadow: -1px -1px 1px rgba(0,0,0,0.8), 1px 1px 1px rgba(255,255,255,0.15);">
-        <p style="font-size:1.1rem; margin-bottom:12px;">📖 ${spells.length} Spells</p>
-        <p style="font-style:italic; font-size:0.8rem;">Turn the pages to browse, or use the filters above to search.</p>
+      <div style="color:#ffffff; font-family:'Cinzel',serif; font-size:0.95rem; text-align:center; padding:40px; text-shadow: 0 0 10px rgba(0,0,0,0.9), 0 2px 4px rgba(0,0,0,0.9);">
+        <p style="font-size:1.2rem; margin-bottom:12px; font-weight: 600;">📖 ${spells.length} Spells</p>
+        <p style="font-style:italic; font-size:0.85rem; opacity:0.95;">Turn the pages to browse, or use the filters above to search.</p>
       </div>
     `;
         flipbookEl.appendChild(insideFront);
@@ -233,8 +233,8 @@
         // Inside back cover (hard)
         const insideBack = doc("div", { className: "hard" });
         insideBack.innerHTML = `
-      <div style="color:#1a0f0a; font-family:'Cinzel',serif; font-size:0.85rem; text-align:center; padding:40px; text-shadow: -1px -1px 1px rgba(0,0,0,0.8), 1px 1px 1px rgba(255,255,255,0.15);">
-        <p style="font-style:italic;">"Magic is the art of turning knowledge into power."</p>
+      <div style="color:#ffffff; font-family:'Cinzel',serif; font-size:0.9rem; text-align:center; padding:40px; text-shadow: 0 0 10px rgba(0,0,0,0.9), 0 2px 4px rgba(0,0,0,0.9);">
+        <p style="font-style:italic; opacity:0.95;">"Magic is the art of turning knowledge into power."</p>
       </div>
     `;
         flipbookEl.appendChild(insideBack);
