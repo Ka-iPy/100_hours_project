@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
+  <defs>
+    <linearGradient id="helmGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#94a3b8"/>
+      <stop offset="50%" stop-color="#475569"/>
+      <stop offset="100%" stop-color="#1e293b"/>
+    </linearGradient>
+    <linearGradient id="crestGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#ef4444"/>
+      <stop offset="100%" stop-color="#991b1b"/>
+    </linearGradient>
+  </defs>
+  <!-- Plume Crest -->
+  <path d="M 50 8 C 30 5, 20 20, 35 30 L 65 30 C 80 20, 70 5, 50 8 Z" fill="url(#crestGrad)"/>
+  <!-- Helmet Dome -->
+  <path d="M 25 45 C 25 25, 75 25, 75 45 L 78 70 Q 50 90 22 70 Z" fill="url(#helmGrad)" stroke="#0f172a" stroke-width="2"/>
+  <!-- Visor Slit -->
+  <path d="M 30 52 L 70 52 L 68 58 L 52 64 L 48 64 L 32 58 Z" fill="#020617" stroke="#fbbf24" stroke-width="1.5"/>
+  <!-- Breathing Holes -->
+  <circle cx="40" cy="72" r="1.5" fill="#020617"/>
+  <circle cx="46" cy="74" r="1.5" fill="#020617"/>
+  <circle cx="54" cy="74" r="1.5" fill="#020617"/>
+  <circle cx="60" cy="72" r="1.5" fill="#020617"/>
+</svg>

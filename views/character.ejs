@@ -9,6 +9,7 @@
   </title>
   <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
   <link rel="stylesheet" href="/styles/styles.css">
+  <link rel="stylesheet" href="/styles/character.css">
 </head>
 
 <body>
@@ -47,21 +48,27 @@
       </div>
     </div>
 
-    <div class="rpg-container">
+    <div class="rpg-container relative" id="sheet-container" data-theme="<%= character.theme || 'classic' %>">
 
       <!-- LEFT COLUMN: Character Card (Sidebar) -->
       <aside class="space-y-6">
 
         <!-- Portrait & Core Info -->
         <div class="rpg-panel">
-          <div class="rpg-portrait-container" id="portrait-container">
+          <div class="rpg-portrait-container relative group cursor-pointer" id="portrait-container">
             <img src="<%= character.portrait || '/images/aasimar_artificer.png' %>" alt="Character Portrait"
               class="rpg-portrait" id="portrait-img">
-            <div class="rpg-portrait-overlay">
+            <div id="portrait-change-badge" class="absolute inset-0 bg-black/60 text-white flex items-center justify-center font-bold text-xs opacity-0 group-hover:opacity-100 transition hidden z-20">
+              📷 Click to Change Image
+            </div>
+            <div class="rpg-portrait-overlay z-30">
               <input name="name"
                 class="rpg-title text-2xl font-bold bg-transparent border-none focus:ring-0 editable-input" type="text"
                 value="<%= character.name %>" readonly />
-              <div class="text-sm text-gray-300 rpg-header-font">
+              <input name="moniker" id="character-moniker"
+                class="rpg-moniker-display w-full bg-transparent border-none p-0 text-xs text-yellow-400 italic editable-input"
+                type="text" value="<%= character.moniker || '' %>" placeholder="Title / Moniker" readonly />
+              <div class="text-sm text-gray-300 rpg-header-font mt-1">
                 <%= classStr %>
               </div>
             </div>
@@ -241,6 +248,7 @@
           <% if (spellData) { %>
             <button type="button" class="rpg-tab-btn" onclick="switchTab('tab-spellbook')">Spells</button>
             <% } %>
+          <button type="button" class="rpg-tab-btn" onclick="switchTab('tab-custom')">Custom & Notes</button>
         </nav>
 
         <!-- TAB 1: Attributes & Skills -->
@@ -263,10 +271,10 @@
                     <span class="label-small mb-1">
                       <%= a.name %>
                     </span>
-                    <input name="abilityScores[<%= a.name %>]"
+                    <input name="abilityScores[<%= a.name %>]" data-ability-key="<%= a.name %>"
                       class="w-16 text-center rpg-ability-score bg-transparent border-none p-0 editable-input"
-                      type="number" value="<%= a.score %>" readonly min="1" max="30" />
-                    <div class="rpg-ability-mod">
+                      type="number" value="<%= a.score %>" readonly min="1" max="30" oninput="recalculateDynamicStats()" />
+                    <div class="rpg-ability-mod" data-ability-mod="<%= a.name %>">
                       <%= a.modStr %>
                     </div>
                   </div>
@@ -288,7 +296,7 @@
                       onclick="toggleSaveBubble(this)"></div>
                     <input type="checkbox" name="savingThrows[<%= st.name %>]" class="hidden" <%=st.proficient
                       ? 'checked' : '' %>/>
-                    <span class="w-8 font-bold text-yellow-500 text-right mr-3">
+                    <span class="w-8 font-bold text-yellow-500 text-right mr-3" data-save-mod="<%= st.name %>">
                       <%= st.modStr %>
                     </span>
                     <span class="text-gray-200">
@@ -313,7 +321,7 @@
                       ? 'checked' : '' %>/>
                     <input type="checkbox" name="skillExpertise[<%= sk.name %>]" value="1" class="hidden"
                       <%=sk.expertise ? 'checked' : '' %>/>
-                    <span class="w-8 font-bold text-yellow-500 text-right mr-3">
+                    <span class="w-8 font-bold text-yellow-500 text-right mr-3" data-skill-mod="<%= sk.name %>" data-skill-ability="<%= sk.abilityKey || '' %>">
                       <%= sk.modStr %>
                     </span>
                     <span class="text-gray-200 flex-grow">
@@ -322,8 +330,9 @@
                     <span class="text-gray-500 text-xs">(<%= sk.ability %>)</span>
                   </div>
                   <% }); %>
-              </div>
-            </div>
+            <!-- Custom Sections appended to Attributes Tab -->
+            <div id="custom-sections-attributes" class="space-y-6"></div>
+
           </div>
 
         </section>
@@ -422,6 +431,9 @@
             </div>
           </div>
 
+          <!-- Custom Sections appended to Inventory Tab -->
+          <div id="custom-sections-inventory" class="space-y-6"></div>
+
         </section>
 
         <!-- TAB 3: Biography & Features -->
@@ -502,6 +514,9 @@
               </div>
             </div>
           </div>
+
+          <!-- Custom Sections appended to Features Tab -->
+          <div id="custom-sections-features" class="space-y-6"></div>
 
         </section>
 
@@ -627,14 +642,81 @@
 
             </div>
 
+            <!-- Custom Sections appended to Spellbook Tab -->
+            <div id="custom-sections-spellbook" class="space-y-6"></div>
+
           </section>
-          <% } %>
+        <% } %>
+
+        <!-- TAB 5: Custom & Notes -->
+        <section id="tab-custom" class="rpg-tab-content space-y-6">
+          <div class="rpg-panel p-4 flex flex-col md:flex-row justify-between items-center gap-4">
+            <div>
+              <h3 class="rpg-header-font font-bold text-lg text-yellow-500">Custom Sections & Notes Studio</h3>
+              <p class="text-xs text-gray-400">Add customizable notes, dynamic tables, sticky cards, or highlight callouts to your character profile.</p>
+            </div>
+            <div class="flex flex-wrap gap-2">
+              <button type="button" class="rpg-btn rpg-btn-secondary text-xs" onclick="addCustomSection('text')">+ Text Block</button>
+              <button type="button" class="rpg-btn rpg-btn-secondary text-xs" onclick="addCustomSection('table')">+ Dynamic Table</button>
+              <button type="button" class="rpg-btn rpg-btn-secondary text-xs" onclick="addCustomSection('note')">+ Sticky Note</button>
+              <button type="button" class="rpg-btn rpg-btn-secondary text-xs" onclick="addCustomSection('highlight')">+ Highlight Callout</button>
+            </div>
+          </div>
+
+          <div id="custom-sections-custom" class="space-y-6">
+            <!-- Rendered dynamically by character.js -->
+          </div>
+        </section>
 
       </main>
 
     </div>
 
+    <!-- Hidden Inputs for Serialized Custom State -->
+    <input type="hidden" name="theme" id="theme-input" value="<%= character.theme || 'classic' %>" />
+    <input type="hidden" name="customSections" id="custom-sections-input" value="" />
+
   </form>
+
+  <!-- Floating Sheet Customizer Button (Hidden until Edit Profile clicked) -->
+  <button type="button" id="customizer-toggle" class="customizer-floating-btn hidden no-print" title="Sheet Customizer Studio" onclick="toggleCustomizerDrawer()">
+    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"/>
+    </svg>
+    <span>Customize Sheet</span>
+  </button>
+
+  <!-- Customizer Drawer Modal -->
+  <div id="customizer-drawer" class="customizer-drawer hidden no-print">
+    <div class="customizer-drawer-header">
+      <span class="rpg-header-font font-bold text-sm text-yellow-500">Sheet Personalization Studio</span>
+      <button type="button" class="text-gray-400 hover:text-white font-bold text-lg" onclick="toggleCustomizerDrawer()">&times;</button>
+    </div>
+    <div class="customizer-drawer-body space-y-4">
+      <!-- Theme Selection -->
+      <div>
+        <label class="label-small block mb-1">Color Theme Preset</label>
+        <select id="theme-selector" class="w-full bg-slate-800 border border-slate-700 text-white rounded p-2 text-sm" onchange="changeTheme(this.value)">
+          <option value="classic" <%= character.theme === 'classic' ? 'selected' : '' %>>📜 Classic Parchment & Warm Gold</option>
+          <option value="arcane" <%= character.theme === 'arcane' ? 'selected' : '' %>>🔮 Arcane Void & Neon Indigo</option>
+          <option value="emerald" <%= character.theme === 'emerald' ? 'selected' : '' %>>🌲 Ranger Grove & Forest Emerald</option>
+          <option value="crimson" <%= character.theme === 'crimson' ? 'selected' : '' %>>🩸 Crimson Blood & Dark Ruby</option>
+          <option value="obsidian" <%= character.theme === 'obsidian' ? 'selected' : '' %>>💀 Shadowfell & Obsidian Slate</option>
+        </select>
+      </div>
+
+      <!-- Add Section Shortcuts -->
+      <div>
+        <label class="label-small block mb-1">Add Custom Section</label>
+        <div class="grid grid-cols-2 gap-2 text-xs">
+          <button type="button" class="rpg-btn rpg-btn-secondary" onclick="addCustomSection('text')">+ Text Notes</button>
+          <button type="button" class="rpg-btn rpg-btn-secondary" onclick="addCustomSection('table')">+ Grid Table</button>
+          <button type="button" class="rpg-btn rpg-btn-secondary" onclick="addCustomSection('note')">+ Sticky Card</button>
+          <button type="button" class="rpg-btn rpg-btn-secondary" onclick="addCustomSection('highlight')">+ Highlight</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <!-- Tooltip Container -->
   <div id="rpg-tooltip" class="rpg-tooltip hidden"></div>
@@ -645,6 +727,11 @@
     window.characterName = "<%= character.name %>";
     window.initialEquipmentCount = parseInt("<%= (equipment || []).length %>") || 0;
     window.initialFeatureCount = parseInt("<%= (features || []).length %>") || 0;
+    window.initialCustomSections = <%- JSON.stringify(character.customSections || []) %>;
+    window.initialTheme = "<%= character.theme || 'classic' %>";
+    window.initialMoniker = "<%= character.moniker || '' %>";
+    window.proficiencyBonus = parseInt("<%= character.pb || 2 %>") || 2;
+    window.spellcastingAbilityKey = "<%= spellData ? (spellData.rawAbility || 'int') : 'int' %>".toLowerCase();
   </script>
   <script src="/js/character.js"></script>
 

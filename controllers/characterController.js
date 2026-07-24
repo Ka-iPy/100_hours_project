@@ -406,6 +406,31 @@ export default {
         });
       }
 
+      if (typeof updates.moniker !== "undefined") {
+        character.moniker = updates.moniker;
+      }
+      if (typeof updates.theme !== "undefined") {
+        character.theme = updates.theme;
+      }
+      if (typeof updates.customSections !== "undefined") {
+        try {
+          character.customSections = typeof updates.customSections === "string"
+            ? JSON.parse(updates.customSections)
+            : updates.customSections;
+        } catch (e) {
+          console.error("Error parsing customSections:", e);
+        }
+      }
+      if (typeof updates.stickers !== "undefined") {
+        try {
+          character.stickers = typeof updates.stickers === "string"
+            ? JSON.parse(updates.stickers)
+            : updates.stickers;
+        } catch (e) {
+          console.error("Error parsing stickers:", e);
+        }
+      }
+
       await character.save();
       res.json(character);
     } catch (err) {
@@ -532,8 +557,30 @@ ${leveledSpellsStr}
         `.trim();
       }
 
+      // Format custom sections & dynamic tables
+      let customSectionsMarkdown = "";
+      if (character.customSections && character.customSections.length > 0) {
+        const sectionsFormatted = character.customSections.map((sec) => {
+          if (sec.type === "table") {
+            const headers = (sec.headers || []).join(" | ");
+            const divider = (sec.headers || []).map(() => "---").join(" | ");
+            const rows = (sec.rows || [])
+              .map((r) => `| ${Array.isArray(r) ? r.join(" | ") : r} |`)
+              .join("\n");
+            return `### ${sec.title || "Custom Table"}\n| ${headers} |\n| ${divider} |\n${rows || "| — |"}`;
+          } else if (sec.type === "note") {
+            return `### 📌 ${sec.title || "Sticky Note"}\n> ${sec.content || "*Empty note.*"}`;
+          } else if (sec.type === "highlight") {
+            return `### 💡 ${sec.title || "Highlight Callout"}\n> **Important:** ${sec.content || "*Empty highlight.*"}`;
+          } else {
+            return `### ${sec.title || "Custom Section"}\n${sec.content || "*Empty section.*"}`;
+          }
+        }).join("\n\n");
+        customSectionsMarkdown = `\n\n---\n\n## Custom Sections & Notes\n\n${sectionsFormatted}`;
+      }
+
       const markdownContent = `
-# ${character.name}
+# ${character.name} ${character.moniker ? `— *"${character.moniker}"*` : ""}
 
 ## Core Information
 - **Player:** ${character.player || "Unknown"}
@@ -614,6 +661,7 @@ ${helpers.otherProfs.join("\n") || "*None.*"}
 
 ## Spellbook
 ${spellbookStr}
+${customSectionsMarkdown}
       `.trim();
 
       res.setHeader("Content-Type", "text/markdown");
@@ -1145,8 +1193,10 @@ function buildCharacterViewHelpers(c) {
         .split(" ")
         .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
         .join(" "),
+      abilityKey: ability,
       ability: ABB[ability],
       proficient: isProficient,
+      expertise: !!s?.expertise,
       mod: total,
       modStr: fmt(total),
     };
@@ -1227,6 +1277,7 @@ function buildCharacterViewHelpers(c) {
       ability: mainSB.spellcastingAbility
         ? ABB[mainSB.spellcastingAbility] || mainSB.spellcastingAbility
         : "",
+      rawAbility: mainSB.spellcastingAbility || "int",
       saveDC: mainSB.spellSaveDC || 0,
       attackBonus: mainSB.spellAttackBonus || 0,
       attackBonusStr: fmt(mainSB.spellAttackBonus || 0),

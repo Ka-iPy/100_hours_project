@@ -23,6 +23,7 @@ import {
   categorizeFeature,
   FEATURE_CATEGORIES,
 } from "../utils/featureCategory.js";
+import { Cerberus } from "./Cerberus.js";
 
 export class CharacterBuilder {
   constructor(loader) {
@@ -81,6 +82,9 @@ export class CharacterBuilder {
       selectedSpells,
     );
     this.calculateDerivedStats(character);
+
+    // Cerberus Watchdog recursive evaluation
+    character.cerberusReport = Cerberus.watchCharacter(character, this.loader);
 
     return character;
   }

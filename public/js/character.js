@@ -19,8 +19,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const portraitData = document.getElementById('portrait-data');
 
     if (portraitContainer && portraitUpload) {
-        portraitContainer.addEventListener('click', () => {
-            if (isEditing) {
+        portraitContainer.addEventListener('click', (e) => {
+            if (isEditing && !e.target.closest('input')) {
                 portraitUpload.click();
             }
         });
@@ -72,6 +72,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const name = bubble.dataset.save;
         const checkbox = form.querySelector(`input[name="savingThrows[${name}]"]`);
         if (checkbox) checkbox.checked = bubble.classList.contains('filled');
+        recalculateDynamicStats();
     };
 
     // Skill proficiency toggle
@@ -81,6 +82,69 @@ document.addEventListener('DOMContentLoaded', () => {
         const name = bubble.dataset.skill;
         const checkbox = form.querySelector(`input[name="skills[${name}]"]`);
         if (checkbox) checkbox.checked = bubble.classList.contains('filled');
+        recalculateDynamicStats();
+    };
+
+    // Real-time Ability, Saving Throw, Skill, and Spell Save DC / Attack Bonus Recalculator
+    window.recalculateDynamicStats = function () {
+        const pb = window.proficiencyBonus || 2;
+        const spellAbilityKey = (window.spellcastingAbilityKey || 'int').toLowerCase();
+
+        // 1. Recalculate Ability Modifiers
+        const mods = {};
+        document.querySelectorAll('input[name^="abilityScores["]').forEach(input => {
+            const key = input.dataset.abilityKey || (input.name.match(/\[(\w+)\]/) ? input.name.match(/\[(\w+)\]/)[1] : null);
+            if (!key) return;
+            const score = parseInt(input.value) || 10;
+            const mod = Math.floor((score - 10) / 2);
+            mods[key] = mod;
+
+            const modEl = document.querySelector(`.rpg-ability-mod[data-ability-mod="${key}"]`);
+            if (modEl) {
+                modEl.textContent = (mod >= 0 ? '+' : '') + mod;
+            }
+        });
+
+        // 2. Recalculate Saving Throws
+        document.querySelectorAll('[data-save-mod]').forEach(el => {
+            const saveKey = el.dataset.saveMod;
+            const mod = mods[saveKey] !== undefined ? mods[saveKey] : 0;
+            const cb = form.querySelector(`input[name="savingThrows[${saveKey}]"]`);
+            const isProf = cb ? cb.checked : false;
+            const total = mod + (isProf ? pb : 0);
+            el.textContent = (total >= 0 ? '+' : '') + total;
+        });
+
+        // 3. Recalculate Skills
+        document.querySelectorAll('[data-skill-mod]').forEach(el => {
+            const skillKey = el.dataset.skillMod;
+            const abilityKey = el.dataset.skillAbility;
+            const mod = mods[abilityKey] !== undefined ? mods[abilityKey] : 0;
+            const profCb = form.querySelector(`input[name="skills[${skillKey}]"]`);
+            const expCb = form.querySelector(`input[name="skillExpertise[${skillKey}]"]`);
+            const isProf = profCb ? profCb.checked : false;
+            const isExp = expCb ? expCb.checked : false;
+
+            let total = mod;
+            if (isExp) {
+                total += (2 * pb);
+            } else if (isProf) {
+                total += pb;
+            }
+            el.textContent = (total >= 0 ? '+' : '') + total;
+        });
+
+        // 4. Recalculate Spell Save DC & Attack Bonus
+        const spellMod = mods[spellAbilityKey] !== undefined ? mods[spellAbilityKey] : (mods['int'] || 0);
+        const saveDCInput = document.querySelector('input[name="spellSaveDC"]');
+        const attackBonusInput = document.querySelector('input[name="spellAttackBonus"]');
+
+        if (saveDCInput) {
+            saveDCInput.value = 8 + pb + spellMod;
+        }
+        if (attackBonusInput) {
+            attackBonusInput.value = pb + spellMod;
+        }
     };
 
     // Death save toggle
@@ -101,34 +165,48 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function saveOriginalValues() {
         originalValues = {};
-        form.querySelectorAll('input[readonly], textarea[readonly]').forEach(input => {
-            if (input.type === 'checkbox') {
-                originalValues[input.name] = input.checked;
-            } else {
-                originalValues[input.name] = input.value;
+        form.querySelectorAll('input, select, textarea').forEach(input => {
+            if (input.name) {
+                if (input.type === 'checkbox') {
+                    originalValues[input.name] = input.checked;
+                } else {
+                    originalValues[input.name] = input.value;
+                }
             }
         });
         const equipItems = equipmentList.querySelectorAll('.equipment-item');
         originalValues.equipment = [];
         equipItems.forEach(item => {
-            originalValues.equipment.push({
-                name: item.querySelector('[name$="[name]"]').value,
-                quantity: item.querySelector('[name$="[quantity]"]').value
-            });
+            const nameEl = item.querySelector('[name$="[name]"]');
+            const qtyEl = item.querySelector('[name$="[quantity]"]');
+            if (nameEl && qtyEl) {
+                originalValues.equipment.push({
+                    name: nameEl.value,
+                    quantity: qtyEl.value
+                });
+            }
         });
         const featItems = featuresList.querySelectorAll('.feature-item');
         originalValues.features = [];
         featItems.forEach(item => {
-            originalValues.features.push({
-                name: item.querySelector('[name$="[name]"]').value,
-                description: item.querySelector('[name$="[description]"]').value
-            });
+            const nameEl = item.querySelector('[name$="[name]"]');
+            const descEl = item.querySelector('[name$="[description]"]');
+            if (nameEl && descEl) {
+                originalValues.features.push({
+                    name: nameEl.value,
+                    description: descEl.value
+                });
+            }
         });
         originalValues.portrait = document.getElementById('portrait-data') ? document.getElementById('portrait-data').value : '';
         originalValues.portraitSrc = document.getElementById('portrait-img') ? document.getElementById('portrait-img').src : '';
+        originalValues.moniker = document.getElementById('character-moniker') ? document.getElementById('character-moniker').value : '';
+        originalValues.theme = document.getElementById('theme-input') ? document.getElementById('theme-input').value : 'classic';
+        originalValues.customSections = JSON.parse(JSON.stringify(customSections));
     }
 
     function enableEditing() {
+        saveOriginalValues();
         isEditing = true;
 
         featuresList.querySelectorAll('input, textarea').forEach(el => {
@@ -169,8 +247,15 @@ document.addEventListener('DOMContentLoaded', () => {
         editToggle.classList.add('hidden');
         cancelEdit.classList.remove('hidden');
         saveBtn.classList.remove('hidden');
-        saveOriginalValues();
+        
+        const customizerToggle = document.getElementById('customizer-toggle');
+        if (customizerToggle) customizerToggle.classList.remove('hidden');
+
+        const portraitBadge = document.getElementById('portrait-change-badge');
+        if (portraitBadge) portraitBadge.classList.remove('hidden');
+
         updatePreviews();
+        if (typeof renderCustomSections === 'function') renderCustomSections();
     }
 
     function disableEditing() {
@@ -217,17 +302,27 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
+        const customizerToggle = document.getElementById('customizer-toggle');
+        if (customizerToggle) customizerToggle.classList.add('hidden');
+
+        const customizerDrawer = document.getElementById('customizer-drawer');
+        if (customizerDrawer) customizerDrawer.classList.add('hidden');
+
+        const portraitBadge = document.getElementById('portrait-change-badge');
+        if (portraitBadge) portraitBadge.classList.add('hidden');
+
         editToggle.classList.remove('hidden');
         cancelEdit.classList.add('hidden');
         saveBtn.classList.add('hidden');
         updatePreviews();
+        if (typeof renderCustomSections === 'function') renderCustomSections();
     }
 
     function restoreOriginalValues() {
         if (!originalValues || Object.keys(originalValues).length === 0) return;
 
-        form.querySelectorAll('input, textarea').forEach(input => {
-            if (originalValues.hasOwnProperty(input.name)) {
+        form.querySelectorAll('input, textarea, select').forEach(input => {
+            if (input.name && originalValues.hasOwnProperty(input.name)) {
                 if (input.type === 'checkbox') {
                     input.checked = originalValues[input.name];
                 } else {
@@ -236,7 +331,10 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        document.getElementById('inspiration-bubble').classList.toggle('filled', originalValues['inspiration'] || false);
+        const inspBubble = document.getElementById('inspiration-bubble');
+        if (inspBubble) {
+            inspBubble.classList.toggle('filled', originalValues['inspiration'] || false);
+        }
 
         form.querySelectorAll('[data-save]').forEach(bubble => {
             const name = bubble.dataset.save;
@@ -275,6 +373,16 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         if (document.getElementById('portrait-img')) {
             document.getElementById('portrait-img').src = originalValues.portraitSrc || '/images/aasimar_artificer.png';
+        }
+        if (document.getElementById('character-moniker')) {
+            document.getElementById('character-moniker').value = originalValues.moniker || '';
+        }
+        if (document.getElementById('theme-input')) {
+            document.getElementById('theme-input').value = originalValues.theme || 'classic';
+            changeTheme(originalValues.theme || 'classic');
+        }
+        if (originalValues.customSections) {
+            customSections = JSON.parse(JSON.stringify(originalValues.customSections));
         }
 
         updatePreviews();
@@ -468,7 +576,8 @@ document.addEventListener('DOMContentLoaded', () => {
     editToggle.addEventListener('click', () => {
         enableEditing();
     });
-    cancelEdit.addEventListener('click', () => {
+    cancelEdit.addEventListener('click', (e) => {
+        e.preventDefault();
         restoreOriginalValues();
         disableEditing();
     });
@@ -560,6 +669,10 @@ document.addEventListener('DOMContentLoaded', () => {
             const level = item.querySelector('.spell-level-input').value;
             if (name) data.spells.push({ name, level });
         });
+
+        data.moniker = document.getElementById('character-moniker') ? document.getElementById('character-moniker').value : '';
+        data.theme = document.getElementById('theme-input') ? document.getElementById('theme-input').value : 'classic';
+        data.customSections = customSections;
 
         try {
             const response = await fetch(`/character/${window.characterId}`, {
@@ -700,6 +813,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
         });
+        recalculateDynamicStats();
     }
 
     // Tooltip logic
@@ -853,6 +967,260 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         return parts.join(" ");
     }
+
+    // --- Custom Sections & Dynamic Tables Studio ---
+    let customSections = window.initialCustomSections || [];
+
+    window.renderCustomSections = function () {
+        const containers = {
+            custom: document.getElementById('custom-sections-custom'),
+            attributes: document.getElementById('custom-sections-attributes'),
+            inventory: document.getElementById('custom-sections-inventory'),
+            features: document.getElementById('custom-sections-features'),
+            spellbook: document.getElementById('custom-sections-spellbook')
+        };
+
+        // Clear all section containers
+        Object.values(containers).forEach(el => {
+            if (el) el.innerHTML = '';
+        });
+
+        if (customSections.length === 0 && containers.custom) {
+            containers.custom.innerHTML = `
+                <div class="text-center py-8 text-gray-500 italic bg-slate-900/30 rounded-xl border border-dashed border-slate-800">
+                    No custom sections yet. Enter Edit Mode to add text blocks, dynamic tables, sticky notes, or highlight callouts!
+                </div>
+            `;
+            return;
+        }
+
+        customSections.forEach((sec) => {
+            const card = document.createElement('div');
+            let typeClass = 'custom-section-card';
+            if (sec.type === 'note') typeClass += ' section-sticky-note';
+            if (sec.type === 'highlight') typeClass += ' section-highlight';
+            card.className = typeClass;
+            card.dataset.id = sec.id;
+
+            let contentHTML = '';
+            if (sec.type === 'table') {
+                const headers = sec.headers || ['Column 1', 'Column 2'];
+                const rows = sec.rows || [['Row 1 Cell 1', 'Row 1 Cell 2']];
+
+                let headerHTML = headers.map((h, colIdx) => `
+                    <th class="relative group">
+                        <div class="flex items-center justify-between gap-1">
+                            <input type="text" value="${escapeHtml(h)}" ${isEditing ? '' : 'readonly'}
+                                oninput="updateCustomTableHead('${sec.id}', ${colIdx}, this.value)" class="w-full bg-transparent font-bold" />
+                            ${isEditing && headers.length > 1 ? `<button type="button" class="text-red-400 font-bold hover:text-red-300 px-1 text-sm" title="Delete Column" onclick="removeCustomTableColumn('${sec.id}', ${colIdx})">&times;</button>` : ''}
+                        </div>
+                    </th>
+                `).join('');
+
+                let rowsHTML = rows.map((row, rowIdx) => `
+                    <tr>
+                        ${row.map((cell, colIdx) => `
+                            <td>
+                                <input type="text" value="${escapeHtml(cell)}" ${isEditing ? '' : 'readonly'}
+                                    oninput="updateCustomTableCell('${sec.id}', ${rowIdx}, ${colIdx}, this.value)" class="w-full bg-transparent" />
+                            </td>
+                        `).join('')}
+                        ${isEditing ? `<td class="w-8 text-center"><button type="button" class="text-red-400 font-bold hover:text-red-300" title="Delete Row" onclick="removeCustomTableRow('${sec.id}', ${rowIdx})">&times;</button></td>` : ''}
+                    </tr>
+                `).join('');
+
+                contentHTML = `
+                    <div class="overflow-x-auto">
+                        <table class="custom-table">
+                            <thead>
+                                <tr>
+                                    ${headerHTML}
+                                    ${isEditing ? '<th class="w-8"></th>' : ''}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${rowsHTML}
+                            </tbody>
+                        </table>
+                    </div>
+                    ${isEditing ? `
+                        <div class="flex gap-2 mt-3 text-xs">
+                            <button type="button" class="rpg-btn rpg-btn-secondary text-[11px] px-2 py-1" onclick="addCustomTableRow('${sec.id}')">+ Add Row</button>
+                            <button type="button" class="rpg-btn rpg-btn-secondary text-[11px] px-2 py-1" onclick="addCustomTableColumn('${sec.id}')">+ Add Column</button>
+                        </div>
+                    ` : ''}
+                `;
+            } else if (sec.type === 'note' || sec.type === 'highlight' || sec.type === 'text') {
+                contentHTML = `
+                    <textarea class="w-full bg-transparent border-none p-0 text-sm focus:ring-0 resize-y" ${isEditing ? '' : 'readonly'}
+                        rows="3" placeholder="Enter content..."
+                        oninput="updateCustomSectionContent('${sec.id}', this.value)">${escapeHtml(sec.content || '')}</textarea>
+                `;
+            }
+
+            const targetTab = sec.targetTab || 'custom';
+            card.innerHTML = `
+                <div class="custom-section-header flex items-center justify-between gap-2">
+                    <input type="text" class="custom-section-title bg-transparent border-none p-0 text-base font-bold focus:ring-0 flex-grow"
+                        value="${escapeHtml(sec.title || 'Untitled Section')}" ${isEditing ? '' : 'readonly'}
+                        oninput="updateCustomSectionTitle('${sec.id}', this.value)" placeholder="Section Title" />
+                    ${isEditing ? `
+                        <div class="flex items-center gap-2">
+                            <select class="bg-slate-800 text-[11px] text-yellow-400 border border-slate-700 rounded px-1.5 py-0.5"
+                                onchange="updateCustomSectionTargetTab('${sec.id}', this.value)">
+                              <option value="custom" ${targetTab === 'custom' ? 'selected' : ''}>Placement: Custom Tab</option>
+                              <option value="attributes" ${targetTab === 'attributes' ? 'selected' : ''}>Placement: Attributes Tab</option>
+                              <option value="inventory" ${targetTab === 'inventory' ? 'selected' : ''}>Placement: Inventory Tab</option>
+                              <option value="features" ${targetTab === 'features' ? 'selected' : ''}>Placement: Features Tab</option>
+                              <option value="spellbook" ${targetTab === 'spellbook' ? 'selected' : ''}>Placement: Spells Tab</option>
+                            </select>
+                            <button type="button" class="text-red-400 hover:text-red-300 font-bold text-lg px-2" onclick="deleteCustomSection('${sec.id}')" title="Delete Section">&times;</button>
+                        </div>
+                    ` : ''}
+                </div>
+                ${contentHTML}
+            `;
+
+            const targetContainer = containers[targetTab] || containers.custom;
+            if (targetContainer) targetContainer.appendChild(card);
+        });
+    };
+
+    window.addCustomSection = function (type) {
+        const id = 'sec_' + Date.now();
+        if (type === 'table') {
+            customSections.push({
+                id,
+                type: 'table',
+                targetTab: 'custom',
+                title: 'Custom Dynamic Table',
+                headers: ['Item / Subject', 'Description', 'Notes'],
+                rows: [
+                    ['Sample Item 1', 'First detail note', 'Active'],
+                    ['Sample Item 2', 'Second detail note', 'Pending']
+                ]
+            });
+        } else if (type === 'note') {
+            customSections.push({
+                id,
+                type: 'note',
+                targetTab: 'custom',
+                title: 'Quick Sticky Note',
+                content: 'Important note for session details, DM clues, or reminders.'
+            });
+        } else if (type === 'highlight') {
+            customSections.push({
+                id,
+                type: 'highlight',
+                targetTab: 'custom',
+                title: 'Featured Oath or Key Rule',
+                content: 'Callout text highlighting a key feature, character quote, or house rule.'
+            });
+        } else {
+            customSections.push({
+                id,
+                type: 'text',
+                targetTab: 'custom',
+                title: 'Custom Notes Section',
+                content: 'Write any additional backstory, quest details, or companion information here.'
+            });
+        }
+        renderCustomSections();
+        switchTab('tab-custom');
+    };
+
+    window.updateCustomSectionTargetTab = function (id, targetTab) {
+        const sec = customSections.find(s => s.id === id);
+        if (sec) {
+            sec.targetTab = targetTab;
+            renderCustomSections();
+        }
+    };
+
+    window.updateCustomSectionTitle = function (id, title) {
+        const sec = customSections.find(s => s.id === id);
+        if (sec) sec.title = title;
+    };
+
+    window.updateCustomSectionContent = function (id, content) {
+        const sec = customSections.find(s => s.id === id);
+        if (sec) sec.content = content;
+    };
+
+    window.updateCustomTableHead = function (id, colIdx, val) {
+        const sec = customSections.find(s => s.id === id);
+        if (sec && sec.headers) sec.headers[colIdx] = val;
+    };
+
+    window.updateCustomTableCell = function (id, rowIdx, colIdx, val) {
+        const sec = customSections.find(s => s.id === id);
+        if (sec && sec.rows && sec.rows[rowIdx]) sec.rows[rowIdx][colIdx] = val;
+    };
+
+    window.addCustomTableRow = function (id) {
+        const sec = customSections.find(s => s.id === id);
+        if (sec && sec.rows) {
+            const newRow = (sec.headers || ['']).map(() => '');
+            sec.rows.push(newRow);
+            renderCustomSections();
+        }
+    };
+
+    window.removeCustomTableRow = function (id, rowIdx) {
+        const sec = customSections.find(s => s.id === id);
+        if (sec && sec.rows) {
+            sec.rows.splice(rowIdx, 1);
+            renderCustomSections();
+        }
+    };
+
+    window.addCustomTableColumn = function (id) {
+        const sec = customSections.find(s => s.id === id);
+        if (sec) {
+            sec.headers = sec.headers || [];
+            sec.headers.push(`Column ${sec.headers.length + 1}`);
+            sec.rows = sec.rows || [];
+            sec.rows.forEach(r => r.push(''));
+            renderCustomSections();
+        }
+    };
+
+    window.removeCustomTableColumn = function (id, colIdx) {
+        const sec = customSections.find(s => s.id === id);
+        if (sec && sec.headers && sec.headers.length > 1) {
+            sec.headers.splice(colIdx, 1);
+            if (sec.rows) {
+                sec.rows.forEach(row => row.splice(colIdx, 1));
+            }
+            renderCustomSections();
+        }
+    };
+
+    window.deleteCustomSection = function (id) {
+        customSections = customSections.filter(s => s.id !== id);
+        renderCustomSections();
+    };
+
+    function escapeHtml(str) {
+        if (typeof str !== 'string') return str || '';
+        return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+    }
+
+    // Theme Switcher & Drawer
+    window.changeTheme = function (themeName) {
+        const container = document.getElementById('sheet-container');
+        if (container) container.dataset.theme = themeName;
+        const themeInput = document.getElementById('theme-input');
+        if (themeInput) themeInput.value = themeName;
+    };
+
+    window.toggleCustomizerDrawer = function () {
+        const drawer = document.getElementById('customizer-drawer');
+        if (drawer) drawer.classList.toggle('hidden');
+    };
+
+    // Initialize custom studio components
+    renderCustomSections();
 
     // Initialize previews
     updatePreviews();

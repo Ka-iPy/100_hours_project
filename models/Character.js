@@ -597,6 +597,10 @@ export class Character {
     this.deathSaveFail3 = false;
     this.otherProficiencies = [];
     this.portrait = "";
+    this.moniker = "";
+    this.theme = "classic";
+    this.customSections = [];
+    this.stickers = [];
   }
 
   getTotalLevel() {
@@ -830,6 +834,10 @@ export class Character {
       deathSaveFail3: this.deathSaveFail3,
       otherProficiencies: [...this.otherProficiencies],
       portrait: this.portrait,
+      moniker: this.moniker || "",
+      theme: this.theme || "classic",
+      customSections: this.customSections || [],
+      stickers: this.stickers || [],
     };
   }
 
@@ -891,6 +899,10 @@ export class Character {
     char.deathSaveFail3 = !!json.deathSaveFail3;
     char.otherProficiencies = json.otherProficiencies || [];
     char.portrait = json.portrait || "";
+    char.moniker = json.moniker || "";
+    char.theme = json.theme || "classic";
+    char.customSections = json.customSections || [];
+    char.stickers = json.stickers || [];
     return char;
   }
 
