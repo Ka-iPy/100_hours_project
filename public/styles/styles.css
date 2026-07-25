@@ -921,8 +921,9 @@ select:focus {
 
 /* ========== Character Creator ========== */
 .creator-page {
-  max-width: 800px;
+  max-width: 1600px;
   margin: 0 auto;
+  width: 100%;
 }
 
 .creator-page>h1 {
@@ -1299,4 +1300,366 @@ select:focus {
     background: transparent !important;
     color: black !important;
   }
+}
+
+/* ==========================================================================
+   Character Builder Wizard (3-Column Step-by-Step UI)
+   ========================================================================== */
+
+.creator-wizard-layout {
+  display: grid;
+  grid-template-columns: 260px 1fr 340px;
+  gap: 20px;
+  min-height: calc(100vh - 120px);
+  max-width: 1600px;
+  margin: 0 auto;
+}
+
+@media (max-width: 1280px) {
+  .creator-wizard-layout {
+    grid-template-columns: 240px 1fr;
+  }
+  .creator-inspector-col {
+    grid-column: span 2;
+  }
+}
+
+@media (max-width: 860px) {
+  .creator-wizard-layout {
+    grid-template-columns: 1fr;
+  }
+  .creator-stepper-col, .creator-inspector-col {
+    grid-column: span 1;
+  }
+}
+
+/* Left Column: Stepper Sidebar */
+.creator-stepper-panel {
+  background-color: var(--rpg-panel-bg);
+  border: 2px solid var(--rpg-border);
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  position: sticky;
+  top: 20px;
+  height: fit-content;
+}
+
+.stepper-header {
+  border-bottom: 1px solid rgba(139, 107, 67, 0.3);
+  padding-bottom: 12px;
+  margin-bottom: 4px;
+}
+
+.stepper-title {
+  font-family: 'Cinzel', serif;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--rpg-border-glow);
+}
+
+.stepper-subtitle {
+  font-size: 0.75rem;
+  color: var(--rpg-text-secondary);
+}
+
+.stepper-progress-container {
+  margin-top: 8px;
+}
+
+.stepper-progress-bar-bg {
+  width: 100%;
+  height: 6px;
+  background-color: rgba(255, 255, 255, 0.08);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.stepper-progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #6366f1, #8b5cf6, #ec4899);
+  width: 12.5%;
+  transition: width 0.3s ease;
+}
+
+.stepper-progress-text {
+  font-size: 0.7rem;
+  color: #94a3b8;
+  text-align: right;
+  margin-top: 4px;
+}
+
+/* Stepper Steps Navigation */
+.stepper-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.stepper-step-btn {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  background-color: transparent;
+  color: #94a3b8;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+  width: 100%;
+}
+
+.stepper-step-btn:hover:not(:disabled) {
+  background-color: rgba(255, 255, 255, 0.04);
+  color: #f1f5f9;
+}
+
+.stepper-step-btn.active {
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(139, 92, 246, 0.15));
+  border-color: #6366f1;
+  color: #ffffff;
+  box-shadow: 0 0 12px rgba(99, 102, 241, 0.25);
+}
+
+.stepper-step-btn.completed {
+  color: #cbd5e1;
+}
+
+.stepper-step-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.step-num-badge {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.stepper-step-btn.active .step-num-badge {
+  background-color: #6366f1;
+  border-color: #818cf8;
+  color: #ffffff;
+}
+
+.stepper-step-btn.completed .step-num-badge {
+  background-color: #10b981;
+  border-color: #34d399;
+  color: #ffffff;
+}
+
+.step-label-container {
+  display: flex;
+  flex-direction: column;
+}
+
+.step-label-title {
+  font-family: 'Cinzel', serif;
+  font-size: 0.85rem;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.step-label-desc {
+  font-size: 0.68rem;
+  opacity: 0.75;
+}
+
+/* Middle Column: Options Grid & Content */
+.creator-main-panel {
+  background-color: var(--rpg-panel-bg);
+  border: 2px solid var(--rpg-border);
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.creator-main-header {
+  background-color: var(--rpg-panel-header-bg);
+  border-bottom: 1px solid var(--rpg-border);
+  padding: 16px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.creator-step-title {
+  font-family: 'Cinzel', serif;
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--rpg-border-glow);
+}
+
+.creator-main-body {
+  padding: 20px;
+  flex: 1;
+  overflow-y: auto;
+}
+
+.creator-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 14px;
+}
+
+.creator-option-card {
+  background-color: rgba(15, 17, 26, 0.7);
+  border: 1px solid rgba(139, 107, 67, 0.3);
+  border-radius: 10px;
+  padding: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.creator-option-card:hover {
+  border-color: var(--rpg-border-glow);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+}
+
+.creator-option-card.selected {
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(139, 92, 246, 0.1));
+  border: 2px solid #6366f1;
+  box-shadow: 0 0 16px rgba(99, 102, 241, 0.3);
+}
+
+.card-title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.card-name {
+  font-family: 'Cinzel', serif;
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: #f1f5f9;
+}
+
+.source-tag {
+  font-size: 0.6rem;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background-color: rgba(255, 255, 255, 0.08);
+  color: #94a3b8;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.card-snippet {
+  font-size: 0.78rem;
+  color: #94a3b8;
+  margin-top: 8px;
+  line-clamp: 2;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Right Column: Dynamic Inspector Panel */
+.creator-inspector-panel {
+  background-color: var(--rpg-panel-bg);
+  border: 2px solid var(--rpg-border);
+  border-radius: 12px;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  position: sticky;
+  top: 20px;
+  max-height: calc(100vh - 80px);
+  overflow-y: auto;
+}
+
+.inspector-empty {
+  text-align: center;
+  color: #64748b;
+  padding: 40px 10px;
+  font-style: italic;
+}
+
+.inspector-header-title {
+  font-family: 'Cinzel Decorative', serif;
+  font-size: 1.2rem;
+  color: var(--rpg-border-glow);
+  margin-bottom: 4px;
+}
+
+.inspector-badges-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.inspector-badge-pill {
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 12px;
+  background: rgba(99, 102, 241, 0.15);
+  color: #a5b4fc;
+  border: 1px solid rgba(99, 102, 241, 0.3);
+}
+
+.inspector-asi-box {
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  border-radius: 8px;
+  padding: 10px;
+  margin-bottom: 12px;
+}
+
+.inspector-asi-title {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #34d399;
+  letter-spacing: 0.05em;
+  margin-bottom: 6px;
+}
+
+.inspector-asi-chips {
+  display: flex;
+  gap: 8px;
+}
+
+.asi-chip {
+  background: #10b981;
+  color: #022c22;
+  font-weight: 800;
+  font-size: 0.75rem;
+  padding: 3px 8px;
+  border-radius: 6px;
+}
+
+/* Footer Controls Bar */
+.creator-wizard-footer {
+  grid-column: 1 / -1;
+  background-color: var(--rpg-panel-header-bg);
+  border: 2px solid var(--rpg-border);
+  border-radius: 12px;
+  padding: 14px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }

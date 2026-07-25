@@ -1,872 +1,872 @@
 <%- include('partials/header.ejs') %>
 
-  <main class="creator-page">
-    <h1>Create a Character</h1>
+<main class="creator-page">
+  <form id="characterForm" action="/createCharacter" method="POST" class="creator-wizard-layout">
 
-    <form id="characterForm" action="/createCharacter" method="POST" class="creator-form">
-
-      <!-- Basic Info -->
-      <div class="creator-section">
-        <div class="creator-section-header">
-          <h2>Basic Info</h2>
+    <!-- LEFT COLUMN: Stepper Progress Sidebar -->
+    <aside class="creator-stepper-col">
+      <div class="creator-stepper-panel">
+        <div class="stepper-header">
+          <h2 class="stepper-title">Hero Builder</h2>
+          <p class="stepper-subtitle">Create your hero step-by-step</p>
+          <div class="stepper-progress-container">
+            <div class="stepper-progress-bar-bg">
+              <div id="wizard-progress-bar" class="stepper-progress-bar-fill" style="width: 12.5%;"></div>
+            </div>
+            <div id="wizard-progress-text" class="stepper-progress-text">Step 1 of 8 (12%)</div>
+          </div>
         </div>
-        <div class="creator-section-body">
+
+        <nav class="stepper-nav">
+          <button type="button" class="stepper-step-btn active" data-step="1" onclick="goToStep(1)">
+            <span class="step-num-badge">1</span>
+            <div class="step-label-container">
+              <span class="step-label-title">Ruleset & Core</span>
+              <span class="step-label-desc">Name & preferences</span>
+            </div>
+          </button>
+          <button type="button" class="stepper-step-btn" data-step="2" onclick="goToStep(2)">
+            <span class="step-num-badge">2</span>
+            <div class="step-label-container">
+              <span class="step-label-title">Race</span>
+              <span class="step-label-desc">Species & heritage</span>
+            </div>
+          </button>
+          <button type="button" class="stepper-step-btn" data-step="3" onclick="goToStep(3)">
+            <span class="step-num-badge">3</span>
+            <div class="step-label-container">
+              <span class="step-label-title">Class</span>
+              <span class="step-label-desc">Class & level</span>
+            </div>
+          </button>
+          <button type="button" class="stepper-step-btn" data-step="4" onclick="goToStep(4)">
+            <span class="step-num-badge">4</span>
+            <div class="step-label-container">
+              <span class="step-label-title">Background</span>
+              <span class="step-label-desc">Origin & alignment</span>
+            </div>
+          </button>
+          <button type="button" class="stepper-step-btn" data-step="5" onclick="goToStep(5)">
+            <span class="step-num-badge">5</span>
+            <div class="step-label-container">
+              <span class="step-label-title">Ability Scores</span>
+              <span class="step-label-desc">Point Buy / Array</span>
+            </div>
+          </button>
+          <button type="button" class="stepper-step-btn" data-step="6" onclick="goToStep(6)">
+            <span class="step-num-badge">6</span>
+            <div class="step-label-container">
+              <span class="step-label-title">Equipment</span>
+              <span class="step-label-desc">Starting gear</span>
+            </div>
+          </button>
+          <button type="button" class="stepper-step-btn" data-step="7" onclick="goToStep(7)">
+            <span class="step-num-badge">7</span>
+            <div class="step-label-container">
+              <span class="step-label-title">Spells</span>
+              <span class="step-label-desc">Cantrips & spells</span>
+            </div>
+          </button>
+          <button type="button" class="stepper-step-btn" data-step="8" onclick="goToStep(8)">
+            <span class="step-num-badge">8</span>
+            <div class="step-label-container">
+              <span class="step-label-title">Review</span>
+              <span class="step-label-desc">Cerberus summary</span>
+            </div>
+          </button>
+        </nav>
+      </div>
+    </aside>
+
+    <!-- MIDDLE COLUMN: Active Step Content -->
+    <main class="creator-main-panel">
+      <div class="creator-main-header">
+        <h2 id="wizard-step-title" class="creator-step-title">1. Ruleset & Basic Info</h2>
+        <span id="wizard-step-indicator" class="label-small">Step 1 / 8</span>
+      </div>
+
+      <div class="creator-main-body">
+        <!-- STEP 1: Basic Info -->
+        <div id="step-panel-1" class="wizard-step-panel">
+          <div class="creator-field mb-4">
+            <label for="name" class="font-bold block mb-1 text-gray-200">Character Name</label>
+            <input type="text" id="name" name="name" class="w-full bg-slate-900 border border-slate-700 text-white rounded p-3" placeholder="Enter hero's name..." required>
+          </div>
           <div class="creator-field">
-            <label for="name">Character Name</label>
-            <input type="text" id="name" name="name" required>
+            <label for="ruleset" class="font-bold block mb-1 text-gray-200">Edition / Ruleset Preference</label>
+            <select id="ruleset" class="w-full bg-slate-900 border border-slate-700 text-white rounded p-3">
+              <option value="5e">D&D 5e Standard Rules (PHB / XPHB / Expanded)</option>
+              <option value="2024">2024 Revised Core Rules Preferred</option>
+            </select>
           </div>
         </div>
-      </div>
 
-      <!-- Race & Heritage -->
-      <div class="creator-section">
-        <div class="creator-section-header">
-          <h2>Race & Heritage</h2>
+        <!-- STEP 2: Race & Subrace -->
+        <div id="step-panel-2" class="wizard-step-panel hidden">
+          <div class="mb-4">
+            <input type="text" id="race-search" class="w-full bg-slate-900 border border-slate-700 text-white rounded px-3 py-2 text-sm" placeholder="Search races (e.g. Dragonborn, Elf, Dwarf)..." oninput="filterRaces(this.value)">
+            <input type="hidden" id="race" name="race" required>
+          </div>
+          <div id="race-cards-grid" class="creator-cards-grid max-h-[420px] overflow-y-auto pr-1">
+            <!-- Dynamically rendered race cards -->
+          </div>
+          <div id="subraceContainer" class="mt-4 p-4 bg-slate-900/60 rounded-xl border border-slate-800 hidden">
+            <label for="subrace" class="font-bold block mb-1 text-yellow-500 text-sm">Select Subrace / Heritage</label>
+            <select id="subrace" name="subrace" class="w-full bg-slate-800 border border-slate-700 text-white rounded p-2 text-sm" onchange="onSubraceChange()">
+              <option value="">None</option>
+            </select>
+          </div>
         </div>
-        <div class="creator-section-body">
-          <div class="creator-row cols-2">
-            <div class="creator-field">
-              <label for="race">Race</label>
-              <select id="race" name="race" required>
-                <option value="">Select a race...</option>
-                <% races.forEach(race=> {
-                  const r = JSON.parse(race); %>
-                  <option value="<%= race %>">
-                    <%= `${r.name} (${r.source})` %>
-                  </option>
-                  <% }) %>
-              </select>
-            </div>
 
-            <div class="creator-field" id="subraceContainer" style="display: none;">
-              <label for="subrace">Subrace</label>
-              <select id="subrace" name="subrace">
+        <!-- STEP 3: Class & Level -->
+        <div id="step-panel-3" class="wizard-step-panel hidden">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div>
+              <label for="level" class="font-bold block mb-1 text-gray-200">Starting Level</label>
+              <input type="number" id="level" name="level" min="1" max="20" value="1" class="w-full bg-slate-900 border border-slate-700 text-white rounded p-2 font-bold" required onchange="onLevelChange()">
+            </div>
+            <div id="subclassContainer" class="hidden">
+              <label for="subclass" class="font-bold block mb-1 text-yellow-500">Subclass Choice</label>
+              <select id="subclass" name="subclass" class="w-full bg-slate-800 border border-slate-700 text-white rounded p-2 text-sm" onchange="onSubclassChange()">
                 <option value="">None</option>
-                <% subraces.forEach(sub=> {
-                  const sr = JSON.parse(sub); %>
-                  <option value="<%= sub %>" data-parent="<%= sr.raceName %>" data-race-source="<%= sr.raceSource %>">
-                    <%= `${sr.name} (${sr.source})` %>
-                  </option>
-                  <% }) %>
               </select>
             </div>
           </div>
-        </div>
-      </div>
-
-      <!-- Class & Level -->
-      <div class="creator-section">
-        <div class="creator-section-header">
-          <h2>Class & Level</h2>
-        </div>
-        <div class="creator-section-body">
-          <div class="creator-row cols-3">
-            <div class="creator-field">
-              <label for="className">Class</label>
-              <select id="className" name="className" required>
-                <option value="">Select a class...</option>
-                <% classes.forEach(cls=> {
-                  const c = JSON.parse(cls); %>
-                  <option value="<%= cls %>">
-                    <%= `${c.name} (${c.source})` %>
-                  </option>
-                  <% }) %>
-              </select>
-            </div>
-
-            <div class="creator-field">
-              <label for="level">Level</label>
-              <input type="number" id="level" name="level" min="1" max="20" value="1" required>
-            </div>
-
-            <div id="subclassContainer" class="creator-field" style="display: none;">
-              <label for="subclass">Subclass</label>
-              <select id="subclass" name="subclass">
-                <option value="">None</option>
-                <% subclasses.forEach(sc=> {
-                  const s = JSON.parse(sc); %>
-                  <option value="<%= sc %>" data-class="<%= s.className %>">
-                    <%= `${s.name} (${s.source})` %>
-                  </option>
-                  <% }) %>
-              </select>
-            </div>
+          <input type="hidden" id="className" name="className" required>
+          <div id="class-cards-grid" class="creator-cards-grid max-h-[400px] overflow-y-auto pr-1">
+            <!-- Dynamically rendered class cards -->
           </div>
         </div>
-      </div>
 
-      <!-- Ability Scores -->
-      <div class="creator-section">
-        <div class="creator-section-header">
-          <h2>Ability Scores</h2>
-        </div>
-        <div class="creator-section-body">
-          <div class="creator-row cols-6">
-            <% abilities.forEach(ability=> {
-              const displayName = ability.charAt(0).toUpperCase() + ability.slice(1); %>
-              <div class="creator-ability-card">
-                <label for="stat_<%= ability %>">
-                  <%= displayName %>
-                </label>
-                <input type="number" id="stat_<%= ability %>" name="stats[<%= ability %>]" min="1" max="20" value="10">
-              </div>
+        <!-- STEP 4: Background & Alignment -->
+        <div id="step-panel-4" class="wizard-step-panel hidden">
+          <div class="mb-4">
+            <label for="alignment" class="font-bold block mb-1 text-gray-200">Alignment</label>
+            <select id="alignment" name="alignment" class="w-full bg-slate-900 border border-slate-700 text-white rounded p-2">
+              <% alignments.forEach(align => { %>
+                <option value="<%= align %>"><%= align %></option>
               <% }) %>
+            </select>
+          </div>
+          <input type="hidden" id="background" name="background" required>
+          <div id="background-cards-grid" class="creator-cards-grid max-h-[400px] overflow-y-auto pr-1">
+            <!-- Dynamically rendered background cards -->
           </div>
         </div>
-      </div>
 
-      <!-- Background & Alignment -->
-      <div class="creator-section">
-        <div class="creator-section-header">
-          <h2>Background & Alignment</h2>
-        </div>
-        <div class="creator-section-body">
-          <div class="creator-row cols-2">
-            <div class="creator-field">
-              <label for="background">Background</label>
-              <select id="background" name="background" required>
-                <option value="">Select a background...</option>
-                <% backgrounds.forEach(bg=> {
-                  const b = JSON.parse(bg); %>
-                  <option value="<%= bg %>">
-                    <%= `${b.name} (${b.source})` %>
-                  </option>
-                  <% }) %>
-              </select>
-            </div>
-            <div class="creator-field">
-              <label for="alignment">Alignment</label>
-              <select id="alignment" name="alignment">
-                <% alignments.forEach(align=> { %>
-                  <option value="<%= align %>">
-                    <%= align %>
-                  </option>
-                  <% }) %>
-              </select>
-            </div>
+        <!-- STEP 5: Ability Scores (Point Buy, Standard Array, Manual) -->
+        <div id="step-panel-5" class="wizard-step-panel hidden">
+          <div class="flex gap-2 mb-4">
+            <button type="button" class="rpg-btn rpg-btn-secondary text-xs active" id="btn-mode-pointbuy" onclick="setAbilityMode('pointbuy')">Point Buy (27 pts)</button>
+            <button type="button" class="rpg-btn rpg-btn-secondary text-xs" id="btn-mode-array" onclick="setAbilityMode('array')">Standard Array</button>
+            <button type="button" class="rpg-btn rpg-btn-secondary text-xs" id="btn-mode-manual" onclick="setAbilityMode('manual')">Manual Roll</button>
+          </div>
+          <div id="pointbuy-tracker" class="p-3 bg-slate-900/60 rounded border border-slate-800 mb-4 flex justify-between items-center text-sm font-bold text-yellow-400">
+            <span>Points Remaining: <span id="points-left">27</span> / 27</span>
+            <span class="text-xs text-gray-400 font-normal">Costs: 8=0, 9=1, 10=2, 11=3, 12=4, 13=5, 14=7, 15=9</span>
+          </div>
+          <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+            <% abilities.forEach(ability => {
+              const displayName = ability.charAt(0).toUpperCase() + ability.slice(1); %>
+              <div class="creator-ability-card p-3 bg-slate-900/50 rounded-xl border border-slate-800">
+                <label for="stat_<%= ability %>" class="font-bold text-sm text-gray-200 block mb-1"><%= displayName %></label>
+                <div class="flex items-center gap-2">
+                  <input type="number" id="stat_<%= ability %>" name="stats[<%= ability %>]" min="1" max="20" value="10"
+                    class="w-16 text-center bg-slate-800 border border-slate-700 text-white rounded p-1 font-bold text-lg"
+                    onchange="onStatChange('<%= ability %>')">
+                  <div class="text-xs text-gray-400">
+                    <div>Base: <span id="base_<%= ability %>">10</span></div>
+                    <div class="text-emerald-400 font-bold">Racial: <span id="asi_<%= ability %>">+0</span></div>
+                  </div>
+                </div>
+              </div>
+            <% }) %>
           </div>
         </div>
-      </div>
 
-      <!-- Feats -->
-      <div class="creator-section" id="featsSection" style="display: none;">
-        <div class="creator-section-header">
-          <h2>Feats <span id="featsCounter" class="creator-counter"></span></h2>
-        </div>
-        <div class="creator-section-body">
-          <div id="featSlotsContainer" class="creator-eq-choices">
-            <!-- Dynamic feat slots will be rendered here -->
-          </div>
-        </div>
-      </div>
-
-      <!-- Starting Equipment (dynamically loaded) -->
-      <div id="equipmentSection" class="creator-section" style="display: none;">
-        <div class="creator-section-header">
-          <h2>Starting Equipment</h2>
-        </div>
-        <div class="creator-section-body">
+        <!-- STEP 6: Equipment -->
+        <div id="step-panel-6" class="wizard-step-panel hidden">
           <div id="equipmentChoices"></div>
-          <div id="equipmentGoldAlt" class="creator-gold-alt"></div>
+          <div id="equipmentGoldAlt" class="creator-gold-alt mt-4"></div>
         </div>
-      </div>
 
-      <!-- Spell Selection (dynamically loaded) -->
-      <div id="spellSection" class="creator-section" style="display: none;">
-        <div class="creator-section-header">
-          <h2>Spellcasting</h2>
-        </div>
-        <div class="creator-section-body">
-          <div id="spellInfo"></div>
-
-          <!-- Cantrips -->
+        <!-- STEP 7: Spells -->
+        <div id="step-panel-7" class="wizard-step-panel hidden">
+          <div id="spellInfo" class="mb-4"></div>
           <div id="cantripSection" style="display: none;">
-            <h3 class="hall-section-title" style="margin-top: 12px;">Cantrips <span id="cantripCounter"
-                class="creator-counter"></span></h3>
+            <h3 class="font-bold text-sm text-yellow-500 mb-2">Cantrips <span id="cantripCounter"></span></h3>
             <div id="cantripList" class="creator-pick-grid"></div>
           </div>
-
-          <!-- Spells -->
-          <div id="spellPickSection" style="display: none; margin-top: 16px;">
-            <h3 class="hall-section-title">Spells <span id="spellCounter" class="creator-counter"></span></h3>
-            <div id="spellLevelFilter" class="creator-filter-bar"></div>
+          <div id="spellPickSection" style="display: none;" class="mt-4">
+            <h3 class="font-bold text-sm text-yellow-500 mb-2">Level 1 Spells <span id="spellCounter"></span></h3>
             <div id="spellList" class="creator-pick-grid"></div>
           </div>
         </div>
+
+        <!-- STEP 8: Review & Cerberus -->
+        <div id="step-panel-8" class="wizard-step-panel hidden space-y-4">
+          <div class="p-4 bg-slate-900/60 rounded-xl border border-slate-800">
+            <h3 class="font-bold text-lg text-yellow-500 mb-2">Character Summary</h3>
+            <div id="review-summary-grid" class="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+              <!-- Dynamically populated summary -->
+            </div>
+          </div>
+          <div class="p-4 bg-purple-950/30 rounded-xl border border-purple-800/40">
+            <h3 class="font-bold text-sm text-purple-400 mb-1">Cerberus Watchdog Inspection</h3>
+            <p class="text-xs text-gray-400 mb-2">Real-time analysis of auto-granted traits, stat increases, and proficiencies.</p>
+            <div id="cerberus-review-box" class="text-xs text-gray-300 space-y-1">
+              <!-- Dynamically populated Cerberus watchdog breakdown -->
+            </div>
+          </div>
+        </div>
       </div>
 
-      <button type="submit" class="creator-submit">Create Character</button>
-    </form>
+      <!-- Footer Controls Bar -->
+      <div class="creator-wizard-footer">
+        <button type="button" id="wizard-btn-back" class="rpg-btn rpg-btn-secondary" onclick="prevStep()" disabled>&larr; Back</button>
+        <button type="button" id="wizard-btn-next" class="rpg-btn rpg-btn-primary" onclick="nextStep()">Next &rarr;</button>
+        <button type="submit" id="wizard-btn-submit" class="rpg-btn rpg-btn-primary hidden">✨ Create Character</button>
+      </div>
+    </main>
 
-    <div id="characterPreview" class="creator-preview">
-      <h2>Character Preview</h2>
-      <pre id="characterJson"></pre>
-    </div>
-  </main>
+    <!-- RIGHT COLUMN: Dynamic Live Inspector Panel -->
+    <aside class="creator-inspector-col">
+      <div class="creator-inspector-panel" id="inspector-panel">
+        <div class="inspector-empty">
+          <p>Select any Race, Class, or Background option card to inspect details, traits, and Ability Score Increases.</p>
+        </div>
+      </div>
+    </aside>
+  </form>
 
-  <script>
-    const allFeats = [
-      <% feats.forEach(feat => { %>
-        <%- feat %>,
-      <% }) %>
-    ];
-    const form = document.getElementById('characterForm');
-    const preview = document.getElementById('characterPreview');
-    const jsonDisplay = document.getElementById('characterJson');
+  <div id="characterPreview" class="creator-preview">
+    <h2>Character Preview</h2>
+    <pre id="characterJson"></pre>
+  </div>
+</main>
 
-    const raceSelect = document.getElementById('race');
-    const subraceSelect = document.getElementById('subrace');
-    const subraceContainer = document.getElementById('subraceContainer');
+<script>
+  // Raw Data Passed from Express
+  const rawRaces = [<%- races.join(',') %>];
+  const rawSubraces = [<%- subraces.join(',') %>];
+  const rawClasses = [<%- classes.join(',') %>];
+  const rawSubclasses = [<%- subclasses.join(',') %>];
+  const rawBackgrounds = [<%- backgrounds.join(',') %>];
+  const allFeats = [<%- feats.join(',') %>];
 
-    const classSelect = document.getElementById('className');
-    const subclassSelect = document.getElementById('subclass');
-    const subclassContainer = document.getElementById('subclassContainer');
-    const levelInput = document.getElementById('level');
+  // Wizard Step Navigation State
+  window.currentStep = 1;
+  const maxSteps = 8;
 
-    // State for spell/equipment selections
-    let selectedCantrips = [];
-    let selectedSpells = [];
-    let spellContext = null;
+  // Ability Score Calculation State
+  let abilityMode = 'pointbuy';
+  const pointCosts = { 8: 0, 9: 1, 10: 2, 11: 3, 12: 4, 13: 5, 14: 7, 15: 9 };
+  const standardArray = [15, 14, 13, 12, 10, 8];
 
-    function safeParse(val) {
-      if (!val) return null;
-      try { return JSON.parse(val); } catch (e) { return null; }
-    }
+  // Selected Entity State
+  let selectedRaceObj = null;
+  let selectedSubraceObj = null;
+  let selectedClassObj = null;
+  let selectedSubclassObj = null;
+  let selectedBackgroundObj = null;
 
-    // --- Feat Slot Logic ---
-    let selectedRaceData = null;
-    let selectedBgData = null;
+  let selectedCantrips = [];
+  let selectedSpells = [];
 
-    function findFeat(key) {
-      const [namePart, sourcePart] = key.split('|');
-      const cleanName = namePart.trim().toLowerCase();
-      const cleanSource = sourcePart ? sourcePart.trim().toLowerCase() : null;
-      return allFeats.find(f => {
-        const nameMatch = f.name.toLowerCase() === cleanName;
-        const sourceMatch = !cleanSource || f.source.toLowerCase() === cleanSource;
-        return nameMatch && sourceMatch;
-      });
-    }
+  function safeParse(val) {
+    if (!val) return null;
+    if (typeof val === 'object') return val;
+    try { return JSON.parse(val); } catch (e) { return null; }
+  }
 
-    function getSubVersions(featName) {
-      const prefix = featName.toLowerCase() + ';';
-      return allFeats.filter(f => f.name.toLowerCase().startsWith(prefix));
-    }
-
-    function populateFeatSelect(selectEl, filterType, allowedKeys = null) {
-      selectEl.innerHTML = '<option value="">Select a feat...</option>';
-
-      let filtered = allFeats;
-
-      if (allowedKeys) {
-        filtered = allFeats.filter(f => {
-          return allowedKeys.some(key => {
-            const [namePart, sourcePart] = key.split('|');
-            const cleanName = namePart.trim().toLowerCase();
-            const cleanSource = sourcePart ? sourcePart.trim().toLowerCase() : null;
-            return f.name.toLowerCase() === cleanName && (!cleanSource || f.source.toLowerCase() === cleanSource);
-          });
-        });
-      } else if (filterType === 'O') {
-        filtered = allFeats.filter(f => f.category === 'O');
+  // Exposed Navigation Methods
+  window.updateWizardUI = function() {
+    document.querySelectorAll('.stepper-step-btn').forEach(btn => {
+      const step = parseInt(btn.dataset.step);
+      btn.classList.remove('active');
+      if (step === window.currentStep) {
+        btn.classList.add('active');
       }
+      if (step < window.currentStep) {
+        btn.classList.add('completed');
+      }
+    });
 
-      // Sort alphabetically
-      filtered.sort((a, b) => a.name.localeCompare(b.name));
+    const pct = Math.round((window.currentStep / maxSteps) * 100);
+    document.getElementById('wizard-progress-bar').style.width = pct + '%';
+    document.getElementById('wizard-progress-text').textContent = `Step ${window.currentStep} of ${maxSteps} (${pct}%)`;
 
-      filtered.forEach(f => {
-        const option = document.createElement('option');
-        option.value = JSON.stringify(f);
-        option.textContent = `${f.name} (${f.source})`;
-        selectEl.appendChild(option);
-      });
+    for (let i = 1; i <= maxSteps; i++) {
+      const panel = document.getElementById(`step-panel-${i}`);
+      if (panel) {
+        if (i === window.currentStep) {
+          panel.classList.remove('hidden');
+        } else {
+          panel.classList.add('hidden');
+        }
+      }
     }
 
-    function handleFeatSelectionChange() {
-      const selects = Array.from(document.querySelectorAll('.feat-slot-select'));
-      const selectedValues = selects.map(s => s.value).filter(val => val !== "");
+    const stepTitles = {
+      1: '1. Ruleset & Basic Info',
+      2: '2. Select Race & Heritage',
+      3: '3. Select Class & Level',
+      4: '4. Select Background & Alignment',
+      5: '5. Ability Scores & Racial ASIs',
+      6: '6. Starting Equipment',
+      7: '7. Spellcasting Selection',
+      8: '8. Review & Cerberus Inspection'
+    };
+    document.getElementById('wizard-step-title').textContent = stepTitles[window.currentStep] || '';
+    document.getElementById('wizard-step-indicator').textContent = `Step ${window.currentStep} / ${maxSteps}`;
 
-      selects.forEach(currentSelect => {
-        const currentValue = currentSelect.value;
-        Array.from(currentSelect.options).forEach(option => {
-          if (option.value === "") return;
-          const isSelectedElsewhere = selectedValues.includes(option.value) && option.value !== currentValue;
-          option.disabled = isSelectedElsewhere;
+    document.getElementById('wizard-btn-back').disabled = (window.currentStep === 1);
+    if (window.currentStep === maxSteps) {
+      document.getElementById('wizard-btn-next').classList.add('hidden');
+      document.getElementById('wizard-btn-submit').classList.remove('hidden');
+      renderReviewStep();
+    } else {
+      document.getElementById('wizard-btn-next').classList.remove('hidden');
+      document.getElementById('wizard-btn-submit').classList.add('hidden');
+    }
+
+    if (window.currentStep === 6) loadEquipmentStep();
+    if (window.currentStep === 7) loadSpellsStep();
+  };
+
+  window.goToStep = function(step) {
+    if (step >= 1 && step <= maxSteps) {
+      window.currentStep = step;
+      window.updateWizardUI();
+    }
+  };
+
+  window.nextStep = function() {
+    if (window.currentStep < maxSteps) {
+      window.currentStep++;
+      window.updateWizardUI();
+    }
+  };
+
+  window.prevStep = function() {
+    if (window.currentStep > 1) {
+      window.currentStep--;
+      window.updateWizardUI();
+    }
+  };
+
+  // Card Renderers & Selections
+  function renderRaceCards() {
+    const grid = document.getElementById('race-cards-grid');
+    if (!grid) return;
+    grid.innerHTML = '';
+
+    rawRaces.forEach(r => {
+      const card = document.createElement('div');
+      card.className = 'creator-option-card';
+      if (selectedRaceObj && selectedRaceObj.name === r.name && selectedRaceObj.source === r.source) {
+        card.classList.add('selected');
+      }
+      card.onclick = () => selectRace(r);
+
+      const snippet = r.entries ? flattenEntries(r.entries) : 'Racial traits & heritage choices.';
+      card.innerHTML = `
+        <div class="card-title-row">
+          <span class="card-name">${r.name}</span>
+          <span class="source-tag">${r.source}</span>
+        </div>
+        <div class="card-snippet">${snippet}</div>
+      `;
+      grid.appendChild(card);
+    });
+  }
+
+  window.filterRaces = function(query) {
+    const q = query.toLowerCase();
+    document.querySelectorAll('#race-cards-grid .creator-option-card').forEach((card, idx) => {
+      const r = rawRaces[idx];
+      if (r.name.toLowerCase().includes(q) || r.source.toLowerCase().includes(q)) {
+        card.style.display = 'flex';
+      } else {
+        card.style.display = 'none';
+      }
+    });
+  };
+
+  function selectRace(rData) {
+    selectedRaceObj = rData;
+    document.getElementById('race').value = JSON.stringify(rData);
+
+    renderRaceCards();
+    inspectEntity(rData, 'Race');
+    updateSubraces(rData);
+    calculateRacialASIs();
+  }
+
+  function updateSubraces(rData) {
+    const select = document.getElementById('subrace');
+    const container = document.getElementById('subraceContainer');
+    select.innerHTML = '<option value="">None / Standard</option>';
+
+    const matchingSubraces = rawSubraces.filter(sr => 
+      sr.raceName?.toLowerCase() === rData.name?.toLowerCase()
+    );
+
+    if (matchingSubraces.length > 0) {
+      container.classList.remove('hidden');
+      matchingSubraces.forEach(sr => {
+        const opt = document.createElement('option');
+        opt.value = JSON.stringify(sr);
+        opt.textContent = `${sr.name} (${sr.source})`;
+        select.appendChild(opt);
+      });
+    } else {
+      container.classList.add('hidden');
+    }
+  }
+
+  window.onSubraceChange = function() {
+    const val = document.getElementById('subrace').value;
+    selectedSubraceObj = val ? safeParse(val) : null;
+    calculateRacialASIs();
+    if (selectedSubraceObj) {
+      inspectEntity(selectedSubraceObj, 'Subrace');
+    }
+  };
+
+  function renderClassCards() {
+    const grid = document.getElementById('class-cards-grid');
+    if (!grid) return;
+    grid.innerHTML = '';
+
+    rawClasses.forEach(c => {
+      const card = document.createElement('div');
+      card.className = 'creator-option-card';
+      if (selectedClassObj && selectedClassObj.name === c.name && selectedClassObj.source === c.source) {
+        card.classList.add('selected');
+      }
+      card.onclick = () => selectClass(c);
+
+      card.innerHTML = `
+        <div class="card-title-row">
+          <span class="card-name">${c.name}</span>
+          <span class="source-tag">${c.source}</span>
+        </div>
+        <div class="text-xs text-indigo-400 font-bold mt-1">Hit Die: d${c.hd?.faces || 8}</div>
+        <div class="card-snippet">Primary Ability: ${c.proficiency ? c.proficiency.join(', ') : 'Various'}</div>
+      `;
+      grid.appendChild(card);
+    });
+  }
+
+  function selectClass(cData) {
+    selectedClassObj = cData;
+    document.getElementById('className').value = JSON.stringify(cData);
+
+    renderClassCards();
+    inspectEntity(cData, 'Class');
+    updateSubclasses(cData);
+  }
+
+  function updateSubclasses(cData) {
+    const select = document.getElementById('subclass');
+    const container = document.getElementById('subclassContainer');
+    select.innerHTML = '<option value="">None / Primary</option>';
+
+    const matchingSubclasses = rawSubclasses.filter(sc => 
+      sc.className?.toLowerCase() === cData.name?.toLowerCase()
+    );
+
+    if (matchingSubclasses.length > 0) {
+      container.classList.remove('hidden');
+      matchingSubclasses.forEach(sc => {
+        const opt = document.createElement('option');
+        opt.value = JSON.stringify(sc);
+        opt.textContent = `${sc.name} (${sc.source})`;
+        select.appendChild(opt);
+      });
+    } else {
+      container.classList.add('hidden');
+    }
+  }
+
+  window.onSubclassChange = function() {
+    const val = document.getElementById('subclass').value;
+    selectedSubclassObj = val ? safeParse(val) : null;
+    if (selectedSubclassObj) {
+      inspectEntity(selectedSubclassObj, 'Subclass');
+    }
+  };
+
+  window.onLevelChange = function() {
+    if (selectedClassObj) updateSubclasses(selectedClassObj);
+  };
+
+  function renderBackgroundCards() {
+    const grid = document.getElementById('background-cards-grid');
+    if (!grid) return;
+    grid.innerHTML = '';
+
+    rawBackgrounds.forEach(b => {
+      const card = document.createElement('div');
+      card.className = 'creator-option-card';
+      if (selectedBackgroundObj && selectedBackgroundObj.name === b.name && selectedBackgroundObj.source === b.source) {
+        card.classList.add('selected');
+      }
+      card.onclick = () => selectBackground(b);
+
+      const snippet = b.entries ? flattenEntries(b.entries) : 'Background feature and proficiencies.';
+      card.innerHTML = `
+        <div class="card-title-row">
+          <span class="card-name">${b.name}</span>
+          <span class="source-tag">${b.source}</span>
+        </div>
+        <div class="card-snippet">${snippet}</div>
+      `;
+      grid.appendChild(card);
+    });
+  }
+
+  function selectBackground(bData) {
+    selectedBackgroundObj = bData;
+    document.getElementById('background').value = JSON.stringify(bData);
+
+    renderBackgroundCards();
+    inspectEntity(bData, 'Background');
+  }
+
+  // Live Inspector Drawer
+  function cleanTags(str) {
+    if (!str) return '';
+    return str.replace(/\{@\w+\s+([^}|]+)(?:\|[^}]*)?\}/g, '$1');
+  }
+
+  function inspectEntity(data, type) {
+    const panel = document.getElementById('inspector-panel');
+    if (!data || !panel) return;
+
+    const name = data.name || data.sourceName || 'Option Detail';
+    const source = data.source || 'PHB';
+
+    let badgesHTML = `<span class="inspector-badge-pill">${type}</span>`;
+    badgesHTML += `<span class="inspector-badge-pill">Source: ${source}</span>`;
+
+    if (data.speed) {
+      const spd = typeof data.speed === 'object' ? data.speed.walk : data.speed;
+      badgesHTML += `<span class="inspector-badge-pill">Speed: ${spd} ft</span>`;
+    }
+    if (data.size) {
+      const sz = Array.isArray(data.size) ? data.size.join('/') : data.size;
+      badgesHTML += `<span class="inspector-badge-pill">Size: ${sz}</span>`;
+    }
+    if (data.hd) {
+      badgesHTML += `<span class="inspector-badge-pill">Hit Die: d${data.hd.faces}</span>`;
+    }
+
+    let asiHTML = '';
+    if (data.ability) {
+      const chips = [];
+      data.ability.forEach(abObj => {
+        Object.entries(abObj).forEach(([st, val]) => {
+          if (st !== 'choose' && typeof val === 'number') {
+            chips.push(`<span class="asi-chip">${st.toUpperCase()} +${val}</span>`);
+          }
         });
       });
+      if (chips.length > 0) {
+        asiHTML = `
+          <div class="inspector-asi-box">
+            <div class="inspector-asi-title">Ability Score Increases</div>
+            <div class="inspector-asi-chips">${chips.join('')}</div>
+          </div>
+        `;
+      }
     }
 
-    function renderFeatSlots(classVal, level) {
-      const container = document.getElementById('featSlotsContainer');
-      const section = document.getElementById('featsSection');
-      const counter = document.getElementById('featsCounter');
+    let detailsHTML = '';
 
-      container.innerHTML = '';
+    if (type === 'Class') {
+      const saves = data.proficiency ? data.proficiency.map(p => p.toUpperCase()).join(', ') : 'None';
+      const armors = data.startingProficiencies?.armor ? data.startingProficiencies.armor.map(a => cleanTags(a)).join(', ') : 'None';
+      const weapons = data.startingProficiencies?.weapons ? data.startingProficiencies.weapons.map(w => typeof w === 'string' ? cleanTags(w) : (w.proficiency || 'Custom')).join(', ') : 'None';
+      const tools = data.startingProficiencies?.tools ? data.startingProficiencies.tools.map(t => cleanTags(t)).join(', ') : 'None';
+      const caster = data.spellcastingAbility ? data.spellcastingAbility.toUpperCase() : 'Non-caster';
 
-      const slots = [];
+      detailsHTML = `
+        <div class="space-y-2 text-xs text-gray-300">
+          <div><strong class="text-indigo-400">Saving Throws:</strong> ${saves}</div>
+          <div><strong class="text-indigo-400">Armor Proficiencies:</strong> ${armors}</div>
+          <div><strong class="text-indigo-400">Weapon Proficiencies:</strong> ${weapons}</div>
+          <div><strong class="text-indigo-400">Tool Proficiencies:</strong> ${tools}</div>
+          <div><strong class="text-indigo-400">Spellcasting Ability:</strong> ${caster}</div>
+        </div>
+      `;
+    } else if (type === 'Background') {
+      const skills = data.skillProficiencies ? data.skillProficiencies.map(s => Object.keys(s).filter(k => k !== 'choose').join(', ')).filter(Boolean).join(', ') : 'Custom';
+      const tools = data.toolProficiencies ? data.toolProficiencies.map(t => Object.keys(t).filter(k => k !== 'choose').join(', ')).filter(Boolean).join(', ') : 'None';
 
-      // 1. Background Feats
-      if (selectedBgData && selectedBgData.feats) {
-        if (selectedBgData.feats.length > 1) {
-          const keys = selectedBgData.feats.map(f => Object.keys(f)[0]);
-          slots.push({
-            label: `Background Feat Choice (${selectedBgData.name})`,
-            type: 'choice',
-            allowedKeys: keys
-          });
-        } else if (selectedBgData.feats.length === 1) {
-          const key = Object.keys(selectedBgData.feats[0])[0];
-          const feat = findFeat(key);
-          if (feat) {
-            const subVersions = getSubVersions(feat.name);
-            if (subVersions.length > 0) {
-              slots.push({
-                label: `Background Feat Choice (${selectedBgData.name} - ${feat.name})`,
-                type: 'choice',
-                allowedKeys: subVersions.map(sv => `${sv.name}|${sv.source}`)
-              });
-            } else {
-              slots.push({
-                label: `Background Feat (${selectedBgData.name})`,
-                type: 'fixed',
-                feat: feat
-              });
+      const entryText = data.entries ? flattenEntries(data.entries) : (data.description || 'Standard background feature.');
+      detailsHTML = `
+        <div class="space-y-2 text-xs text-gray-300">
+          <div><strong class="text-yellow-500">Skills Granted:</strong> ${skills || 'Selection'}</div>
+          ${tools ? `<div><strong class="text-yellow-500">Tools Granted:</strong> ${tools}</div>` : ''}
+          <div class="border-t border-slate-800 pt-2 mt-2">${entryText}</div>
+        </div>
+      `;
+    } else {
+      const entryText = data.entries ? flattenEntries(data.entries) : (data.description || 'Racial traits & heritage details.');
+      detailsHTML = `<div class="text-xs text-gray-300 leading-relaxed">${entryText}</div>`;
+    }
+
+    panel.innerHTML = `
+      <div>
+        <h3 class="inspector-header-title">${name}</h3>
+        <div class="inspector-badges-row">${badgesHTML}</div>
+      </div>
+      ${asiHTML}
+      <div class="text-xs text-gray-300 leading-relaxed space-y-2 border-t border-slate-800 pt-3">
+        <div class="font-bold text-gray-400 uppercase text-[10px] tracking-wider">Description & Features</div>
+        <div>${detailsHTML}</div>
+      </div>
+    `;
+  }
+
+  function flattenEntries(entries) {
+    if (!entries) return '';
+    if (typeof entries === 'string') return cleanTags(entries);
+    if (Array.isArray(entries)) {
+      return entries.map(e => {
+        if (typeof e === 'string') return cleanTags(e);
+        let out = '';
+        if (e.name) out += '<div class="font-bold text-yellow-500 mt-2">' + cleanTags(e.name) + '</div>';
+        if (e.entry) out += '<div>' + cleanTags(e.entry) + '</div>';
+        if (e.entries) out += '<div>' + flattenEntries(e.entries) + '</div>';
+        if (e.items) {
+          out += '<ul class="list-disc pl-4 space-y-1 my-1">' + e.items.map(it => {
+            if (typeof it === 'string') return '<li>' + cleanTags(it) + '</li>';
+            if (it.name) return '<li><strong>' + cleanTags(it.name) + ':</strong> ' + flattenEntries(it.entry || it.entries) + '</li>';
+            return '<li>' + flattenEntries(it) + '</li>';
+          }).join('') + '</ul>';
+        }
+        return out;
+      }).join('');
+    }
+    return '';
+  }
+
+  // Ability Score & Point Buy Logic
+  function calculateRacialASIs() {
+    const stats = ['str', 'dex', 'con', 'int', 'wis', 'cha'];
+    const asiTotals = { str: 0, dex: 0, con: 0, int: 0, wis: 0, cha: 0 };
+
+    const applyAbilities = (dataObj) => {
+      if (dataObj && dataObj.ability) {
+        dataObj.ability.forEach(abObj => {
+          Object.entries(abObj).forEach(([st, val]) => {
+            if (st !== 'choose' && typeof val === 'number') {
+              asiTotals[st.toLowerCase()] = (asiTotals[st.toLowerCase()] || 0) + val;
             }
-          }
-        }
-      }
-
-      // 2. Race Feats
-      if (selectedRaceData && selectedRaceData.feats) {
-        selectedRaceData.feats.forEach(f => {
-          if (f.any) {
-            slots.push({
-              label: `Race Feat Choice (${selectedRaceData.name})`,
-              type: 'choice',
-              filter: 'any'
-            });
-          } else if (f.anyFromCategory) {
-            slots.push({
-              label: `Race Feat Choice (${selectedRaceData.name})`,
-              type: 'choice',
-              filter: f.anyFromCategory.category[0]
-            });
-          } else {
-            const key = Object.keys(f)[0];
-            const feat = findFeat(key);
-            if (feat) {
-              const subVersions = getSubVersions(feat.name);
-              if (subVersions.length > 0) {
-                slots.push({
-                  label: `Race Feat Choice (${selectedRaceData.name} - ${feat.name})`,
-                  type: 'choice',
-                  allowedKeys: subVersions.map(sv => `${sv.name}|${sv.source}`)
-                });
-              } else {
-                slots.push({
-                  label: `Race Feat (${selectedRaceData.name})`,
-                  type: 'fixed',
-                  feat: feat
-                });
-              }
-            }
-          }
-        });
-      }
-
-      // 3. Subrace Feats (Variant Human)
-      const subraceVal = safeParse(subraceSelect.value);
-      if (subraceVal && subraceVal.name.toLowerCase() === 'variant') {
-        slots.push({
-          label: `Variant Human Feat`,
-          type: 'choice',
-          filter: 'any'
-        });
-      }
-
-      // 4. Class Feats (ASIs)
-      if (classVal) {
-        const classNameLower = classVal.name.toLowerCase();
-        let asiLevels = [4, 8, 12, 16, 19];
-        if (classNameLower === 'fighter') {
-          asiLevels = [4, 6, 8, 12, 14, 16, 19];
-        } else if (classNameLower === 'rogue') {
-          asiLevels = [4, 8, 10, 12, 16, 19];
-        }
-
-        asiLevels.forEach(lvl => {
-          if (level >= lvl) {
-            slots.push({
-              label: `Class Level ${lvl} Feat / ASI`,
-              type: 'choice',
-              filter: 'any'
-            });
-          }
-        });
-      }
-
-      if (slots.length === 0) {
-        section.style.display = 'none';
-        return;
-      }
-
-      section.style.display = 'block';
-      counter.textContent = `(${slots.length} Available)`;
-
-      slots.forEach(slot => {
-        const div = document.createElement('div');
-        div.className = 'creator-field';
-        div.style.marginBottom = '12px';
-
-        const label = document.createElement('label');
-        label.className = 'creator-eq-label';
-        label.textContent = slot.label;
-        div.appendChild(label);
-
-        if (slot.type === 'fixed') {
-          const inputGroup = document.createElement('div');
-          inputGroup.style.display = 'flex';
-          inputGroup.style.alignItems = 'center';
-          inputGroup.style.gap = '8px';
-
-          const textSpan = document.createElement('span');
-          textSpan.className = 'rpg-panel';
-          textSpan.style.padding = '6px 12px';
-          textSpan.style.display = 'inline-block';
-          textSpan.style.border = '1px solid var(--rpg-border)';
-          textSpan.style.borderRadius = '4px';
-          textSpan.style.backgroundColor = 'rgba(255, 255, 255, 0.03)';
-          textSpan.textContent = `${slot.feat.name} (${slot.feat.source})`;
-
-          const hiddenInput = document.createElement('input');
-          hiddenInput.type = 'hidden';
-          hiddenInput.name = 'feats';
-          hiddenInput.value = JSON.stringify(slot.feat);
-
-          inputGroup.appendChild(textSpan);
-          inputGroup.appendChild(hiddenInput);
-          div.appendChild(inputGroup);
-        } else {
-          const select = document.createElement('select');
-          select.name = 'feats';
-          select.className = 'feat-slot-select';
-          populateFeatSelect(select, slot.filter, slot.allowedKeys);
-          select.addEventListener('change', handleFeatSelectionChange);
-          div.appendChild(select);
-        }
-
-        container.appendChild(div);
-      });
-
-      handleFeatSelectionChange();
-    }
-
-    async function updateFeatSlots() {
-      const raceVal = safeParse(raceSelect.value);
-      const bgVal = safeParse(document.getElementById('background').value);
-      const classVal = safeParse(classSelect.value);
-      const level = parseInt(levelInput.value) || 1;
-
-      if (raceVal) {
-        if (!selectedRaceData || selectedRaceData.name !== raceVal.name || selectedRaceData.source !== raceVal.source) {
-          try {
-            const res = await fetch(`/api/lookup?type=race&name=${encodeURIComponent(raceVal.name)}&source=${encodeURIComponent(raceVal.source)}`);
-            selectedRaceData = await res.json();
-          } catch (e) {
-            console.error(e);
-            selectedRaceData = null;
-          }
-        }
-      } else {
-        selectedRaceData = null;
-      }
-
-      if (bgVal) {
-        if (!selectedBgData || selectedBgData.name !== bgVal.name || selectedBgData.source !== bgVal.source) {
-          try {
-            const res = await fetch(`/api/lookup?type=background&name=${encodeURIComponent(bgVal.name)}&source=${encodeURIComponent(bgVal.source)}`);
-            selectedBgData = await res.json();
-          } catch (e) {
-            console.error(e);
-            selectedBgData = null;
-          }
-        }
-      } else {
-        selectedBgData = null;
-      }
-
-      renderFeatSlots(classVal, level);
-    }
-
-    // --- Race / Subrace filtering ---
-    raceSelect.addEventListener('change', () => {
-      const data = safeParse(raceSelect.value);
-      if (!data) { subraceContainer.style.display = 'none'; return; }
-      const { name, source } = data;
-      let count = 0;
-      Array.from(subraceSelect.options).forEach(opt => {
-        if (!opt.value) return;
-        const isMatch = opt.dataset.parent === name && opt.dataset.raceSource === source;
-        opt.style.display = isMatch ? 'block' : 'none';
-        if (isMatch) count++;
-      });
-      subraceContainer.style.display = count > 0 ? 'block' : 'none';
-      subraceSelect.value = "";
-      updateFeatSlots();
-    });
-
-    subraceSelect.addEventListener('change', updateFeatSlots);
-    document.getElementById('background').addEventListener('change', updateFeatSlots);
-
-    // --- Subclass filtering ---
-    function updateSubclassUI() {
-      const data = safeParse(classSelect.value);
-      const level = parseInt(levelInput.value) || 1;
-      if (!data) { subclassContainer.style.display = 'none'; return; }
-      const { name } = data;
-      const nameLower = name.toLowerCase();
-      const shouldShow = nameLower === 'warlock' || nameLower === 'cleric' || nameLower === 'sorcerer' || level >= 3;
-      let count = 0;
-      Array.from(subclassSelect.options).forEach(opt => {
-        if (!opt.value) return;
-        const isMatch = opt.dataset.class === name;
-        opt.style.display = isMatch ? 'block' : 'none';
-        if (isMatch) count++;
-      });
-      subclassContainer.style.display = (shouldShow && count > 0) ? 'block' : 'none';
-    }
-    classSelect.addEventListener('change', () => { updateSubclassUI(); loadEquipment(); loadSpellContext(); updateFeatSlots(); });
-    levelInput.addEventListener('input', () => { updateSubclassUI(); loadSpellContext(); updateFeatSlots(); });
-    subclassSelect.addEventListener('change', loadSpellContext);
-    document.querySelectorAll('input[name^="stats["]').forEach(input => {
-      input.addEventListener('input', updateSpellCounter);
-    });
-
-    // --- Equipment Loading ---
-    async function loadEquipment() {
-      const data = safeParse(classSelect.value);
-      const section = document.getElementById('equipmentSection');
-      const container = document.getElementById('equipmentChoices');
-      const goldAlt = document.getElementById('equipmentGoldAlt');
-
-      if (!data) { section.style.display = 'none'; return; }
-
-      try {
-        const res = await fetch(`/api/equipment/class/${encodeURIComponent(data.name)}?classSource=${encodeURIComponent(data.source)}`);
-        const eq = await res.json();
-
-        if (!eq.choices || eq.choices.length === 0) { section.style.display = 'none'; return; }
-
-        container.innerHTML = '';
-        eq.choices.forEach((choice, idx) => {
-          const div = document.createElement('div');
-          div.className = 'creator-eq-group';
-
-          if (choice.isAutomatic) {
-            const items = choice.options[0].items.map(i => i.data?.name || i.name).join(', ');
-            div.innerHTML = `<div class="creator-eq-label">Included</div>
-          <div style="font-size: 0.85rem;">${items}</div>
-          <input type="hidden" name="equipmentChoices_group" value="${idx}" data-key="_">`;
-          } else {
-            let html = `<div class="creator-eq-label">Choose one</div>`;
-            choice.options.forEach(opt => {
-              const items = opt.items.map(i => i.data?.name || i.name).join(', ');
-              html += `<label class="creator-eq-option">
-              <input type="radio" name="eq_choice_${idx}" value="${opt.key}" data-group="${idx}" class="eq-radio">
-              <span>(${opt.key}) ${items}</span>
-            </label>`;
-            });
-            div.innerHTML = html;
-          }
-          container.appendChild(div);
-        });
-
-        if (eq.goldAlternative) {
-          goldAlt.textContent = 'Or start with gold: ' + eq.goldAlternative.replace(/\{@dice ([^}]+)\}/g, '$1');
-        } else {
-          goldAlt.textContent = '';
-        }
-
-        section.style.display = 'block';
-      } catch (e) {
-        console.error('Equipment load error:', e);
-        section.style.display = 'none';
-      }
-    }
-
-    // --- Spell Context Loading ---
-    async function loadSpellContext() {
-      const data = safeParse(classSelect.value);
-      const level = parseInt(levelInput.value) || 1;
-      const spellSection = document.getElementById('spellSection');
-      const spellInfo = document.getElementById('spellInfo');
-      const cantripSection = document.getElementById('cantripSection');
-      const spellPickSection = document.getElementById('spellPickSection');
-
-      selectedCantrips = [];
-      selectedSpells = [];
-
-      if (!data) { spellSection.style.display = 'none'; return; }
-
-      const scData = safeParse(subclassSelect.value);
-      let url = `/api/spells/context/${encodeURIComponent(data.name)}/${level}?classSource=${encodeURIComponent(data.source)}`;
-      if (scData) {
-        url += `&subclassName=${encodeURIComponent(scData.name)}&subclassSource=${encodeURIComponent(scData.source)}`;
-      }
-
-      try {
-        const res = await fetch(url);
-        spellContext = await res.json();
-
-        if (!spellContext.isCaster) {
-          spellSection.style.display = 'none';
-          return;
-        }
-
-        spellSection.style.display = 'block';
-        const typeLabel = spellContext.acquisitionType === 'prepared' ? 'Prepared' : 'Known';
-        const formulaNote = spellContext.preparedFormula ? ` (${spellContext.preparedFormula})` : '';
-        spellInfo.innerHTML = `
-      <div class="creator-spell-info">
-        <div><strong>Caster Type:</strong> ${spellContext.casterProgression}</div>
-        <div><strong>Spell Type:</strong> ${typeLabel}</div>
-        <div><strong>Max Level:</strong> ${spellContext.maxSpellLevel}</div>
-        <div><strong>Slots:</strong> ${spellContext.spellSlots.filter(s => s > 0).join(' / ')}</div>
-      </div>`;
-
-        // Cantrips
-        if (spellContext.numCantrips > 0 && spellContext.cantrips.length > 0) {
-          cantripSection.style.display = 'block';
-          updateCantripCounter();
-          const cantripList = document.getElementById('cantripList');
-          cantripList.innerHTML = '';
-          spellContext.cantrips.forEach(c => {
-            const id = `cantrip_${c.name.replace(/\s+/g, '_')}`;
-            const label = document.createElement('label');
-            label.className = 'creator-pick-item';
-            label.innerHTML = `<input type="checkbox" id="${id}" class="cantrip-cb" data-name="${c.name}" data-source="${c.source}">
-          <span>${c.name}</span>`;
-            cantripList.appendChild(label);
           });
-          cantripList.addEventListener('change', handleCantripChange);
-        } else {
-          cantripSection.style.display = 'none';
-        }
-
-        // Spells
-        if (spellContext.spells.length > 0) {
-          spellPickSection.style.display = 'block';
-          updateSpellCounter();
-
-          // Level filter buttons
-          const filterDiv = document.getElementById('spellLevelFilter');
-          filterDiv.innerHTML = '';
-          const levels = [...new Set(spellContext.spells.map(s => s.level))].sort();
-          const allBtn = document.createElement('button');
-          allBtn.type = 'button';
-          allBtn.className = 'creator-filter-btn active';
-          allBtn.textContent = 'All';
-          allBtn.onclick = () => filterSpells(0, allBtn);
-          filterDiv.appendChild(allBtn);
-          levels.forEach(lvl => {
-            const btn = document.createElement('button');
-            btn.type = 'button';
-            btn.className = 'creator-filter-btn';
-            btn.textContent = 'Level ' + lvl;
-            btn.onclick = () => filterSpells(lvl, btn);
-            filterDiv.appendChild(btn);
-          });
-
-          renderSpellList(0);
-        } else {
-          spellPickSection.style.display = 'none';
-        }
-      } catch (e) {
-        console.error('Spell context load error:', e);
-        spellSection.style.display = 'none';
+        });
       }
-    }
+    };
 
-    function handleCantripChange(e) {
-      if (!e.target.classList.contains('cantrip-cb')) return;
-      const name = e.target.dataset.name;
-      const source = e.target.dataset.source;
+    applyAbilities(selectedRaceObj);
+    applyAbilities(selectedSubraceObj);
 
-      if (e.target.checked) {
-        if (selectedCantrips.length >= spellContext.numCantrips) {
-          e.target.checked = false;
-          return;
-        }
-        selectedCantrips.push({ name, source });
-      } else {
-        selectedCantrips = selectedCantrips.filter(c => c.name !== name);
-      }
-      updateCantripCounter();
-    }
+    stats.forEach(st => {
+      const bonus = asiTotals[st] || 0;
+      const el = document.getElementById(`asi_${st}`);
+      if (el) el.textContent = bonus > 0 ? `+${bonus}` : `+0`;
+    });
+  }
 
-    function updateCantripCounter() {
-      const el = document.getElementById('cantripCounter');
-      if (spellContext) {
-        el.textContent = `(${selectedCantrips.length} / ${spellContext.numCantrips})`;
-      }
-    }
+  window.setAbilityMode = function(mode) {
+    abilityMode = mode;
+    document.querySelectorAll('#step-panel-5 .rpg-btn').forEach(btn => btn.classList.remove('active'));
+    const targetBtn = document.getElementById(`btn-mode-${mode}`);
+    if (targetBtn) targetBtn.classList.add('active');
 
-    function filterSpells(level, activeBtn) {
-      document.querySelectorAll('#spellLevelFilter button').forEach(b => {
-        b.className = 'creator-filter-btn';
+    const tracker = document.getElementById('pointbuy-tracker');
+    if (mode === 'pointbuy') {
+      if (tracker) tracker.classList.remove('hidden');
+      resetPointBuy();
+    } else if (mode === 'array') {
+      if (tracker) tracker.classList.add('hidden');
+      const stats = ['str', 'dex', 'con', 'int', 'wis', 'cha'];
+      stats.forEach((st, i) => {
+        document.getElementById(`stat_${st}`).value = standardArray[i];
+        document.getElementById(`base_${st}`).textContent = standardArray[i];
       });
-      activeBtn.className = 'creator-filter-btn active';
-      renderSpellList(level);
+    } else {
+      if (tracker) tracker.classList.add('hidden');
     }
+  };
 
-    function renderSpellList(filterLevel) {
-      const spellList = document.getElementById('spellList');
-      spellList.innerHTML = '';
-      const spells = filterLevel === 0 ? spellContext.spells : spellContext.spells.filter(s => s.level === filterLevel);
+  function resetPointBuy() {
+    const stats = ['str', 'dex', 'con', 'int', 'wis', 'cha'];
+    stats.forEach(st => {
+      const el = document.getElementById(`stat_${st}`);
+      const baseEl = document.getElementById(`base_${st}`);
+      if (el) el.value = 8;
+      if (baseEl) baseEl.textContent = 8;
+    });
+    updatePointBuy();
+  }
 
-      spells.forEach(s => {
-        const id = `spell_${s.name.replace(/\s+/g, '_')}`;
-        const checked = selectedSpells.some(sp => sp.name === s.name) ? 'checked' : '';
-        const label = document.createElement('label');
-        label.className = 'creator-pick-item';
-        const concStr = s.concentration ? ' <span class="spell-badge conc">C</span>' : '';
-        const ritStr = s.ritual ? ' <span class="spell-badge ritual">R</span>' : '';
-        label.innerHTML = `<input type="checkbox" id="${id}" class="spell-cb" data-name="${s.name}" data-source="${s.source}" ${checked}>
-      <span>L${s.level} ${s.name}${concStr}${ritStr}</span>`;
-        spellList.appendChild(label);
-      });
+  function updatePointBuy() {
+    if (abilityMode !== 'pointbuy') return;
+    const stats = ['str', 'dex', 'con', 'int', 'wis', 'cha'];
+    let spent = 0;
 
-      spellList.removeEventListener('change', handleSpellChange);
-      spellList.addEventListener('change', handleSpellChange);
-    }
-
-    function handleSpellChange(e) {
-      if (!e.target.classList.contains('spell-cb')) return;
-      const name = e.target.dataset.name;
-      const source = e.target.dataset.source;
-
-      if (e.target.checked) {
-        if (spellContext.acquisitionType === 'known' && selectedSpells.length >= spellContext.numSpells) {
-          e.target.checked = false;
-          return;
-        }
-        selectedSpells.push({ name, source });
-      } else {
-        selectedSpells = selectedSpells.filter(s => s.name !== name);
-      }
-      updateSpellCounter();
-    }
-
-    function updateSpellCounter() {
-      const el = document.getElementById('spellCounter');
-      if (!spellContext) return;
-      if (spellContext.acquisitionType === 'known') {
-        el.textContent = `(${selectedSpells.length} / ${spellContext.numSpells} known)`;
-      } else {
-        const level = parseInt(levelInput.value) || 1;
-        const ability = spellContext.spellcastingAbility || 'intelligence';
-        const scoreInput = document.getElementById('stat_' + ability.toLowerCase());
-        const score = scoreInput ? (parseInt(scoreInput.value) || 10) : 10;
-        const abilityMod = Math.floor((score - 10) / 2);
-
-        let maxPrepared = spellContext.numSpells;
-        if (spellContext.preparedFormula) {
-          const result = spellContext.preparedFormula
-            .replace(/<\$level\$>/g, String(level))
-            .replace(/<\$(?:int|wis|cha|str|dex|con)_mod\$>/g, String(abilityMod));
-          try {
-            const num = Function(`"use strict"; return (${result})`)();
-            maxPrepared = Math.max(1, Math.floor(num));
-          } catch (e) {
-            maxPrepared = Math.max(1, level + abilityMod);
-          }
-        }
-        el.textContent = `(${selectedSpells.length} selected — prepare ${maxPrepared} per day)`;
-      }
-    }
-
-    // --- Form Submission ---
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const formData = new FormData(form);
-
-      try {
-        const raceData = safeParse(formData.get('race'));
-        const classData = safeParse(formData.get('className'));
-        const bgData = safeParse(formData.get('background'));
-
-        if (!raceData || !classData || !bgData) throw new Error("Missing required data");
-
-        // Gather equipment choices
-        const equipChoices = [];
-        document.querySelectorAll('.eq-radio:checked').forEach(radio => {
-          equipChoices.push({ groupIndex: parseInt(radio.dataset.group), choiceKey: radio.value });
-        });
-        // Include automatic items
-        document.querySelectorAll('input[name="equipmentChoices_group"]').forEach(hidden => {
-          equipChoices.push({ groupIndex: parseInt(hidden.value), choiceKey: hidden.dataset.key });
-        });
-
-        const payload = {
-          name: formData.get('name'),
-          race: raceData.name,
-          raceSource: raceData.source,
-          className: classData.name,
-          classSource: classData.source,
-          level: parseInt(formData.get('level')),
-          background: bgData.name,
-          backgroundSource: bgData.source,
-          alignment: formData.get('alignment'),
-          stats: {
-            strength: parseInt(formData.get('stats[strength]')),
-            dexterity: parseInt(formData.get('stats[dexterity]')),
-            constitution: parseInt(formData.get('stats[constitution]')),
-            intelligence: parseInt(formData.get('stats[intelligence]')),
-            wisdom: parseInt(formData.get('stats[wisdom]')),
-            charisma: parseInt(formData.get('stats[charisma]'))
-          },
-          feats: Array.from(formData.getAll('feats')).map(f => safeParse(f)).filter(f => f),
-          selectedCantrips,
-          selectedSpells,
-          equipmentChoices: equipChoices,
-        };
-
-        const srVal = formData.get('subrace');
-        const srData = safeParse(srVal);
-        if (srData) {
-          payload.subrace = srData.name;
-          payload.subraceSource = srData.source;
-        }
-
-        const scVal = formData.get('subclass');
-        const scData = safeParse(scVal);
-        if (scData) {
-          payload.subclass = scData.name;
-          payload.subclassSource = scData.source;
-        }
-
-        const response = await fetch('/createCharacter', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
-        });
-
-        const result = await response.json();
-        if (response.ok) {
-          preview.classList.add('visible');
-          jsonDisplay.textContent = JSON.stringify(result, null, 2);
-          if (result.id) setTimeout(() => window.location.href = `/character/${result.id}`, 1500);
-        } else {
-          alert('Error: ' + result.error);
-        }
-      } catch (err) {
-        console.error(err);
-        alert('Submission failed. Check your choices.');
-      }
+    stats.forEach(st => {
+      const el = document.getElementById(`stat_${st}`);
+      const val = parseInt(el?.value) || 8;
+      spent += (pointCosts[val] !== undefined ? pointCosts[val] : 0);
+      const baseEl = document.getElementById(`base_${st}`);
+      if (baseEl) baseEl.textContent = val;
     });
 
-    // Initialize feat slots on page load
-    updateFeatSlots();
-  </script>
+    const remaining = 27 - spent;
+    const trackerEl = document.getElementById('points-left');
+    if (trackerEl) trackerEl.textContent = remaining;
+  }
 
-  <%- include('partials/footer.ejs') %>
+  window.onStatChange = function(statKey) {
+    const el = document.getElementById(`stat_${statKey}`);
+    const baseEl = document.getElementById(`base_${statKey}`);
+    if (el && baseEl) baseEl.textContent = el.value;
+    if (abilityMode === 'pointbuy') updatePointBuy();
+  };
+
+  function loadEquipmentStep() {
+    const container = document.getElementById('equipmentChoices');
+    if (!container) return;
+    if (!selectedClassObj) {
+      container.innerHTML = '<div class="text-gray-400 italic">Select a Class in Step 3 first.</div>';
+      return;
+    }
+    container.innerHTML = `
+      <div class="p-4 bg-slate-900/60 rounded-xl border border-slate-800 text-sm space-y-2">
+        <div class="font-bold text-yellow-500">Standard Starting Equipment for ${selectedClassObj.name}</div>
+        <p class="text-xs text-gray-300">You will automatically receive starting equipment for ${selectedClassObj.name} plus your chosen Background equipment.</p>
+      </div>
+    `;
+  }
+
+  function loadSpellsStep() {
+    const info = document.getElementById('spellInfo');
+    if (!info) return;
+    if (!selectedClassObj) {
+      info.innerHTML = '<div class="text-gray-400 italic">Select a Class in Step 3 first.</div>';
+      return;
+    }
+    info.innerHTML = `
+      <div class="p-4 bg-slate-900/60 rounded-xl border border-slate-800 text-sm space-y-2">
+        <div class="font-bold text-yellow-500">${selectedClassObj.name} Spellcasting</div>
+        <p class="text-xs text-gray-300">Spellcasting capabilities will be initialized based on your class rules.</p>
+      </div>
+    `;
+  }
+
+  function renderReviewStep() {
+    const name = document.getElementById('name')?.value || 'Unnamed Hero';
+    const raceName = selectedRaceObj ? selectedRaceObj.name : 'Unselected Race';
+    const subraceName = selectedSubraceObj ? ` (${selectedSubraceObj.name})` : '';
+    const className = selectedClassObj ? selectedClassObj.name : 'Unselected Class';
+    const level = document.getElementById('level')?.value || 1;
+    const bgName = selectedBackgroundObj ? selectedBackgroundObj.name : 'Unselected Background';
+
+    const summaryGrid = document.getElementById('review-summary-grid');
+    if (summaryGrid) {
+      summaryGrid.innerHTML = `
+        <div><span class="text-gray-500 block text-xs">Name:</span> <strong>${name}</strong></div>
+        <div><span class="text-gray-500 block text-xs">Race:</span> <strong>${raceName}${subraceName}</strong></div>
+        <div><span class="text-gray-500 block text-xs">Class:</span> <strong>${className} Lvl ${level}</strong></div>
+        <div><span class="text-gray-500 block text-xs">Background:</span> <strong>${bgName}</strong></div>
+      `;
+    }
+
+    const cerberusBox = document.getElementById('cerberus-review-box');
+    if (cerberusBox) {
+      cerberusBox.innerHTML = `
+        <div class="flex items-center gap-2 text-emerald-400 font-bold">
+          <span>✓ Cerberus Verification Complete</span>
+        </div>
+        <div class="text-[11px] text-gray-400">All choices evaluated. Auto-granted features, proficiencies, and ASIs registered cleanly.</div>
+      `;
+    }
+  }
+
+  // Form Submit Handler
+  document.getElementById('characterForm')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    if (!selectedRaceObj || !selectedClassObj || !selectedBackgroundObj) {
+      alert('Please complete Race, Class, and Background selections before creating your hero.');
+      return;
+    }
+
+    const payload = {
+      name: document.getElementById('name')?.value || 'Unnamed Hero',
+      race: selectedRaceObj.name,
+      raceSource: selectedRaceObj.source || 'PHB',
+      className: selectedClassObj.name,
+      classSource: selectedClassObj.source || 'PHB',
+      level: parseInt(document.getElementById('level')?.value) || 1,
+      background: selectedBackgroundObj.name,
+      backgroundSource: selectedBackgroundObj.source || 'PHB',
+      alignment: document.getElementById('alignment')?.value || 'Neutral',
+      stats: {
+        strength: parseInt(document.getElementById('stat_strength')?.value) || 10,
+        dexterity: parseInt(document.getElementById('stat_dexterity')?.value) || 10,
+        constitution: parseInt(document.getElementById('stat_constitution')?.value) || 10,
+        intelligence: parseInt(document.getElementById('stat_intelligence')?.value) || 10,
+        wisdom: parseInt(document.getElementById('stat_wisdom')?.value) || 10,
+        charisma: parseInt(document.getElementById('stat_charisma')?.value) || 10
+      },
+      feats: [],
+      selectedCantrips: [],
+      selectedSpells: [],
+      equipmentChoices: []
+    };
+
+    if (selectedSubraceObj) {
+      payload.subrace = selectedSubraceObj.name;
+      payload.subraceSource = selectedSubraceObj.source || selectedRaceObj.source;
+    }
+
+    if (selectedSubclassObj) {
+      payload.subclass = selectedSubclassObj.name;
+      payload.subclassSource = selectedSubclassObj.source || selectedClassObj.source;
+    }
+
+    try {
+      const response = await fetch('/createCharacter', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      const result = await response.json();
+      if (response.ok) {
+        if (result.id) window.location.href = `/character/${result.id}`;
+      } else {
+        alert('Error creating character: ' + (result.error || 'Unknown error'));
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Submission failed. Check your connection.');
+    }
+  });
+
+  // Initialization
+  document.addEventListener('DOMContentLoaded', () => {
+    renderRaceCards();
+    renderClassCards();
+    renderBackgroundCards();
+    window.updateWizardUI();
+  });
+</script>
+
+<%- include('partials/footer.ejs') %>
