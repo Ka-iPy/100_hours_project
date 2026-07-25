@@ -329,17 +329,20 @@ export class Cerberus {
     }
 
     // A. Ability Scores (fixed JSON array or object)
-    if (entity.ability && Array.isArray(entity.ability)) {
-      entity.ability.forEach((abObj) => {
-        Object.entries(abObj).forEach(([stat, val]) => {
-          if (stat !== "choose" && typeof val === "number") {
-            grants.abilityScores.push({
-              stat: stat.toLowerCase(),
-              bonus: val,
-              source: entity.name,
-            });
-          }
-        });
+    if (entity.ability) {
+      const abList = Array.isArray(entity.ability) ? entity.ability : [entity.ability];
+      abList.forEach((abObj) => {
+        if (typeof abObj === "object") {
+          Object.entries(abObj).forEach(([stat, val]) => {
+            if (stat !== "choose" && typeof val === "number") {
+              grants.abilityScores.push({
+                stat: stat.toLowerCase(),
+                bonus: val,
+                source: entity.name,
+              });
+            }
+          });
+        }
       });
     }
 
@@ -437,9 +440,10 @@ export class Cerberus {
     const choices = report.selectableChoices;
 
     // A. Flexible Ability Score Choices (JSON .ability with choose or text)
-    if (entity.ability && Array.isArray(entity.ability)) {
-      entity.ability.forEach((abObj) => {
-        if (abObj.choose) {
+    if (entity.ability) {
+      const abList = Array.isArray(entity.ability) ? entity.ability : [entity.ability];
+      abList.forEach((abObj) => {
+        if (typeof abObj === "object" && abObj.choose) {
           const chooseInfo = abObj.choose.weighted || abObj.choose;
           const count = chooseInfo.count || 1;
           const amount = chooseInfo.amount || 1;

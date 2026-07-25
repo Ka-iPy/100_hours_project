@@ -248,6 +248,7 @@
           <% if (spellData) { %>
             <button type="button" class="rpg-tab-btn" onclick="switchTab('tab-spellbook')">Spells</button>
             <% } %>
+          <button type="button" class="rpg-tab-btn" onclick="switchTab('tab-cerberus')">Cerberus Traceability</button>
           <button type="button" class="rpg-tab-btn" onclick="switchTab('tab-custom')">Custom & Notes</button>
         </nav>
 
@@ -647,6 +648,71 @@
 
           </section>
         <% } %>
+
+        <!-- TAB 6: Cerberus Traceability & Source Watchdog -->
+        <section id="tab-cerberus" class="rpg-tab-content space-y-6">
+          <div class="rpg-panel">
+            <div class="rpg-panel-header">
+              <span class="rpg-header-font font-bold text-sm text-yellow-500">🐕 Cerberus Source Watchdog & Attribute Traceability</span>
+            </div>
+            <div class="rpg-panel-content text-xs text-gray-300 space-y-5">
+              
+              <!-- Ability Score Origins -->
+              <div>
+                <h4 class="font-bold text-indigo-400 mb-2 uppercase tracking-wider text-[11px]">Ability Score Source Traceability</h4>
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+                  <% abilityData.forEach(function(a) { %>
+                    <div class="p-3 bg-slate-900/60 rounded-xl border border-slate-800 space-y-1">
+                      <div class="flex justify-between items-center">
+                        <span class="font-bold text-gray-200 uppercase"><%= a.name %></span>
+                        <span class="text-yellow-400 font-bold"><%= a.score %> (<%= a.modStr %>)</span>
+                      </div>
+                      <div class="text-[10px] text-gray-400 space-y-0.5 border-t border-slate-800/80 pt-1 mt-1">
+                        <div>• Base Value: <%= a.score %></div>
+                        <div>• Source: <%= raceDisplay %></div>
+                      </div>
+                    </div>
+                  <% }); %>
+                </div>
+              </div>
+
+              <!-- Feat Descriptions & Benefits -->
+              <% if (featsList && featsList.length > 0) { %>
+                <div>
+                  <h4 class="font-bold text-yellow-500 mb-2 uppercase tracking-wider text-[11px]">Feats & Special Abilities</h4>
+                  <div class="space-y-3">
+                    <% featsList.forEach(function(f) { %>
+                      <div class="p-3 bg-slate-900/60 rounded-xl border border-slate-800">
+                        <div class="flex justify-between items-center mb-1">
+                          <span class="font-bold text-indigo-400"><%= f.name %></span>
+                          <span class="text-[10px] text-gray-500 bg-slate-800 px-2 py-0.5 rounded"><%= f.source %></span>
+                        </div>
+                        <div class="text-xs text-gray-300 leading-relaxed"><%= f.description || 'Feat option and granted benefits.' %></div>
+                      </div>
+                    <% }); %>
+                  </div>
+                </div>
+              <% } %>
+
+              <!-- Granted Features & Auto-Modifiers -->
+              <div>
+                <h4 class="font-bold text-emerald-400 mb-2 uppercase tracking-wider text-[11px]">Auto-Granted Features & Traits</h4>
+                <div class="space-y-3 max-h-[350px] overflow-y-auto pr-1">
+                  <% features.forEach(function(f) { %>
+                    <div class="p-3 bg-slate-900/60 rounded-xl border border-slate-800 space-y-1">
+                      <div class="flex justify-between items-center">
+                        <span class="font-bold text-yellow-500"><%= f.name %></span>
+                        <span class="text-[10px] text-gray-500"><%= f.category %></span>
+                      </div>
+                      <div class="text-xs text-gray-300 leading-relaxed"><%= f.description %></div>
+                    </div>
+                  <% }); %>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </section>
 
         <!-- TAB 5: Custom & Notes -->
         <section id="tab-custom" class="rpg-tab-content space-y-6">

@@ -1,6 +1,7 @@
 import { CharacterBuilder } from "../models/CharacterBuilder.js";
 import { Character, Equipment, TracedFeature, Spellbook } from "../models/Character.js";
 import loader from "../data/loader.js";
+import { Cerberus } from "../models/Cerberus.js";
 import { PDFDocument, rgb, StandardFonts } from "pdf-lib";
 import { readFileSync } from "fs";
 import { fileURLToPath } from "url";
@@ -13,46 +14,22 @@ const TEMPLATE_PATH = join(__dirname, "..", "templates", "character-sheet.pdf");
 export default {
   getCharacterCreator: async (req, res) => {
     await loader.loadAll();
+    const safeStringify = (obj) => JSON.stringify(obj).replace(/<\/script>/gi, "<\\/script>");
+
     const races = loader
       .getRaces()
       .filter((r) => !r.lineage && !r.traitTags?.includes("NPC Race"))
-      .map((race) => {
-        return JSON.stringify({ name: race.name, source: race.source });
-      });
+      .map((race) => safeStringify(race));
 
-    const subraces = loader.getSubraces().map((sr) => {
-      return JSON.stringify({
-        name: sr.name || sr.raceName || "Standard",
-        source: sr.source,
-        raceName: sr.raceName || sr._copy?.raceName,
-        raceSource: sr.raceSource || sr._copy?.raceSource,
-      });
-    });
+    const subraces = loader.getSubraces().map((sr) => safeStringify(sr));
 
-    const classes = loader.getClasses().map((cls) => {
-      return JSON.stringify({ name: cls.name, source: cls.source });
-    });
+    const classes = loader.getClasses().map((cls) => safeStringify(cls));
 
-    const subclasses = loader.getSubclasses().map((sc) => {
-      return JSON.stringify({
-        name: sc.name,
-        shortName: sc.subclassShortName,
-        className: sc.className,
-        source: sc.source,
-      });
-    });
+    const subclasses = loader.getSubclasses().map((sc) => safeStringify(sc));
 
-    const backgrounds = loader.getBackgrounds().map((bg) => {
-      return JSON.stringify({ name: bg.name, source: bg.source });
-    });
+    const backgrounds = loader.getBackgrounds().map((bg) => safeStringify(bg));
 
-    const feats = loader.getFeats().map((feat) => {
-      return JSON.stringify({
-        name: feat.name,
-        source: feat.source,
-        category: feat.category || null,
-      });
-    });
+    const feats = loader.getFeats().map((feat) => safeStringify(feat));
 
     const alignments = [
       "Lawful Good",
@@ -1326,6 +1303,14 @@ function buildCharacterViewHelpers(c) {
       };
     });
 
+  const featsList = (c.feats || []).map((f) => ({
+    name: f.sourceName || f.name,
+    source: f.source || "PHB",
+    description: f.description ? stripHtmlTags(String(f.description)) : "",
+  }));
+
+  const cerberusReport = c.cerberusReport || Cerberus.watchCharacter(c, loader);
+
   return {
     abilityData,
     savingThrows,
@@ -1342,6 +1327,8 @@ function buildCharacterViewHelpers(c) {
     equipment,
     spellData,
     weapons,
+    featsList,
+    cerberusReport,
     fmt,
   };
 }
