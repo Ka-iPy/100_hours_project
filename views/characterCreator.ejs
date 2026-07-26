@@ -78,170 +78,184 @@
       </div>
     </aside>
 
-    <!-- MIDDLE COLUMN: Active Step Content -->
-    <main class="creator-main-panel">
-      <div class="creator-main-header">
-        <h2 id="wizard-step-title" class="creator-step-title">1. Ruleset & Basic Info</h2>
-        <span id="wizard-step-indicator" class="label-small">Step 1 / 8</span>
-      </div>
+    <!-- MIDDLE SECTION: Active Step Content Flanked by Full-Height Vertical Nav Buttons -->
+    <div class="creator-middle-section">
+      <!-- Left Side Prev Button -->
+      <button type="button" id="wizard-btn-back" class="creator-side-nav-btn btn-prev" onclick="prevStep()" disabled title="Previous Step">
+        <span class="nav-btn-icon">◀</span>
+        <span class="nav-btn-label">PREV</span>
+      </button>
 
-      <div class="creator-main-body">
-        <!-- STEP 1: Basic Info -->
-        <div id="step-panel-1" class="wizard-step-panel">
-          <div class="creator-field mb-4">
-            <label for="name" class="font-bold block mb-1 text-gray-200">Character Name</label>
-            <input type="text" id="name" name="name" class="w-full bg-slate-900 border border-slate-700 text-white rounded p-3" placeholder="Enter hero's name..." required>
-          </div>
-          <div class="creator-field">
-            <label for="ruleset" class="font-bold block mb-1 text-gray-200">Edition / Ruleset Preference</label>
-            <select id="ruleset" class="w-full bg-slate-900 border border-slate-700 text-white rounded p-3">
-              <option value="5e">D&D 5e Standard Rules (PHB / XPHB / Expanded)</option>
-              <option value="2024">2024 Revised Core Rules Preferred</option>
-            </select>
-          </div>
+      <!-- Main Content Panel -->
+      <main class="creator-main-panel">
+        <div class="creator-main-header">
+          <h2 id="wizard-step-title" class="creator-step-title">1. Ruleset & Basic Info</h2>
+          <span id="wizard-step-indicator" class="label-small">Step 1 / 8</span>
         </div>
 
-        <!-- STEP 2: Race & Subrace -->
-        <div id="step-panel-2" class="wizard-step-panel hidden">
-          <div class="mb-4">
-            <input type="text" id="race-search" class="w-full bg-slate-900 border border-slate-700 text-white rounded px-3 py-2 text-sm" placeholder="Search races (e.g. Dragonborn, Elf, Dwarf)..." oninput="filterRaces(this.value)">
-            <input type="hidden" id="race" name="race" required>
-          </div>
-          <div id="race-cards-grid" class="creator-cards-grid max-h-[420px] overflow-y-auto pr-1">
-            <!-- Dynamically rendered race cards -->
-          </div>
-          <div id="subraceContainer" class="mt-4 p-4 bg-slate-900/60 rounded-xl border border-slate-800 hidden">
-            <label for="subrace" class="font-bold block mb-1 text-yellow-500 text-sm">Select Subrace / Heritage</label>
-            <select id="subrace" name="subrace" class="w-full bg-slate-800 border border-slate-700 text-white rounded p-2 text-sm" onchange="onSubraceChange()">
-              <option value="">None</option>
-            </select>
-          </div>
-        </div>
-
-        <!-- STEP 3: Class & Level -->
-        <div id="step-panel-3" class="wizard-step-panel hidden">
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-            <div>
-              <label for="level" class="font-bold block mb-1 text-gray-200">Starting Level</label>
-              <input type="number" id="level" name="level" min="1" max="20" value="1" class="w-full bg-slate-900 border border-slate-700 text-white rounded p-2 font-bold" required onchange="onLevelChange()">
+        <div class="creator-main-body">
+          <!-- STEP 1: Basic Info -->
+          <div id="step-panel-1" class="wizard-step-panel">
+            <div class="creator-field mb-4">
+              <label for="name" class="font-bold block mb-1 text-gray-200">Character Name</label>
+              <input type="text" id="name" name="name" class="w-full bg-slate-900 border border-slate-700 text-white rounded p-3" placeholder="Enter hero's name..." required>
             </div>
-            <div id="subclassContainer" class="hidden">
-              <label for="subclass" class="font-bold block mb-1 text-yellow-500">Subclass Choice</label>
-              <select id="subclass" name="subclass" class="w-full bg-slate-800 border border-slate-700 text-white rounded p-2 text-sm" onchange="onSubclassChange()">
+            <div class="creator-field">
+              <label for="ruleset" class="font-bold block mb-1 text-gray-200">Edition / Ruleset Preference</label>
+              <select id="ruleset" class="w-full bg-slate-900 border border-slate-700 text-white rounded p-3">
+                <option value="5e">D&D 5e Standard Rules (PHB / XPHB / Expanded)</option>
+                <option value="2024">2024 Revised Core Rules Preferred</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- STEP 2: Race & Subrace -->
+          <div id="step-panel-2" class="wizard-step-panel hidden">
+            <div class="mb-4">
+              <input type="text" id="race-search" class="w-full bg-slate-900 border border-slate-700 text-white rounded px-3 py-2 text-sm" placeholder="Search races (e.g. Dragonborn, Elf, Dwarf)..." oninput="filterRaces(this.value)">
+              <input type="hidden" id="race" name="race" required>
+            </div>
+            <div id="race-cards-grid" class="creator-cards-grid max-h-[420px] overflow-y-auto pr-1">
+              <!-- Dynamically rendered race cards -->
+            </div>
+            <div id="subraceContainer" class="mt-4 p-4 bg-slate-900/60 rounded-xl border border-slate-800 hidden">
+              <label for="subrace" class="font-bold block mb-1 text-yellow-500 text-sm">Select Subrace / Heritage</label>
+              <select id="subrace" name="subrace" class="w-full bg-slate-800 border border-slate-700 text-white rounded p-2 text-sm" onchange="onSubraceChange()">
                 <option value="">None</option>
               </select>
             </div>
           </div>
-          <input type="hidden" id="className" name="className" required>
-          <div id="class-cards-grid" class="creator-cards-grid max-h-[400px] overflow-y-auto pr-1">
-            <!-- Dynamically rendered class cards -->
-          </div>
-        </div>
 
-        <!-- STEP 4: Background & Alignment -->
-        <div id="step-panel-4" class="wizard-step-panel hidden">
-          <div class="mb-4">
-            <label for="alignment" class="font-bold block mb-1 text-gray-200">Alignment</label>
-            <select id="alignment" name="alignment" class="w-full bg-slate-900 border border-slate-700 text-white rounded p-2">
-              <% alignments.forEach(align => { %>
-                <option value="<%= align %>"><%= align %></option>
-              <% }) %>
-            </select>
-          </div>
-          <input type="hidden" id="background" name="background" required>
-          <div id="background-cards-grid" class="creator-cards-grid max-h-[300px] overflow-y-auto pr-1 mb-4">
-            <!-- Dynamically rendered background cards -->
-          </div>
-
-          <!-- Feats Selection Section -->
-          <div class="p-4 bg-slate-900/60 rounded-xl border border-slate-800">
-            <div class="flex justify-between items-center mb-2">
-              <label class="font-bold text-yellow-500 text-sm">Select Feats (Optional / Origin Feats)</label>
-              <span id="feat-counter" class="text-xs text-gray-400 font-semibold">0 selected</span>
+          <!-- STEP 3: Class & Level -->
+          <div id="step-panel-3" class="wizard-step-panel hidden">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+              <div>
+                <label for="level" class="font-bold block mb-1 text-gray-200">Starting Level</label>
+                <input type="number" id="level" name="level" min="1" max="20" value="1" class="w-full bg-slate-900 border border-slate-700 text-white rounded p-2 font-bold" required onchange="onLevelChange()">
+              </div>
+              <div id="subclassContainer" class="hidden">
+                <label for="subclass" class="font-bold block mb-1 text-yellow-500">Subclass Choice</label>
+                <select id="subclass" name="subclass" class="w-full bg-slate-800 border border-slate-700 text-white rounded p-2 text-sm" onchange="onSubclassChange()">
+                  <option value="">None</option>
+                </select>
+              </div>
             </div>
-            <div class="mb-3">
-              <input type="text" id="feat-search" class="w-full bg-slate-800 border border-slate-700 text-white rounded px-3 py-1.5 text-xs" placeholder="Search feats (e.g., Alert, Magic Initiate, Tough)..." oninput="filterFeats(this.value)">
-            </div>
-            <div id="feat-cards-grid" class="creator-cards-grid max-h-[220px] overflow-y-auto pr-1">
-              <!-- Dynamically rendered feat cards -->
+            <input type="hidden" id="className" name="className" required>
+            <div id="class-cards-grid" class="creator-cards-grid max-h-[400px] overflow-y-auto pr-1">
+              <!-- Dynamically rendered class cards -->
             </div>
           </div>
-        </div>
 
-        <!-- STEP 5: Ability Scores (Point Buy, Standard Array, Manual) -->
-        <div id="step-panel-5" class="wizard-step-panel hidden">
-          <div class="flex gap-2 mb-4">
-            <button type="button" class="rpg-btn rpg-btn-secondary text-xs active" id="btn-mode-pointbuy" onclick="setAbilityMode('pointbuy')">Point Buy (27 pts)</button>
-            <button type="button" class="rpg-btn rpg-btn-secondary text-xs" id="btn-mode-array" onclick="setAbilityMode('array')">Standard Array</button>
-            <button type="button" class="rpg-btn rpg-btn-secondary text-xs" id="btn-mode-manual" onclick="setAbilityMode('manual')">Manual Roll</button>
+          <!-- STEP 4: Background & Alignment -->
+          <div id="step-panel-4" class="wizard-step-panel hidden">
+            <div class="mb-4">
+              <label for="alignment" class="font-bold block mb-1 text-gray-200">Alignment</label>
+              <select id="alignment" name="alignment" class="w-full bg-slate-900 border border-slate-700 text-white rounded p-2">
+                <% alignments.forEach(align => { %>
+                  <option value="<%= align %>"><%= align %></option>
+                <% }) %>
+              </select>
+            </div>
+            <input type="hidden" id="background" name="background" required>
+            <div id="background-cards-grid" class="creator-cards-grid max-h-[300px] overflow-y-auto pr-1 mb-4">
+              <!-- Dynamically rendered background cards -->
+            </div>
+
+            <!-- Feats Selection Section -->
+            <div class="p-4 bg-slate-900/60 rounded-xl border border-slate-800">
+              <div class="flex justify-between items-center mb-2">
+                <label class="font-bold text-yellow-500 text-sm">Select Feats (Optional / Origin Feats)</label>
+                <span id="feat-counter" class="text-xs text-gray-400 font-semibold">0 selected</span>
+              </div>
+              <div class="mb-3">
+                <input type="text" id="feat-search" class="w-full bg-slate-800 border border-slate-700 text-white rounded px-3 py-1.5 text-xs" placeholder="Search feats (e.g., Alert, Magic Initiate, Tough)..." oninput="filterFeats(this.value)">
+              </div>
+              <div id="feat-cards-grid" class="creator-cards-grid max-h-[220px] overflow-y-auto pr-1">
+                <!-- Dynamically rendered feat cards -->
+              </div>
+            </div>
           </div>
-          <div id="pointbuy-tracker" class="p-3 bg-slate-900/60 rounded border border-slate-800 mb-4 flex justify-between items-center text-sm font-bold text-yellow-400">
-            <span>Points Remaining: <span id="points-left">27</span> / 27</span>
-            <span class="text-xs text-gray-400 font-normal">Costs: 8=0, 9=1, 10=2, 11=3, 12=4, 13=5, 14=7, 15=9</span>
-          </div>
-          <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
-            <% abilities.forEach(ability => {
-              const displayName = ability.charAt(0).toUpperCase() + ability.slice(1); %>
-              <div class="creator-ability-card p-3 bg-slate-900/50 rounded-xl border border-slate-800">
-                <label for="stat_<%= ability %>" class="font-bold text-sm text-gray-200 block mb-1"><%= displayName %></label>
-                <div class="flex items-center gap-2">
-                  <input type="number" id="stat_<%= ability %>" name="stats[<%= ability %>]" min="1" max="20" value="10"
-                    class="w-16 text-center bg-slate-800 border border-slate-700 text-white rounded p-1 font-bold text-lg"
-                    onchange="onStatChange('<%= ability %>')">
-                  <div class="text-xs text-gray-400">
-                    <div>Base: <span id="base_<%= ability %>">10</span></div>
-                    <div class="text-emerald-400 font-bold">Racial: <span id="asi_<%= ability %>">+0</span></div>
+
+          <!-- STEP 5: Ability Scores (Point Buy, Standard Array, Manual) -->
+          <div id="step-panel-5" class="wizard-step-panel hidden">
+            <div class="flex gap-2 mb-4">
+              <button type="button" class="rpg-btn rpg-btn-secondary text-xs active" id="btn-mode-pointbuy" onclick="setAbilityMode('pointbuy')">Point Buy (27 pts)</button>
+              <button type="button" class="rpg-btn rpg-btn-secondary text-xs" id="btn-mode-array" onclick="setAbilityMode('array')">Standard Array</button>
+              <button type="button" class="rpg-btn rpg-btn-secondary text-xs" id="btn-mode-manual" onclick="setAbilityMode('manual')">Manual Roll</button>
+            </div>
+            <div id="pointbuy-tracker" class="p-3 bg-slate-900/60 rounded border border-slate-800 mb-4 flex justify-between items-center text-sm font-bold text-yellow-400">
+              <span>Points Remaining: <span id="points-left">27</span> / 27</span>
+              <span class="text-xs text-gray-400 font-normal">Costs: 8=0, 9=1, 10=2, 11=3, 12=4, 13=5, 14=7, 15=9</span>
+            </div>
+            <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+              <% abilities.forEach(ability => {
+                const displayName = ability.charAt(0).toUpperCase() + ability.slice(1); %>
+                <div class="creator-ability-card p-3 bg-slate-900/50 rounded-xl border border-slate-800">
+                  <label for="stat_<%= ability %>" class="font-bold text-sm text-gray-200 block mb-1"><%= displayName %></label>
+                  <div class="flex items-center gap-2">
+                    <input type="number" id="stat_<%= ability %>" name="stats[<%= ability %>]" min="1" max="20" value="10"
+                      class="w-16 text-center bg-slate-800 border border-slate-700 text-white rounded p-1 font-bold text-lg"
+                      onchange="onStatChange('<%= ability %>')">
+                    <div class="text-xs text-gray-400">
+                      <div>Base: <span id="base_<%= ability %>">10</span></div>
+                      <div class="text-emerald-400 font-bold">Racial: <span id="asi_<%= ability %>">+0</span></div>
+                    </div>
                   </div>
                 </div>
+              <% }) %>
+            </div>
+          </div>
+
+          <!-- STEP 6: Equipment -->
+          <div id="step-panel-6" class="wizard-step-panel hidden">
+            <div id="equipmentChoices"></div>
+            <div id="equipmentGoldAlt" class="creator-gold-alt mt-4"></div>
+          </div>
+
+          <!-- STEP 7: Spells -->
+          <div id="step-panel-7" class="wizard-step-panel hidden">
+            <div id="spellInfo" class="mb-4"></div>
+            <div id="cantripSection" style="display: none;">
+              <h3 class="font-bold text-sm text-yellow-500 mb-2">Cantrips <span id="cantripCounter"></span></h3>
+              <div id="cantripList" class="creator-pick-grid"></div>
+            </div>
+            <div id="spellPickSection" style="display: none;" class="mt-4">
+              <h3 class="font-bold text-sm text-yellow-500 mb-2">Level 1 Spells <span id="spellCounter"></span></h3>
+              <div id="spellList" class="creator-pick-grid"></div>
+            </div>
+          </div>
+
+          <!-- STEP 8: Review & Cerberus -->
+          <div id="step-panel-8" class="wizard-step-panel hidden space-y-4">
+            <div class="p-4 bg-slate-900/60 rounded-xl border border-slate-800">
+              <h3 class="font-bold text-lg text-yellow-500 mb-2">Character Summary</h3>
+              <div id="review-summary-grid" class="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+                <!-- Dynamically populated summary -->
               </div>
-            <% }) %>
-          </div>
-        </div>
-
-        <!-- STEP 6: Equipment -->
-        <div id="step-panel-6" class="wizard-step-panel hidden">
-          <div id="equipmentChoices"></div>
-          <div id="equipmentGoldAlt" class="creator-gold-alt mt-4"></div>
-        </div>
-
-        <!-- STEP 7: Spells -->
-        <div id="step-panel-7" class="wizard-step-panel hidden">
-          <div id="spellInfo" class="mb-4"></div>
-          <div id="cantripSection" style="display: none;">
-            <h3 class="font-bold text-sm text-yellow-500 mb-2">Cantrips <span id="cantripCounter"></span></h3>
-            <div id="cantripList" class="creator-pick-grid"></div>
-          </div>
-          <div id="spellPickSection" style="display: none;" class="mt-4">
-            <h3 class="font-bold text-sm text-yellow-500 mb-2">Level 1 Spells <span id="spellCounter"></span></h3>
-            <div id="spellList" class="creator-pick-grid"></div>
-          </div>
-        </div>
-
-        <!-- STEP 8: Review & Cerberus -->
-        <div id="step-panel-8" class="wizard-step-panel hidden space-y-4">
-          <div class="p-4 bg-slate-900/60 rounded-xl border border-slate-800">
-            <h3 class="font-bold text-lg text-yellow-500 mb-2">Character Summary</h3>
-            <div id="review-summary-grid" class="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
-              <!-- Dynamically populated summary -->
             </div>
-          </div>
-          <div class="p-4 bg-purple-950/30 rounded-xl border border-purple-800/40">
-            <h3 class="font-bold text-sm text-purple-400 mb-1">Cerberus Watchdog Inspection</h3>
-            <p class="text-xs text-gray-400 mb-2">Real-time analysis of auto-granted traits, stat increases, and proficiencies.</p>
-            <div id="cerberus-review-box" class="text-xs text-gray-300 space-y-1">
-              <!-- Dynamically populated Cerberus watchdog breakdown -->
+            <div class="p-4 bg-purple-950/30 rounded-xl border border-purple-800/40">
+              <h3 class="font-bold text-sm text-purple-400 mb-1">Cerberus Watchdog Inspection</h3>
+              <p class="text-xs text-gray-400 mb-2">Real-time analysis of auto-granted traits, stat increases, and proficiencies.</p>
+              <div id="cerberus-review-box" class="text-xs text-gray-300 space-y-1">
+                <!-- Dynamically populated Cerberus watchdog breakdown -->
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      </main>
 
-      <!-- Footer Controls Bar -->
-      <div class="creator-wizard-footer">
-        <button type="button" id="wizard-btn-back" class="rpg-btn rpg-btn-secondary" onclick="prevStep()" disabled>&larr; Back</button>
-        <button type="button" id="wizard-btn-next" class="rpg-btn rpg-btn-primary" onclick="nextStep()">Next &rarr;</button>
-        <button type="submit" id="wizard-btn-submit" class="rpg-btn rpg-btn-primary hidden">✨ Create Character</button>
+      <!-- Right Side Next / Submit Button -->
+      <div class="creator-side-nav-right">
+        <button type="button" id="wizard-btn-next" class="creator-side-nav-btn btn-next" onclick="nextStep()" title="Next Step">
+          <span class="nav-btn-label">NEXT</span>
+          <span class="nav-btn-icon">▶</span>
+        </button>
+        <button type="submit" id="wizard-btn-submit" class="creator-side-nav-btn btn-submit hidden" title="Create Character">
+          <span class="nav-btn-label">CREATE</span>
+          <span class="nav-btn-icon">✨</span>
+        </button>
       </div>
-    </main>
+    </div>
 
     <!-- RIGHT COLUMN: Dynamic Live Inspector Panel -->
     <aside class="creator-inspector-col">
@@ -251,9 +265,10 @@
         </div>
       </div>
     </aside>
+
   </form>
 
-  <div id="characterPreview" class="creator-preview">
+  <div id="characterPreview" class="creator-preview hidden">
     <h2>Character Preview</h2>
     <pre id="characterJson"></pre>
   </div>

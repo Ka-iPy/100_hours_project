@@ -920,11 +920,6 @@ select:focus {
 }
 
 /* ========== Character Creator ========== */
-.creator-page {
-  max-width: 1600px;
-  margin: 0 auto;
-  width: 100%;
-}
 
 .creator-page>h1 {
   font-family: 'Cinzel Decorative', serif;
@@ -1306,34 +1301,47 @@ select:focus {
    Character Builder Wizard (3-Column Step-by-Step UI)
    ========================================================================== */
 
-.creator-wizard-layout {
-  display: grid;
-  grid-template-columns: 260px 1fr 340px;
-  gap: 20px;
-  min-height: calc(100vh - 120px);
-  max-width: 1600px;
-  margin: 0 auto;
+.creator-page {
+  padding: 0;
+  max-width: 100%;
 }
 
-@media (max-width: 1280px) {
+.creator-wizard-layout {
+  display: grid;
+  grid-template-columns: 240px 1fr 300px;
+  grid-template-rows: 1fr;
+  gap: 14px;
+  height: calc(100vh - 40px);
+  max-width: 1800px;
+  margin: 0 auto;
+  padding: 12px;
+  box-sizing: border-box;
+}
+
+@media (max-width: 1100px) {
   .creator-wizard-layout {
-    grid-template-columns: 240px 1fr;
-  }
-  .creator-inspector-col {
-    grid-column: span 2;
+    grid-template-columns: 200px 1fr 260px;
+    gap: 10px;
   }
 }
 
 @media (max-width: 860px) {
   .creator-wizard-layout {
     grid-template-columns: 1fr;
+    height: auto;
+    min-height: calc(100vh - 40px);
   }
   .creator-stepper-col, .creator-inspector-col {
-    grid-column: span 1;
+    display: none;
   }
 }
 
 /* Left Column: Stepper Sidebar */
+.creator-stepper-col {
+  grid-row: 1 / 2;
+  overflow-y: auto;
+}
+
 .creator-stepper-panel {
   background-color: var(--rpg-panel-bg);
   border: 2px solid var(--rpg-border);
@@ -1343,7 +1351,7 @@ select:focus {
   flex-direction: column;
   gap: 16px;
   position: sticky;
-  top: 20px;
+  top: 16px;
   height: fit-content;
 }
 
@@ -1477,23 +1485,106 @@ select:focus {
   opacity: 0.75;
 }
 
+/* Middle Section: Flanked Side Nav Buttons + Main Panel */
+.creator-middle-section {
+  grid-column: 2 / 3;
+  grid-row: 1 / 2;
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  gap: 10px;
+  height: 100%;
+  min-height: 0;
+  width: 100%;
+}
+
+.creator-side-nav-right {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+/* Full-Height Vertical Side Navigation Buttons */
+.creator-side-nav-btn {
+  width: 52px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  background-color: var(--rpg-panel-bg);
+  border: 2px solid var(--rpg-border);
+  border-radius: 12px;
+  color: var(--rpg-border-glow);
+  font-family: 'Cinzel', serif;
+  font-weight: 700;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  user-select: none;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  flex-shrink: 0;
+}
+
+.nav-btn-icon {
+  font-size: 1.1rem;
+}
+
+.nav-btn-label {
+  writing-mode: vertical-rl;
+  text-orientation: upright;
+  letter-spacing: 0.25em;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.creator-side-nav-btn:hover:not(:disabled) {
+  border-color: #6366f1;
+  color: #ffffff;
+  background: linear-gradient(180deg, rgba(99, 102, 241, 0.25), rgba(139, 92, 246, 0.15));
+  box-shadow: 0 0 20px rgba(99, 102, 241, 0.4);
+  transform: scale(1.02);
+}
+
+.creator-side-nav-btn.btn-submit:hover:not(:disabled) {
+  border-color: #10b981;
+  color: #ffffff;
+  background: linear-gradient(180deg, rgba(16, 185, 129, 0.25), rgba(5, 150, 105, 0.15));
+  box-shadow: 0 0 20px rgba(16, 185, 129, 0.4);
+}
+
+.creator-side-nav-btn:disabled {
+  opacity: 0.25;
+  cursor: not-allowed;
+  border-color: rgba(139, 107, 67, 0.2);
+  color: #64748b;
+  background-color: rgba(15, 17, 26, 0.4);
+  box-shadow: none;
+  transform: none;
+}
+
 /* Middle Column: Options Grid & Content */
 .creator-main-panel {
+  flex: 1;
   background-color: var(--rpg-panel-bg);
   border: 2px solid var(--rpg-border);
   border-radius: 12px;
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  min-height: 0; /* critical for flex/grid scroll containment */
+  height: 100%;
 }
 
 .creator-main-header {
   background-color: var(--rpg-panel-header-bg);
   border-bottom: 1px solid var(--rpg-border);
-  padding: 16px 20px;
+  padding: 14px 20px;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-shrink: 0;
 }
 
 .creator-step-title {
@@ -1507,12 +1598,19 @@ select:focus {
   padding: 20px;
   flex: 1;
   overflow-y: auto;
+  min-height: 0;
 }
 
 .creator-cards-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   gap: 14px;
+}
+
+.creator-pick-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 10px;
 }
 
 .creator-option-card {
@@ -1576,6 +1674,14 @@ select:focus {
 }
 
 /* Right Column: Dynamic Inspector Panel */
+.creator-inspector-col {
+  grid-column: 3 / 4;
+  grid-row: 1 / 2;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+
 .creator-inspector-panel {
   background-color: var(--rpg-panel-bg);
   border: 2px solid var(--rpg-border);
@@ -1584,9 +1690,8 @@ select:focus {
   display: flex;
   flex-direction: column;
   gap: 16px;
-  position: sticky;
-  top: 20px;
-  max-height: calc(100vh - 80px);
+  height: 100%;
+  box-sizing: border-box;
   overflow-y: auto;
 }
 
@@ -1662,4 +1767,20 @@ select:focus {
   display: flex;
   justify-content: space-between;
   align-items: center;
+}
+
+/* Character Preview (debug) */
+.creator-preview {
+  margin-top: 16px;
+  background-color: var(--rpg-panel-bg);
+  border: 2px solid var(--rpg-border);
+  border-radius: 12px;
+  padding: 16px;
+}
+
+.creator-preview pre {
+  max-height: 300px;
+  overflow-y: auto;
+  font-size: 0.75rem;
+  color: #94a3b8;
 }
