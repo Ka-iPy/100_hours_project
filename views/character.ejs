@@ -669,12 +669,43 @@
                       </div>
                       <div class="text-[10px] text-gray-400 space-y-0.5 border-t border-slate-800/80 pt-1 mt-1">
                         <div>• Base Value: <%= a.score %></div>
-                        <div>• Source: <%= raceDisplay %></div>
+                        <div>• Race: <%= raceDisplay %></div>
+                        <% if (bgStr) { %>
+                          <div>• Background: <%= bgStr %></div>
+                        <% } %>
+                        <% if (cerberusReport && cerberusReport.aggregatedAutoGrants && cerberusReport.aggregatedAutoGrants.abilityScores) { %>
+                          <% const extraAsi = cerberusReport.aggregatedAutoGrants.abilityScores.filter(function(ab) { return ab.stat === a.name.toLowerCase(); }); %>
+                          <% extraAsi.forEach(function(ea) { %>
+                            <div class="text-yellow-400">• +<%= ea.bonus %> from <%= ea.source %></div>
+                          <% }); %>
+                        <% } %>
                       </div>
                     </div>
                   <% }); %>
                 </div>
               </div>
+
+              <!-- Auto-Granted Spells & Additional Spell Lists -->
+              <% if (cerberusReport && cerberusReport.aggregatedAutoGrants && cerberusReport.aggregatedAutoGrants.spells && cerberusReport.aggregatedAutoGrants.spells.length > 0) { %>
+                <div>
+                  <h4 class="font-bold text-purple-400 mb-2 uppercase tracking-wider text-[11px]">Auto-Granted Spells & Additional Spell Lists</h4>
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+                    <% cerberusReport.aggregatedAutoGrants.spells.forEach(function(s) { %>
+                      <div class="p-2.5 bg-slate-900/70 rounded-lg border border-purple-900/50 flex justify-between items-center text-xs">
+                        <div class="flex items-center gap-2">
+                          <span class="text-purple-300 font-semibold">✨ <%= s.name %></span>
+                          <% if (s.expanded) { %>
+                            <span class="text-[9px] bg-purple-950 text-purple-300 border border-purple-800 px-1.5 py-0.5 rounded">Expanded List</span>
+                          <% } else { %>
+                            <span class="text-[9px] bg-emerald-950 text-emerald-300 border border-emerald-800 px-1.5 py-0.5 rounded">Auto Granted</span>
+                          <% } %>
+                        </div>
+                        <span class="text-[10px] text-gray-400 italic"><%= s.source || 'Background / Feat / Race' %></span>
+                      </div>
+                    <% }); %>
+                  </div>
+                </div>
+              <% } %>
 
               <!-- Feat Descriptions & Benefits -->
               <% if (featsList && featsList.length > 0) { %>

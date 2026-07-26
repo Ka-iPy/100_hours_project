@@ -46,8 +46,17 @@ export class CerberusTagParser {
         const result = replacer(tagName.toLowerCase(), rawContent, raw);
         if (result !== null && result !== undefined) return result;
       }
+      const tag = tagName.toLowerCase();
       const parts = rawContent.split("|");
-      return parts[0] || raw;
+      if (tag === "filter" || tag === "dice" || tag === "damage") {
+        return parts[0] ? parts[0].trim() : raw;
+      }
+      if (parts.length >= 3 && parts[2].trim() && !parts[2].includes("=")) {
+        return parts[2].trim();
+      }
+      if (tag === "dc") return `DC ${parts[0]}`;
+      if (tag === "chance") return `${parts[0]}%`;
+      return parts[0] ? parts[0].trim() : raw;
     });
   }
 
@@ -136,7 +145,10 @@ export class Cerberus {
     // 2. Detect Selectable Choices
     this.detectSelectableChoices(entity, descriptionText, report, loader);
 
-    // 3. Class & Subclass Feature Expansion (retrieve child features up to level)
+    // 3. Parse 5etools additionalSpells structure
+    this.parseAdditionalSpells(entity, descriptionText, report, loader);
+
+    // 4. Class & Subclass Feature Expansion (retrieve child features up to level)
     if (loader) {
       if (entityType === "Class") {
         const classSrc = entity.source || "PHB";
@@ -434,35 +446,202 @@ export class Cerberus {
   }
 
   /**
+   * Parse 5etools additionalSpells structure (innate, known, prepared, expanded)
+   */
+  static parseAdditionalSpells(entity, descText, report, loader) {
+    if (!entity.additionalSpells || !Array.isArray(entity.additionalSpells)) return;
+
+    const grants = report.autoGrants;
+    const choices = report.selectableChoices;
+
+    const cleanSpellString = (str) => {
+      if (typeof str !== "string") return null;
+      let clean = str.replace(/#c$/i, "").trim();
+      const parts = clean.split("|");
+      const name = parts[0].trim();
+      const source = parts[1] ? parts[1].trim().toUpperCase() : "PHB";
+      return { name, source };
+    };
+
+    const resolveSpellObj = (spellInfo) => {
+      if (!spellInfo) return null;
+      const dbSpell = loader ? loader.getSpell(spellInfo.name, spellInfo.source) : null;
+      return {
+        name: dbSpell ? dbSpell.name : spellInfo.name,
+        source: dbSpell ? dbSpell.source : spellInfo.source,
+        level: dbSpell ? dbSpell.level : 0,
+        school: dbSpell ? dbSpell.school : "",
+        autoGranted: true,
+      };
+    };
+
+    const extractSpellsAndChoices = (obj) => {
+      if (!obj) return;
+      if (typeof obj === "string") {
+        const cleaned = cleanSpellString(obj);
+        if (cleaned && !grants.spells.some((s) => s.name.toLowerCase() === cleaned.name.toLowerCase())) {
+          const resolved = resolveSpellObj(cleaned);
+          if (resolved) grants.spells.push(resolved);
+        }
+        return;
+      }
+      if (Array.isArray(obj)) {
+        obj.forEach((item) => extractSpellsAndChoices(item));
+        return;
+      }
+      if (typeof obj === "object") {
+        if (obj.choose) {
+          this.processSpellQueryChoice(entity, obj.choose, choices, loader);
+        } else {
+          Object.values(obj).forEach((val) => extractSpellsAndChoices(val));
+        }
+      }
+    };
+
+    entity.additionalSpells.forEach((addSp) => {
+      if (typeof addSp !== "object") return;
+
+      ["innate", "known", "prepared"].forEach((key) => {
+        if (addSp[key]) {
+          extractSpellsAndChoices(addSp[key]);
+        }
+      });
+
+      if (addSp.expanded && typeof addSp.expanded === "object") {
+        Object.entries(addSp.expanded).forEach(([lvlKey, spellList]) => {
+          if (Array.isArray(spellList)) {
+            spellList.forEach((spStr) => {
+              const cleaned = cleanSpellString(spStr);
+              if (cleaned && !grants.spells.some((s) => s.name.toLowerCase() === cleaned.name.toLowerCase())) {
+                const resolved = resolveSpellObj(cleaned);
+                if (resolved) {
+                  resolved.expanded = true;
+                  grants.spells.push(resolved);
+                }
+              }
+            });
+          }
+        });
+      }
+    });
+  }
+
+  /**
+   * Helper to parse 5etools choose query string e.g. "level=1|school=D|school=E" or "level=0|class=Sorcerer"
+   */
+  static processSpellQueryChoice(entity, chooseQuery, choices, loader) {
+    if (!chooseQuery || typeof chooseQuery !== "string") return;
+
+    const params = {};
+    chooseQuery.split("|").forEach((part) => {
+      const [k, v] = part.split("=");
+      if (k && v) {
+        if (!params[k]) params[k] = [];
+        v.split(";").forEach((subVal) => {
+          if (subVal.trim()) params[k].push(subVal.trim());
+        });
+      }
+    });
+
+    const targetLevels = params.level ? params.level.map((l) => parseInt(l)) : [0];
+    const targetSchools = params.school ? params.school.map((s) => s.toUpperCase()) : null;
+    const targetClasses = params.class ? params.class.map((c) => c.toLowerCase()) : null;
+
+    let availableSpells = loader ? loader.getSpells() : [];
+
+    availableSpells = availableSpells.filter((s) => {
+      if (s.level === undefined || s.level === null) return false;
+      if (targetLevels.length > 0 && !targetLevels.includes(s.level)) {
+        return false;
+      }
+      if (targetSchools && targetSchools.length > 0) {
+        const sSchool = (s.school || "").toUpperCase();
+        if (!targetSchools.includes(sSchool)) return false;
+      }
+      if (targetClasses && targetClasses.length > 0 && s.classes?.fromClassList) {
+        const classList = (s.classes.fromClassList || []).map((c) => (c.name || "").toLowerCase());
+        if (!targetClasses.some((tc) => classList.includes(tc))) return false;
+      }
+      return true;
+    });
+
+    const levelLabel = targetLevels.includes(0) ? "Cantrip" : `Level ${targetLevels.join("/")} Spell`;
+    const choiceId = `spell_choice_${entity.name}_${targetLevels.join("_")}`;
+
+    if (!choices.some((c) => c.id === choiceId)) {
+      choices.push({
+        id: choiceId,
+        type: "SPELL",
+        name: `${entity.name} ${levelLabel} Selection`,
+        description: `Choose 1 ${levelLabel.toLowerCase()} (${chooseQuery}).`,
+        count: 1,
+        options: availableSpells.map((s) => ({
+          name: s.name,
+          source: s.source,
+          school: s.school,
+          level: s.level,
+          entity: s,
+        })),
+      });
+    }
+  }
+
+  /**
    * Detect selectable choices for an entity
    */
   static detectSelectableChoices(entity, descText, report, loader) {
     const choices = report.selectableChoices;
 
-    // A. Flexible Ability Score Choices (JSON .ability with choose or text)
+    // A. Flexible Ability Score Choices (JSON .ability with choose or weighted or text)
     if (entity.ability) {
       const abList = Array.isArray(entity.ability) ? entity.ability : [entity.ability];
       abList.forEach((abObj) => {
         if (typeof abObj === "object" && abObj.choose) {
-          const chooseInfo = abObj.choose.weighted || abObj.choose;
-          const count = chooseInfo.count || 1;
-          const amount = chooseInfo.amount || 1;
-          const from = chooseInfo.from || ["str", "dex", "con", "int", "wis", "cha"];
-          choices.push({
-            id: `asi_${entity.name}`,
-            type: "ABILITY_SCORE",
-            name: `${entity.name} Ability Score Increase`,
-            description: `Choose ${count} ability score(s) to increase by ${amount}.`,
-            count,
-            amount,
-            options: from.map((st) => ({
-              name: st.toUpperCase(),
-              value: st,
-            })),
-          });
+          if (abObj.choose.weighted) {
+            const w = abObj.choose.weighted;
+            const from = w.from || ["str", "dex", "con", "int", "wis", "cha"];
+            const weights = w.weights || [1, 1];
+            const is21Mode = weights.length === 2 && weights[0] === 2 && weights[1] === 1;
+
+            const choiceId = `asi_weighted_${entity.name}_${weights.join("_")}`;
+            if (!choices.some((c) => c.id === choiceId)) {
+              choices.push({
+                id: choiceId,
+                type: "ABILITY_SCORE",
+                name: is21Mode
+                  ? `${entity.name} Ability Score (+2 / +1 Mode)`
+                  : `${entity.name} Ability Score (+1 / +1 / +1 Mode)`,
+                description: is21Mode
+                  ? `Increase one score from [${from.join(", ").toUpperCase()}] by +2, and another by +1.`
+                  : `Increase three scores from [${from.join(", ").toUpperCase()}] by +1 each.`,
+                count: is21Mode ? 2 : 3,
+                amount: is21Mode ? 2 : 1,
+                options: from.map((st) => ({
+                  name: st.toUpperCase(),
+                  value: st,
+                })),
+              });
+            }
+          } else {
+            const count = abObj.choose.count || 1;
+            const amount = abObj.choose.amount || 1;
+            const from = abObj.choose.from || ["str", "dex", "con", "int", "wis", "cha"];
+            choices.push({
+              id: `asi_${entity.name}`,
+              type: "ABILITY_SCORE",
+              name: `${entity.name} Ability Score Increase`,
+              description: `Choose ${count} ability score(s) to increase by ${amount}.`,
+              count,
+              amount,
+              options: from.map((st) => ({
+                name: st.toUpperCase(),
+                value: st,
+              })),
+            });
+          }
         }
       });
-    } else if (/\bincrease\s+(?:one|two|\d+)\s+(?:ability\s+scores?|different\s+ability\s+scores?)/i.test(descText) || /gain\s+\+1\s+to\s+two/i.test(descText)) {
+    } else if (/\bincrease\s+(?:your\s+)?(?:one|two|\d+)?\s*(?:ability\s+scores?|different\s+ability\s+scores?|Strength|Dexterity|Constitution|Intelligence|Wisdom|Charisma).*(?:by\s+1|\+1)/i.test(descText) || /gain\s+\+1\s+to\s+two/i.test(descText)) {
       choices.push({
         id: `asi_${entity.name}`,
         type: "ABILITY_SCORE",
@@ -518,8 +697,8 @@ export class Cerberus {
       });
     }
 
-    // D. Spell / Cantrip Choices (text or additionalSpells)
-    if (/choose\s+(?:one|two|\d+)\s+cantrip/i.test(descText) || /learn\s+(?:one|two|\d+)\s+cantrip/i.test(descText) || entity.additionalSpells) {
+    // D. Cantrip Choices from text description (when not handled by additionalSpells)
+    if ((/choose\s+(?:one|two|\d+)\s+cantrip/i.test(descText) || /learn\s+(?:one|two|\d+)\s+cantrip/i.test(descText)) && !entity.additionalSpells) {
       const match = descText.match(/(?:choose|learn)\s+(one|two|\d+)\s+cantrip/i);
       const count = match ? (match[1] === "one" ? 1 : match[1] === "two" ? 2 : parseInt(match[1])) : 1;
       choices.push({

@@ -1,5 +1,6 @@
 import loader from "../data/loader.js";
 import SpellListResolver from "../models/SpellListResolver.js";
+import { CerberusTagParser } from "../models/Cerberus.js";
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -299,7 +300,49 @@ export function getSpellContext(req, res) {
     return res.json({ isCaster: false });
   }
 
-  res.json(context);
+  // Build spellList grouped by level (UI expects { "1": [...], "2": [...], ... })
+  const spellList = {};
+  if (context.spells && context.spells.length > 0) {
+    for (const spell of context.spells) {
+      const lvl = spell.level || 1;
+      if (!spellList[lvl]) spellList[lvl] = [];
+      spellList[lvl].push(spell);
+    }
+  }
+
+  // Build slot map for UI
+  const slots = {};
+  if (context.spellSlots) {
+    for (let i = 0; i < context.spellSlots.length; i++) {
+      if (context.spellSlots[i] > 0) {
+        slots[i + 1] = { max: context.spellSlots[i], used: 0 };
+      }
+    }
+  }
+
+  // Calculate DC and attack bonus with a default ability mod of 0
+  // (actual mod depends on character stats, but we provide the base formula context)
+  const abilityAbbr = (context.spellcastingAbility || "int").toUpperCase();
+  const profBonus = Math.ceil(charLevel / 4) + 1;
+
+  res.json({
+    isCaster: true,
+    casterProgression: context.casterProgression,
+    ability: abilityAbbr,
+    rawAbility: context.spellcastingAbility,
+    acquisitionType: context.acquisitionType,
+    maxSpellLevel: context.maxSpellLevel,
+    slots,
+    maxCantrips: context.numCantrips,
+    maxSpells: context.numSpells,
+    preparedFormula: context.preparedFormula,
+    cantripList: context.cantrips,
+    spellList,
+    dc: 8 + profBonus,
+    attackBonus: profBonus,
+    subclassAlwaysPrepared: context.subclassAlwaysPrepared || [],
+    subclassExpandedList: context.subclassExpandedList || [],
+  });
 }
 
 /**
@@ -307,6 +350,33 @@ export function getSpellContext(req, res) {
  * Query params: classSource
  * Returns structured starting equipment choices.
  */
+const GENERIC_EQUIPMENT_MAP = {
+  "weaponSimple": "Simple Weapon",
+  "weaponMartial": "Martial Weapon",
+  "armorLight": "Light Armor",
+  "armorMedium": "Medium Armor",
+  "armorHeavy": "Heavy Armor",
+  "toolThieves": "Thieves' Tools",
+  "toolArtisan": "Artisan's Tools",
+  "instrumentMusical": "Musical Instrument",
+  "packDungeoneer": "Dungeoneer's Pack",
+  "packExplorer": "Explorer's Pack",
+  "packPriest": "Priest's Pack",
+  "packScholar": "Scholar's Pack",
+  "packDiplomat": "Diplomat's Pack",
+  "packEntertainer": "Entertainer's Pack",
+  "packBurglar": "Burglar's Pack",
+};
+
+function formatEquipmentName(name) {
+  if (!name || typeof name !== "string") return name || "";
+  const rendered = CerberusTagParser.renderTags(name);
+  if (GENERIC_EQUIPMENT_MAP[rendered]) {
+    return GENERIC_EQUIPMENT_MAP[rendered];
+  }
+  return rendered;
+}
+
 export function getStartingEquipment(req, res) {
   const { className } = req.params;
   const { classSource = "PHB" } = req.query;
@@ -327,7 +397,8 @@ export function getStartingEquipment(req, res) {
 
   for (let i = 0; i < defaultData.length; i++) {
     const group = defaultData[i];
-    const text = defaultText[i] || "";
+    const rawText = defaultText[i] || "";
+    const cleanText = CerberusTagParser.renderTags(rawText);
     const options = [];
 
     for (const [key, items] of Object.entries(group)) {
@@ -336,8 +407,9 @@ export function getStartingEquipment(req, res) {
         if (typeof item === "string") {
           const [itemName, itemSource] = item.split("|");
           const itemData = loader.getItemByName(itemName);
+          const cleanName = formatEquipmentName(itemName);
           resolvedItems.push({
-            name: itemName,
+            name: cleanName,
             source: itemSource || null,
             data: itemData
               ? {
@@ -349,16 +421,18 @@ export function getStartingEquipment(req, res) {
               : null,
           });
         } else if (item.equipmentType) {
+          const cleanName = formatEquipmentName(item.equipmentType);
           resolvedItems.push({
-            name: item.equipmentType,
+            name: cleanName,
             type: "category",
             equipmentType: item.equipmentType,
           });
         } else if (item.item) {
           const [itemName, itemSource] = item.item.split("|");
           const itemData = loader.getItemByName(itemName);
+          const cleanName = formatEquipmentName(itemName);
           resolvedItems.push({
-            name: itemName,
+            name: cleanName,
             source: itemSource || null,
             quantity: item.quantity || 1,
             data: itemData
@@ -380,15 +454,18 @@ export function getStartingEquipment(req, res) {
     }
 
     choices.push({
-      text,
+      text: cleanText,
       options,
       isAutomatic: Object.keys(group).length === 1 && group._ !== undefined,
     });
   }
 
+  const goldAltRaw = equipment.goldAlternative || null;
+  const goldAltClean = goldAltRaw ? CerberusTagParser.renderTags(goldAltRaw) : null;
+
   res.json({
     choices,
-    goldAlternative: equipment.goldAlternative || null,
+    goldAlternative: goldAltClean,
     additionalFromBackground: equipment.additionalFromBackground || false,
   });
 }

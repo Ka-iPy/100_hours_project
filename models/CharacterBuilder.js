@@ -85,8 +85,52 @@ export class CharacterBuilder {
 
     // Cerberus Watchdog recursive evaluation
     character.cerberusReport = Cerberus.watchCharacter(character, this.loader);
+    this.applyCerberusAutoGrantedSpells(character);
 
     return character;
+  }
+
+  applyCerberusAutoGrantedSpells(character) {
+    if (!character.cerberusReport?.aggregatedAutoGrants?.spells) return;
+    const grantedSpells = character.cerberusReport.aggregatedAutoGrants.spells;
+    if (grantedSpells.length === 0) return;
+
+    const sbKeys = Object.keys(character.spellbooks);
+    let targetSB = sbKeys.length > 0 ? character.spellbooks[sbKeys[0]] : null;
+
+    if (!targetSB) {
+      targetSB = new Spellbook();
+      targetSB.spellcastingAbility = "int";
+      character.spellbooks["Innate & Granted"] = targetSB;
+    }
+
+    grantedSpells.forEach((sp) => {
+      const spellData = this.loader.getSpell(sp.name, sp.source);
+      const spellInfo = {
+        name: spellData ? spellData.name : sp.name,
+        source: spellData ? spellData.source : (sp.source || "PHB"),
+        level: spellData ? (spellData.level || 0) : (sp.level || 0),
+        school: spellData ? spellData.school : (sp.school || ""),
+        expanded: sp.expanded || false,
+      };
+
+      const sourceRef = new SourceReference({
+        category: SOURCE_CATEGORIES.SPECIAL,
+        sourceName: sp.source || "Granted Spell",
+        sourceId: "cerberusAutoGrant",
+      });
+
+      if (spellInfo.level === 0) {
+        if (!targetSB.cantripsKnown.some((c) => c.name.toLowerCase() === spellInfo.name.toLowerCase())) {
+          targetSB.cantripsKnown.push(spellInfo);
+        }
+      } else {
+        if (!targetSB.known.some((s) => s.name.toLowerCase() === spellInfo.name.toLowerCase())) {
+          targetSB.addKnown(spellInfo, sourceRef);
+          targetSB.prepare(spellInfo);
+        }
+      }
+    });
   }
 
   applyRace(character, raceData, raceSource, subraceData, subraceSource) {

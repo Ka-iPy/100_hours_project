@@ -1231,60 +1231,74 @@ function buildCharacterViewHelpers(c) {
     properties: e.item?.property || [],
   }));
 
-  // Spellbook
+  const cerberusReport = c.cerberusReport || Cerberus.watchCharacter(c, loader);
+
+  // Spellbook & Cerberus Granted Spells
   const sbKeys = Object.keys(c.spellbooks || {});
   const mainSB = sbKeys.length > 0 ? c.spellbooks[sbKeys[0]] : null;
-  let spellData = null;
-  if (mainSB) {
-    const cantrips = mainSB.cantripsKnown || [];
-    const allSpells = [...(mainSB.known || []), ...(mainSB.prepared || [])];
-    const spellMap = new Map();
-    allSpells.forEach((s) => spellMap.set(s.name, s));
-    const uniqueSpells = Array.from(spellMap.values());
-    const spellsByLevel = {};
-    uniqueSpells.forEach((s) => {
-      const lvl = s.level || 1;
-      if (!spellsByLevel[lvl]) spellsByLevel[lvl] = [];
-      spellsByLevel[lvl].push(s);
-    });
-    const slots = mainSB.slots?.slots || {};
+  
+  const cantrips = mainSB?.cantripsKnown ? [...mainSB.cantripsKnown] : [];
+  const allSpells = mainSB ? [...(mainSB.known || []), ...(mainSB.prepared || [])] : [];
+  
+  // Merge Cerberus Auto-Granted & Expanded Spells
+  if (cerberusReport?.aggregatedAutoGrants?.spells) {
+    cerberusReport.aggregatedAutoGrants.spells.forEach((cg) => {
+      const dbSpell = loader.getSpell(cg.name, cg.source);
+      const spellItem = {
+        name: dbSpell ? dbSpell.name : cg.name,
+        source: dbSpell ? dbSpell.source : (cg.source || "PHB"),
+        level: dbSpell ? (dbSpell.level || 0) : (cg.level || 0),
+        school: dbSpell ? dbSpell.school : (cg.school || ""),
+        expanded: cg.expanded || false,
+        origin: cg.source || "Granted Spell",
+      };
 
-    spellData = {
-      className: sbKeys[0],
-      ability: mainSB.spellcastingAbility
-        ? ABB[mainSB.spellcastingAbility] || mainSB.spellcastingAbility
-        : "",
-      rawAbility: mainSB.spellcastingAbility || "int",
-      saveDC: mainSB.spellSaveDC || 0,
-      attackBonus: mainSB.spellAttackBonus || 0,
-      attackBonusStr: fmt(mainSB.spellAttackBonus || 0),
-      cantrips,
-      spellsByLevel,
-      slots,
-    };
-  } else {
-    // Provide empty spellData so the Spellbook tab is always available for manual additions
-    spellData = {
-      className: "Custom",
-      ability: "",
-      saveDC: 0,
-      attackBonus: 0,
-      attackBonusStr: "+0",
-      cantrips: [],
-      spellsByLevel: {},
-      slots: {
-        1: { max: 0, used: 0 },
-        2: { max: 0, used: 0 },
-        3: { max: 0, used: 0 },
-        4: { max: 0, used: 0 },
-        5: { max: 0, used: 0 },
-        6: { max: 0, used: 0 },
-        7: { max: 0, used: 0 },
-        8: { max: 0, used: 0 },
-        9: { max: 0, used: 0 },
-      },
-    };
+      if (spellItem.level === 0) {
+        if (!cantrips.some((ct) => ct.name.toLowerCase() === spellItem.name.toLowerCase())) {
+          cantrips.push(spellItem);
+        }
+      } else {
+        if (!allSpells.some((sp) => sp.name.toLowerCase() === spellItem.name.toLowerCase())) {
+          allSpells.push(spellItem);
+        }
+      }
+    });
   }
+
+  const spellMap = new Map();
+  allSpells.forEach((s) => spellMap.set(s.name, s));
+  const uniqueSpells = Array.from(spellMap.values());
+  const spellsByLevel = {};
+  uniqueSpells.forEach((s) => {
+    const lvl = s.level || 1;
+    if (!spellsByLevel[lvl]) spellsByLevel[lvl] = [];
+    spellsByLevel[lvl].push(s);
+  });
+  const slots = mainSB?.slots?.slots || {
+    1: { max: 0, used: 0 },
+    2: { max: 0, used: 0 },
+    3: { max: 0, used: 0 },
+    4: { max: 0, used: 0 },
+    5: { max: 0, used: 0 },
+    6: { max: 0, used: 0 },
+    7: { max: 0, used: 0 },
+    8: { max: 0, used: 0 },
+    9: { max: 0, used: 0 },
+  };
+
+  const spellData = {
+    className: mainSB ? sbKeys[0] : "Innate & Granted",
+    ability: mainSB?.spellcastingAbility
+      ? ABB[mainSB.spellcastingAbility] || mainSB.spellcastingAbility
+      : "INT",
+    rawAbility: mainSB?.spellcastingAbility || "int",
+    saveDC: mainSB?.spellSaveDC || (8 + profBonus + getMod("intelligence")),
+    attackBonus: mainSB?.spellAttackBonus || (profBonus + getMod("intelligence")),
+    attackBonusStr: fmt(mainSB?.spellAttackBonus || (profBonus + getMod("intelligence"))),
+    cantrips,
+    spellsByLevel,
+    slots,
+  };
 
   // Weapon attacks
   const strMod = getMod("strength");
@@ -1308,8 +1322,6 @@ function buildCharacterViewHelpers(c) {
     source: f.source || "PHB",
     description: f.description ? stripHtmlTags(String(f.description)) : "",
   }));
-
-  const cerberusReport = c.cerberusReport || Cerberus.watchCharacter(c, loader);
 
   return {
     abilityData,

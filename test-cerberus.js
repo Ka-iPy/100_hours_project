@@ -129,6 +129,24 @@ async function runCerberusTestSuite() {
         const toughReport = Cerberus.watchChoice(tough, loader);
         assert(toughReport.autoGrants.features.some(f => f.name.toLowerCase().includes("tough")), "Tough feat detected auto-granted feature");
     }
+
+    const woodElfMagic = loader.getFeat('Wood Elf Magic', 'XGE');
+    if (woodElfMagic) {
+        const wemReport = Cerberus.watchChoice(woodElfMagic, loader);
+        assert(wemReport.autoGrants.spells.some(s => s.name.toLowerCase().includes("pass without trace")), "Wood Elf Magic detected auto-granted spell: Pass without Trace");
+    }
+
+    const boros = loader.getBackground('Boros Legionnaire', 'GGR');
+    if (boros) {
+        const borosReport = Cerberus.watchChoice(boros, loader);
+        assert(borosReport.autoGrants.spells.some(s => s.name.toLowerCase().includes("sacred flame")), "Boros Legionnaire detected expanded spell: Sacred Flame");
+    }
+
+    const acolyte2024 = loader.getBackground('Acolyte', 'XPHB');
+    if (acolyte2024) {
+        const acolyerep = Cerberus.watchChoice(acolyte2024, loader);
+        assert(acolyerep.selectableChoices.some(c => c.name.includes("+2 / +1 Mode")), "Acolyte XPHB detected 2024 weighted ASI +2 / +1 mode choice");
+    }
     console.log('');
 
     // ---------------------------------------------------------

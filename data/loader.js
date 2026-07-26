@@ -82,7 +82,7 @@ class DataLoader {
       if (fs.existsSync(spellsDir)) {
         const spellFiles = fs
           .readdirSync(spellsDir)
-          .filter((f) => f.endsWith(".json"));
+          .filter((f) => f.startsWith("spells-") && f.endsWith(".json"));
         for (const file of spellFiles) {
           const data = JSON.parse(
             fs.readFileSync(path.join(spellsDir, file), "utf8"),

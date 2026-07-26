@@ -557,8 +557,21 @@
 
   // Live Inspector Drawer
   function cleanTags(str) {
-    if (!str) return '';
-    return str.replace(/\{@\w+\s+([^}|]+)(?:\|[^}]*)?\}/g, '$1');
+    if (!str || typeof str !== 'string') return str || '';
+    const TAG_REGEX = /\{@([a-zA-Z0-9_:]+)\s+([^}]+)\}/g;
+    return str.replace(TAG_REGEX, (raw, tagName, rawContent) => {
+      const tag = tagName.toLowerCase();
+      const parts = rawContent.split('|');
+      if (tag === 'filter' || tag === 'dice' || tag === 'damage') {
+        return parts[0] ? parts[0].trim() : raw;
+      }
+      if (parts.length >= 3 && parts[2].trim() && !parts[2].includes('=')) {
+        return parts[2].trim();
+      }
+      if (tag === 'dc') return `DC ${parts[0]}`;
+      if (tag === 'chance') return `${parts[0]}%`;
+      return parts[0] ? parts[0].trim() : raw;
+    });
   }
 
   function inspectEntity(data, type) {
@@ -865,22 +878,23 @@
       selectedEquipmentChoices = [];
 
       data.choices.forEach((choiceGroup, groupIdx) => {
+        const cleanGroupText = choiceGroup.text ? cleanTags(choiceGroup.text) : `Choice ${groupIdx + 1}`;
         html += `<div class="p-3 bg-slate-900/60 rounded-xl border border-slate-800 text-xs">`;
-        html += `<div class="font-bold text-gray-200 mb-2">${choiceGroup.text || `Choice ${groupIdx + 1}`}</div>`;
+        html += `<div class="font-bold text-gray-200 mb-2">${cleanGroupText}</div>`;
 
         if (choiceGroup.isAutomatic && choiceGroup.options.length > 0) {
-          const itemNames = choiceGroup.options[0].items.map(it => it.name + (it.quantity > 1 ? ` (x${it.quantity})` : '')).join(', ');
+          const itemNames = choiceGroup.options[0].items.map(it => cleanTags(it.name) + (it.quantity > 1 ? ` (x${it.quantity})` : '')).join(', ');
           html += `<div class="text-emerald-400 font-semibold">Granted Automatically: ${itemNames}</div>`;
-          choiceGroup.options[0].items.forEach(it => selectedEquipmentChoices.push(it.name));
+          choiceGroup.options[0].items.forEach(it => selectedEquipmentChoices.push(cleanTags(it.name)));
         } else {
           html += `<div class="space-y-2">`;
           choiceGroup.options.forEach((opt, optIdx) => {
-            const itemNames = opt.items.map(it => it.name + (it.quantity > 1 ? ` (x${it.quantity})` : '')).join(', ');
+            const itemNames = opt.items.map(it => cleanTags(it.name) + (it.quantity > 1 ? ` (x${it.quantity})` : '')).join(', ');
             const checked = optIdx === 0 ? 'checked' : '';
             if (optIdx === 0) {
-              opt.items.forEach(it => selectedEquipmentChoices.push(it.name));
+              opt.items.forEach(it => selectedEquipmentChoices.push(cleanTags(it.name)));
             }
-            const itemDataJson = JSON.stringify(opt.items.map(i => i.name));
+            const itemDataJson = JSON.stringify(opt.items.map(i => cleanTags(i.name)));
             html += `
               <label class="flex items-center gap-2 cursor-pointer p-2 rounded bg-slate-800/80 hover:bg-slate-800 border border-slate-700/60 text-gray-200">
                 <input type="radio" name="equip_group_${groupIdx}" value='${itemDataJson}' ${checked} onchange="onEquipmentChoiceChange(${groupIdx}, this.value)">
@@ -896,7 +910,7 @@
       if (data.goldAlternative) {
         html += `
           <div class="p-3 bg-slate-900/40 rounded-xl border border-slate-800 text-xs text-gray-400">
-            <strong>Gold Alternative:</strong> ${data.goldAlternative}
+            <strong>Gold Alternative:</strong> ${cleanTags(data.goldAlternative)}
           </div>
         `;
       }
@@ -1205,6 +1219,62 @@
       `;
     }
 
+    // Granted Spells Breakdown (Background / Feats / Race)
+    let spellsBreakdownHTML = '';
+    const allSpellSources = [selectedRaceObj, selectedBackgroundObj, ...selectedFeats].filter(Boolean);
+    const detectedSpells = [];
+    allSpellSources.forEach(entity => {
+      if (entity.additionalSpells) {
+        entity.additionalSpells.forEach(addSp => {
+          if (addSp.expanded) {
+            Object.values(addSp.expanded).forEach(list => {
+              if (Array.isArray(list)) {
+                list.forEach(sStr => {
+                  const spName = typeof sStr === 'string' ? sStr.split('|')[0].replace(/#c$/i, '') : '';
+                  if (spName) detectedSpells.push({ name: spName, source: entity.name, type: 'Expanded Spell' });
+                });
+              }
+            });
+          }
+          ["innate", "known", "prepared"].forEach(key => {
+            if (addSp[key]) {
+              const findSpells = (obj) => {
+                if (typeof obj === 'string') {
+                  const spName = obj.split('|')[0].replace(/#c$/i, '');
+                  if (spName) detectedSpells.push({ name: spName, source: entity.name, type: 'Innate / Granted' });
+                } else if (Array.isArray(obj)) {
+                  obj.forEach(findSpells);
+                } else if (typeof obj === 'object') {
+                  if (obj.choose) {
+                    detectedSpells.push({ name: `Choice: ${obj.choose}`, source: entity.name, type: 'Selectable Spell Choice' });
+                  } else {
+                    Object.values(obj).forEach(findSpells);
+                  }
+                }
+              };
+              findSpells(addSp[key]);
+            }
+          });
+        });
+      }
+    });
+
+    if (detectedSpells.length > 0) {
+      spellsBreakdownHTML += `
+        <div class="mt-3">
+          <strong class="text-purple-400 block text-xs mb-1 uppercase tracking-wider">Spells & Spell Lists (Background / Feat / Race)</strong>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-1.5 max-h-[140px] overflow-y-auto pr-1">
+            ${detectedSpells.map(s => `
+              <div class="p-1.5 bg-purple-950/40 rounded border border-purple-800/40 text-[11px] flex justify-between items-center">
+                <span class="text-purple-200 font-medium">✨ ${s.name}</span>
+                <span class="text-[9px] text-gray-400 italic">${s.source} (${s.type})</span>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    }
+
     const cerberusBox = document.getElementById('cerberus-review-box');
     if (cerberusBox) {
       cerberusBox.innerHTML = `
@@ -1215,6 +1285,7 @@
           <div>• <strong>Hit Points:</strong> ${estHp} HP (${hdFaces} Hit Die + ${conMod >= 0 ? '+' : ''}${conMod} CON)</div>
           <div>• <strong>Ability Score & Stat Increase Breakdown:</strong></div>
           ${statBreakdownHTML}
+          ${spellsBreakdownHTML}
           ${featsBreakdownHTML}
           ${traitsBreakdownHTML}
         </div>
