@@ -280,8 +280,14 @@ export function getSubraceParent(req, res) {
  */
 export function getSpellContext(req, res) {
   const { className, level } = req.params;
-  const { classSource = "PHB", subclassName, subclassSource } = req.query;
+  const {
+    classSource = "PHB",
+    subclassName,
+    subclassSource,
+    abilityMod: abilityModStr,
+  } = req.query;
   const charLevel = parseInt(level);
+  const abilityMod = parseInt(abilityModStr) || 0;
 
   if (!className || isNaN(charLevel) || charLevel < 1 || charLevel > 20) {
     return res.status(400).json({ error: "Invalid class name or level" });
@@ -294,6 +300,7 @@ export function getSpellContext(req, res) {
     charLevel,
     subclassName || null,
     subclassSource || null,
+    abilityMod,
   );
 
   if (!context) {
@@ -320,8 +327,7 @@ export function getSpellContext(req, res) {
     }
   }
 
-  // Calculate DC and attack bonus with a default ability mod of 0
-  // (actual mod depends on character stats, but we provide the base formula context)
+  // Calculate DC and attack bonus using the actual ability modifier
   const abilityAbbr = (context.spellcastingAbility || "int").toUpperCase();
   const profBonus = Math.ceil(charLevel / 4) + 1;
 
@@ -334,12 +340,15 @@ export function getSpellContext(req, res) {
     maxSpellLevel: context.maxSpellLevel,
     slots,
     maxCantrips: context.numCantrips,
-    maxSpells: context.numSpells,
+    maxSpells: context.numSelectable,
+    numSelectable: context.numSelectable,
+    numPrepared: context.numPrepared,
+    spellbookSize: context.spellbookSize,
     preparedFormula: context.preparedFormula,
     cantripList: context.cantrips,
     spellList,
-    dc: 8 + profBonus,
-    attackBonus: profBonus,
+    dc: 8 + profBonus + abilityMod,
+    attackBonus: profBonus + abilityMod,
     subclassAlwaysPrepared: context.subclassAlwaysPrepared || [],
     subclassExpandedList: context.subclassExpandedList || [],
   });

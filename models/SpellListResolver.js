@@ -174,20 +174,108 @@ class SpellListResolver {
   }
 
   getNumSpells(classData, subclassData, characterLevel, abilityMod = 0) {
+    // 1. XPHB 2024: preparedSpellsProgression (fixed array)
+    const prepProg =
+      subclassData?.preparedSpellsProgression ||
+      classData.preparedSpellsProgression;
+    if (prepProg) {
+      const idx = Math.min(Math.max(characterLevel, 1), prepProg.length) - 1;
+      return prepProg[idx] || 0;
+    }
+
+    // 2. PHB known casters: spellsKnownProgression (Bard, Sorcerer, Warlock, Ranger)
     const knownProg =
       subclassData?.spellsKnownProgression || classData.spellsKnownProgression;
-
     if (knownProg) {
       const idx = Math.min(Math.max(characterLevel, 1), knownProg.length) - 1;
       return knownProg[idx] || 0;
     }
 
+    // 3. PHB prepared casters: formula (Wizard, Cleric, Druid, Paladin)
     const formula = classData.preparedSpells;
     if (formula) {
       return this._evaluatePreparedFormula(formula, characterLevel, abilityMod);
     }
 
     return 0;
+  }
+
+  /**
+   * For Wizard (PHB): spellbook starts with 6 spells, gains 2 per level.
+   * Returns null for non-spellbook classes.
+   */
+  getSpellbookSize(classData, characterLevel) {
+    // Only PHB Wizard uses a spellbook mechanic:
+    // - Has preparedSpells formula (not preparedSpellsProgression)
+    // - Spellcasting ability is INT
+    // - Is a full caster
+    if (
+      classData.preparedSpells &&
+      !classData.preparedSpellsProgression &&
+      classData.spellcastingAbility === "int" &&
+      classData.casterProgression === "full"
+    ) {
+      return 4 + 2 * Math.max(characterLevel, 1);
+    }
+    return null;
+  }
+
+  /**
+   * Determine the spell acquisition type for the class.
+   * Returns: "known" | "prepared_formula" | "prepared_list" | "spellbook"
+   */
+  getAcquisitionType(classData, subclassData) {
+    // XPHB 2024: all classes use preparedSpellsProgression
+    if (
+      subclassData?.preparedSpellsProgression ||
+      classData.preparedSpellsProgression
+    ) {
+      return "prepared_list";
+    }
+
+    // PHB known casters (Bard, Sorcerer, Warlock, Ranger)
+    if (
+      subclassData?.spellsKnownProgression ||
+      classData.spellsKnownProgression
+    ) {
+      return "known";
+    }
+
+    // PHB prepared formula casters
+    if (classData.preparedSpells) {
+      // Wizard has a spellbook (INT-based full caster with formula)
+      if (
+        classData.spellcastingAbility === "int" &&
+        classData.casterProgression === "full"
+      ) {
+        return "spellbook";
+      }
+      // Cleric, Druid, Paladin: prepare from all class spells
+      return "prepared_formula";
+    }
+
+    return "known";
+  }
+
+  /**
+   * Get the number of spells the user should SELECT at character creation.
+   * This differs from getNumSpells for spellbook casters (Wizard PHB).
+   */
+  getNumSelectable(classData, subclassData, characterLevel, abilityMod = 0) {
+    const acqType = this.getAcquisitionType(classData, subclassData);
+
+    if (acqType === "spellbook") {
+      // Wizard PHB: select spells for the spellbook
+      return this.getSpellbookSize(classData, characterLevel);
+    }
+
+    // For all other types, numSelectable = numSpells
+    return this.getNumSpells(
+      classData,
+      subclassData,
+      characterLevel,
+      abilityMod,
+    );
   }
 
   _evaluatePreparedFormula(formula, level, abilityMod) {
@@ -449,6 +537,7 @@ class SpellListResolver {
     characterLevel,
     subclassName = null,
     subclassSource = null,
+    abilityMod = 0,
   ) {
     const classData = this.loader.getClass(className, classSource);
     if (!classData) return null;
@@ -468,12 +557,20 @@ class SpellListResolver {
       subclassData,
       characterLevel,
     );
-    const numSpells = this.getNumSpells(
+    const acquisitionType = this.getAcquisitionType(classData, subclassData);
+    const numPrepared = this.getNumSpells(
       classData,
       subclassData,
       characterLevel,
-      0,
+      abilityMod,
     );
+    const numSelectable = this.getNumSelectable(
+      classData,
+      subclassData,
+      characterLevel,
+      abilityMod,
+    );
+    const spellbookSize = this.getSpellbookSize(classData, characterLevel);
     const preparedFormula = classData.preparedSpells || null;
 
     const cantrips = this.getAvailableCantrips(className, classSource);
@@ -489,13 +586,6 @@ class SpellListResolver {
       ? this.getSubclassGrantedSpells(subclassData, characterLevel)
       : { prepared: [], expanded: [] };
 
-    const acquisitionType =
-      classData.spellsKnownProgression || subclassData?.spellsKnownProgression
-        ? "known"
-        : classData.preparedSpells
-          ? "prepared"
-          : "known";
-
     return {
       isCaster: true,
       casterProgression: casterProg,
@@ -504,7 +594,10 @@ class SpellListResolver {
       maxSpellLevel,
       spellSlots: slots,
       numCantrips,
-      numSpells,
+      numSpells: numSelectable,
+      numSelectable,
+      numPrepared,
+      spellbookSize,
       preparedFormula,
       cantrips,
       spells,

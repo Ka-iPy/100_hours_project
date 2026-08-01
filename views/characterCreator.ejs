@@ -111,37 +111,41 @@
 
           <!-- STEP 2: Race & Subrace -->
           <div id="step-panel-2" class="wizard-step-panel hidden">
+            <!-- Subrace Container at Top (Sticky) -->
+            <div id="subraceContainer" class="sticky -top-5 z-20 mb-3 p-3 bg-slate-900/95 backdrop-blur-md rounded-xl border border-yellow-500/50 shadow-xl hidden">
+              <label for="subrace" class="font-bold block mb-1 text-yellow-500 text-xs uppercase tracking-wider">Select Subrace / Heritage Choice</label>
+              <select id="subrace" name="subrace" class="w-full bg-slate-800 border border-slate-700 text-white rounded p-2 text-sm focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500" onchange="onSubraceChange()">
+                <option value="">None</option>
+              </select>
+            </div>
             <div class="mb-4">
               <input type="text" id="race-search" class="w-full bg-slate-900 border border-slate-700 text-white rounded px-3 py-2 text-sm" placeholder="Search races (e.g. Dragonborn, Elf, Dwarf)..." oninput="filterRaces(this.value)">
               <input type="hidden" id="race" name="race" required>
             </div>
-            <div id="race-cards-grid" class="creator-cards-grid max-h-[420px] overflow-y-auto pr-1">
+            <div id="race-cards-grid" class="creator-cards-grid pr-1">
               <!-- Dynamically rendered race cards -->
-            </div>
-            <div id="subraceContainer" class="mt-4 p-4 bg-slate-900/60 rounded-xl border border-slate-800 hidden">
-              <label for="subrace" class="font-bold block mb-1 text-yellow-500 text-sm">Select Subrace / Heritage</label>
-              <select id="subrace" name="subrace" class="w-full bg-slate-800 border border-slate-700 text-white rounded p-2 text-sm" onchange="onSubraceChange()">
-                <option value="">None</option>
-              </select>
             </div>
           </div>
 
           <!-- STEP 3: Class & Level -->
           <div id="step-panel-3" class="wizard-step-panel hidden">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-              <div>
-                <label for="level" class="font-bold block mb-1 text-gray-200">Starting Level</label>
-                <input type="number" id="level" name="level" min="1" max="20" value="1" class="w-full bg-slate-900 border border-slate-700 text-white rounded p-2 font-bold" required onchange="onLevelChange()">
-              </div>
-              <div id="subclassContainer" class="hidden">
-                <label for="subclass" class="font-bold block mb-1 text-yellow-500">Subclass Choice</label>
-                <select id="subclass" name="subclass" class="w-full bg-slate-800 border border-slate-700 text-white rounded p-2 text-sm" onchange="onSubclassChange()">
-                  <option value="">None</option>
-                </select>
+            <!-- Class Controls Header (Sticky) -->
+            <div class="sticky -top-5 z-20 mb-4 p-3 bg-slate-900/95 backdrop-blur-md rounded-xl border border-slate-800 shadow-xl">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label for="level" class="font-bold block mb-1 text-gray-200 text-xs uppercase tracking-wider">Starting Level</label>
+                  <input type="number" id="level" name="level" min="1" max="20" value="1" class="w-full bg-slate-800 border border-slate-700 text-white rounded p-2 text-sm font-bold" required onchange="onLevelChange()">
+                </div>
+                <div id="subclassContainer" class="hidden">
+                  <label for="subclass" class="font-bold block mb-1 text-yellow-500 text-xs uppercase tracking-wider">Subclass Choice</label>
+                  <select id="subclass" name="subclass" class="w-full bg-slate-800 border border-slate-700 text-white rounded p-2 text-sm focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500" onchange="onSubclassChange()">
+                    <option value="">None</option>
+                  </select>
+                </div>
               </div>
             </div>
             <input type="hidden" id="className" name="className" required>
-            <div id="class-cards-grid" class="creator-cards-grid max-h-[400px] overflow-y-auto pr-1">
+            <div id="class-cards-grid" class="creator-cards-grid pr-1">
               <!-- Dynamically rendered class cards -->
             </div>
           </div>
@@ -864,6 +868,22 @@
     if (abilityMode === 'pointbuy') updatePointBuy();
   };
 
+  /**
+   * Compute the ability modifier for the class's spellcasting ability.
+   * Uses the base score from the stat inputs + racial ASIs.
+   */
+  function getSpellcastingAbilityMod(rawAbility) {
+    if (!rawAbility) return 0;
+    // Map short ability name ("int", "wis", "cha") to full name
+    const fullName = ABIL_MAP[rawAbility.toLowerCase()] || rawAbility.toLowerCase();
+    const baseEl = document.getElementById(`stat_${fullName}`);
+    const asiEl = document.getElementById(`asi_${fullName}`);
+    const baseScore = parseInt(baseEl?.value) || 10;
+    const asiBonus = parseInt(asiEl?.textContent) || 0;
+    const totalScore = baseScore + asiBonus;
+    return Math.floor((totalScore - 10) / 2);
+  }
+
   // Step 6: Interactive Equipment Loader
   async function loadEquipmentStep() {
     const container = document.getElementById('equipmentChoices');
@@ -970,7 +990,14 @@
     info.innerHTML = '<div class="text-gray-400 italic p-4 bg-slate-900/60 rounded-xl border border-slate-800 animate-pulse">Loading spellcasting context...</div>';
 
     try {
-      const url = `/api/spells/context/${encodeURIComponent(selectedClassObj.name)}/${level}?classSource=${encodeURIComponent(selectedClassObj.source || 'PHB')}&subclassName=${encodeURIComponent(subclassName)}&subclassSource=${encodeURIComponent(subclassSource)}`;
+      // Compute the spellcasting ability modifier from the user's ability scores
+      // We need to know the class's spellcasting ability first — fetch with mod=0 to get the ability key,
+      // but since we know common mappings, compute it eagerly
+      const classData = rawClasses.find(c => c.name === selectedClassObj.name && c.source === (selectedClassObj.source || 'PHB'));
+      const rawAbility = classData?.spellcastingAbility || 'int';
+      const abilityMod = getSpellcastingAbilityMod(rawAbility);
+
+      const url = `/api/spells/context/${encodeURIComponent(selectedClassObj.name)}/${level}?classSource=${encodeURIComponent(selectedClassObj.source || 'PHB')}&subclassName=${encodeURIComponent(subclassName)}&subclassSource=${encodeURIComponent(subclassSource)}&abilityMod=${abilityMod}`;
       const res = await fetch(url);
       if (!res.ok) throw new Error('Failed to fetch spell context');
       spellContextData = await res.json();
@@ -989,10 +1016,28 @@
         return;
       }
 
+      // Build acquisition type description
+      const acqType = spellContextData.acquisitionType || 'known';
+      const numSelectable = spellContextData.numSelectable || spellContextData.maxSpells || 0;
+      const numPrepared = spellContextData.numPrepared || 0;
+      const abilityLabel = (spellContextData.ability || 'INT').toUpperCase();
+      let acqDescription = '';
+
+      if (acqType === 'spellbook') {
+        acqDescription = `<div class="text-xs text-amber-300 mt-1">📖 <strong>Spellbook:</strong> Choose <strong>${numSelectable}</strong> spells for your spellbook. You can prepare <strong>${numPrepared}</strong> daily (Level + ${abilityLabel} mod).</div>`;
+      } else if (acqType === 'prepared_formula') {
+        acqDescription = `<div class="text-xs text-sky-300 mt-1">📋 <strong>Prepared Caster:</strong> Choose <strong>${numSelectable}</strong> spells to prepare from all ${selectedClassObj.name} spells (Level + ${abilityLabel} mod).</div>`;
+      } else if (acqType === 'prepared_list') {
+        acqDescription = `<div class="text-xs text-violet-300 mt-1">✨ <strong>Prepared Spells:</strong> Choose <strong>${numSelectable}</strong> prepared spells from the ${selectedClassObj.name} spell list.</div>`;
+      } else {
+        acqDescription = `<div class="text-xs text-emerald-300 mt-1">🎵 <strong>Known Spells:</strong> Choose <strong>${numSelectable}</strong> spells you know permanently.</div>`;
+      }
+
       info.innerHTML = `
         <div class="p-4 bg-slate-900/60 rounded-xl border border-slate-800 text-sm space-y-1">
           <div class="font-bold text-yellow-500">${selectedClassObj.name} Spellcasting</div>
-          <p class="text-xs text-gray-300">Ability: <strong>${(spellContextData.ability || 'INT').toUpperCase()}</strong> | Save DC: <strong>${spellContextData.dc || '8+'}</strong> | Attack Bonus: <strong>+${spellContextData.attackBonus || 2}</strong></p>
+          <p class="text-xs text-gray-300">Ability: <strong>${abilityLabel}</strong> (mod: <strong>${abilityMod >= 0 ? '+' : ''}${abilityMod}</strong>) | Save DC: <strong>${spellContextData.dc || '8+'}</strong> | Attack Bonus: <strong>+${spellContextData.attackBonus || 2}</strong></p>
+          ${acqDescription}
         </div>
       `;
 
@@ -1008,7 +1053,7 @@
       const lvl1Spells = spellContextData.spellList ? (spellContextData.spellList['1'] || spellContextData.spellList[1] || []) : [];
       if (lvl1Spells.length > 0) {
         if (spellPickSec) spellPickSec.style.display = 'block';
-        renderSpellPickGrid(lvl1Spells, spellContextData.maxSpells || 0);
+        renderSpellPickGrid(lvl1Spells, numSelectable);
       } else {
         if (spellPickSec) spellPickSec.style.display = 'none';
       }
