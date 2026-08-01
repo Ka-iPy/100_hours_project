@@ -2,6 +2,7 @@ import { CharacterBuilder } from "../models/CharacterBuilder.js";
 import { Character, Equipment, TracedFeature, Spellbook } from "../models/Character.js";
 import loader from "../data/loader.js";
 import { Cerberus } from "../models/Cerberus.js";
+import { Tags } from "../utils/parser.js";
 import { PDFDocument, rgb, StandardFonts } from "pdf-lib";
 import { readFileSync } from "fs";
 import { fileURLToPath } from "url";
@@ -764,7 +765,8 @@ function flattenEntries(entries) {
   for (const e of entries) {
     if (typeof e === "string") {
       // Strip 5etools tags like {@damage 1d6}, {@spell Alarm|PHB}, etc.
-      parts.push(e.replace(/\{@[a-zA-Z]+ ([^|}]+)[^}]*\}/g, "$1"));
+      // (canonical cleaning lives in utils/parser.js -> Renderer.stripTags)
+      parts.push(Tags.stripTags(e));
     } else if (e.entries) {
       parts.push(flattenEntries(e.entries));
     } else if (e.items) {
@@ -773,7 +775,7 @@ function flattenEntries(entries) {
       parts.push(`${e.name}: ${flattenEntries(e.entries)}`);
     } else if (e.name && e.entry) {
       const txt = typeof e.entry === "string"
-        ? e.entry.replace(/\{@[a-zA-Z]+ ([^|}]+)[^}]*\}/g, "$1")
+        ? Tags.stripTags(e.entry)
         : flattenEntries([e.entry]);
       parts.push(`${e.name}. ${txt}`);
     }

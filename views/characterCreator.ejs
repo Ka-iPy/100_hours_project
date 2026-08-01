@@ -278,6 +278,11 @@
   </div>
 </main>
 
+<script type="module">
+  import { Tags } from '/utils/parser.js';
+  window.Tags = Tags;
+</script>
+
 <script>
   // Raw Data Passed from Express
   const rawRaces = [<%- races.join(',') %>];
@@ -577,20 +582,14 @@
   // Live Inspector Drawer
   function cleanTags(str) {
     if (!str || typeof str !== 'string') return str || '';
-    const TAG_REGEX = /\{@([a-zA-Z0-9_:]+)\s+([^}]+)\}/g;
-    return str.replace(TAG_REGEX, (raw, tagName, rawContent) => {
-      const tag = tagName.toLowerCase();
-      const parts = rawContent.split('|');
-      if (tag === 'filter' || tag === 'dice' || tag === 'damage') {
-        return parts[0] ? parts[0].trim() : raw;
-      }
-      if (parts.length >= 3 && parts[2].trim() && !parts[2].includes('=')) {
-        return parts[2].trim();
-      }
-      if (tag === 'dc') return `DC ${parts[0]}`;
-      if (tag === 'chance') return `${parts[0]}%`;
-      return parts[0] ? parts[0].trim() : raw;
-    });
+    let text = str;
+    if (window.Tags && typeof window.Tags.cleanTags === 'function') {
+      text = window.Tags.cleanTags(str);
+    }
+    if (typeof window.renderMarkdown === 'function') {
+      return window.renderMarkdown(text);
+    }
+    return text;
   }
 
   function inspectEntity(data, type) {

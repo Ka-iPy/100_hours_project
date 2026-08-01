@@ -3,46 +3,63 @@
 
   <main class="hall-page">
     <div class="hall-header">
-      <h1>Greetings, <%= username %>!</h1>
+      <div>
+        <div class="obsidian-tag">📁 /vault/characters/</div>
+        <h1 style="margin-top: 4px;">Welcome back, <%= username %></h1>
+      </div>
       <div class="hall-nav">
-        <button class="hall-spellbook-btn" onclick="openSpellbook()">📖 Spellbook</button>
-        <a href="/createCharacter" class="rpg-btn rpg-btn-primary">Create a Character</a>
+        <button class="rpg-btn rpg-btn-secondary" onclick="openSpellbook()">📖 Grimoire Spellbook</button>
+        <a href="/createCharacter" class="rpg-btn rpg-btn-primary">⚡ New Character Note</a>
         <a href="/logout" class="rpg-btn rpg-btn-secondary">Logout</a>
       </div>
     </div>
 
-    <h2 class="hall-section-title">Your Characters</h2>
+    <h2 class="hall-section-title">Character Notes (<%= characters ? characters.length : 0 %>)</h2>
 
-    <% if (characters && characters.length> 0) { %>
+    <% if (characters && characters.length > 0) { %>
       <div class="hall-grid">
         <% characters.forEach(function(char) { %>
           <div class="hall-card">
             <a href="/character/<%= char.id %>" class="hall-card-link">
-              <div class="hall-card-name">
-                <%= char.name %>
+              <div class="hall-card-name" style="display: flex; align-items: center; gap: 8px;">
+                <span>📄</span>
+                <span><%= char.name %></span>
               </div>
-              <div class="hall-card-meta">
-                Level <%= char.getTotalLevel() %>
-                  <%= char.classes.length> 0 ? char.classes[0].className : '' %>
+              <div class="hall-card-meta" style="margin-top: 6px; display: flex; flex-wrap: wrap; gap: 4px;">
+                <span class="obsidian-tag">Level <%= char.getTotalLevel() %></span>
+                <% if (char.classes && char.classes.length > 0) { %>
+                  <span class="obsidian-tag">#<%= char.classes[0].className.toLowerCase() %></span>
+                <% } %>
+                <% 
+                  let raceTag = '';
+                  if (char.subrace && (char.subrace.sourceName || char.subrace.name)) {
+                    raceTag = char.subrace.sourceName || char.subrace.name;
+                  } else if (char.race) {
+                    raceTag = typeof char.race === 'string' ? char.race : (char.race.sourceName || char.race.name || '');
+                  }
+                %>
+                <% if (raceTag) { %>
+                  <span class="obsidian-tag">#<%= raceTag.toLowerCase().replace(/\s+/g, '-') %></span>
+                <% } %>
               </div>
             </a>
             <div class="hall-card-actions">
               <button type="button" onclick='confirmDelete(<%- JSON.stringify({ id: char.id, name: char.name }) %>)'
-                class="rpg-btn rpg-btn-danger" style="font-size: 0.75rem; padding: 5px 10px;">
+                class="rpg-btn rpg-btn-danger" style="font-size: 0.75rem; padding: 4px 10px;">
                 Delete
               </button>
             </div>
           </div>
-          <% }); %>
+        <% }); %>
       </div>
-      <% } else { %>
-        <div class="hall-empty">
-          <p>You haven't created any characters yet. Embark on a new adventure!</p>
-        </div>
-        <% } %>
+    <% } else { %>
+      <div class="hall-empty">
+        <p>No character notes found in vault. Click <strong>"⚡ New Character Note"</strong> to create your first hero file.</p>
+      </div>
+    <% } %>
   </main>
 
-  <!-- ========== Spellbook Modal ========== -->
+  <!-- ========== Spellbook Modal (Preserved Flipbook) ========== -->
   <div id="spellbook-overlay" class="spellbook-overlay">
     <div class="spellbook-controls">
       <input type="text" id="sb-search" class="spellbook-search" placeholder="Search spell name...">

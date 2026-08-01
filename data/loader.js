@@ -1,9 +1,28 @@
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
+import Parser from "../utils/parser.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+// Keys whose values are structured metadata rather than entry text; the
+// entry walker (used by dereferencing and link inspection) skips these.
+const NON_ENTRY_KEYS = new Set([
+	"name", "source", "page", "images", "image", "alt", "id", "caption", "title",
+	"file", "href", "style", "rollable", "toRoll", "displayText", "nameDisplay",
+	"type", "subType", "entriesTemplate", "rows", "rowLabel", "colLabel",
+	"data", "dataLabels", "dataRows", "shortName", "className", "classSource",
+	"subclassName", "subclassShortName", "subclassSource", "level", "hd",
+	"speed", "size", "weight", "value", "ac", "hp", "proficiency",
+	"spellcastingAbility", "casterProgression", "chance", "amount", "count",
+	"min", "max", "traitTags", "reprintedAs", "reprintOf", "srd", "basicRules",
+	"excludeFromSearch", "isReprinted", "header", "otherSources", "altArt",
+	"pageNumber", "parent", "group", "requires", "suggests", "sourcePage",
+]);
+
+// 5etools `{@tag name|source|extra}` link tag regex (cf. js/render.js)
+const TAG_REGEX = /\{@([a-zA-Z0-9_:]+)\s+([^}]+)\}/g;
 
 class DataLoader {
   constructor(dataDir = __dirname) {
@@ -29,7 +48,56 @@ class DataLoader {
     this.subraceParents = new Map(); // subraceName|raceName|raceSource -> { raceName: string, raceSource: string }
     this.classFeatureParents = new Map(); // featureName|className|classSource -> { className: string, classSource: string }
     this.isLoaded = false;
+
+    // 5etools DataLoader pattern (cf. js/utils-dataloader): page/source/hash cache
+    this._CACHE = new Map(); // "page|source|hash" -> entity (or _ENTITY_NULL sentinel)
+    this._ENTITY_NULL = Symbol("entity-null");
+    this._MAX_DEREFERENCE_LOOPS = 25; // conservatively avoid infinite looping
+    this._derefStats = { replaced: 0, failed: 0, itemEntrySpliced: 0 };
+
+    this.Parser = Parser; // expose the ported 5etools parser to consumers
+    this.charoptions = null;
   }
+
+  // Page -> loader collection property (5etools "props" equivalent)
+  _PAGE_TO_COLLECTION = {
+    race: "races",
+    subrace: "subraces",
+    background: "backgrounds",
+    feat: "feats",
+    optionalfeature: "optionalFeatures",
+    spell: "spells",
+    item: "items",
+    skill: "skills",
+    language: "languages",
+    class: "classes",
+    subclass: "subclasses",
+    classFeature: "classFeatures",
+    subclassFeature: "subclassFeatures",
+    charoption: "charoptions",
+  };
+
+  // Page -> entity hash builder (cf. 5etools UrlUtil.URL_TO_HASH_BUILDER)
+  _PAGE_TO_HASH_BUILDER = {
+    race: (e) => `${e.name}|${e.source}`.toLowerCase(),
+    subrace: (e) =>
+      `${e.name || e.raceName || "Standard"}|${e.source || e.raceSource || ""}`.toLowerCase(),
+    background: (e) => `${e.name}|${e.source}`.toLowerCase(),
+    feat: (e) => `${e.name}|${e.source}`.toLowerCase(),
+    optionalfeature: (e) => `${e.name}|${e.source}`.toLowerCase(),
+    spell: (e) => `${e.name}|${e.source}`.toLowerCase(),
+    item: (e) => `${e.name}|${e.source}`.toLowerCase(),
+    skill: (e) => `${e.name}|${e.source}`.toLowerCase(),
+    language: (e) => `${e.name}|${e.source}`.toLowerCase(),
+    class: (e) => `${e.name}|${e.source}`.toLowerCase(),
+    subclass: (e) =>
+      `${e.name || e.subclassShortName || ""}|${e.className || ""}|${e.source || ""}`.toLowerCase(),
+    classFeature: (e) =>
+      `${e.name}|${e.className}|${e.classSource}|${e.level}`.toLowerCase(),
+    subclassFeature: (e) =>
+      `${e.name}|${e.className}||${e.subclassShortName || e.subclassName || ""}|${e.source || e.subclassSource || ""}|${e.level}`.toLowerCase(),
+    charoption: (e) => `${e.name}|${e.source}`.toLowerCase(),
+  };
 
   async loadAll() {
     if (this.isLoaded) return;
@@ -108,6 +176,15 @@ class DataLoader {
       if (fs.existsSync(itemsPath)) {
         const itemsData = JSON.parse(fs.readFileSync(itemsPath, "utf8"));
         this.items = itemsData.item || [];
+        this.itemGroups = itemsData.itemGroup || []; // `{#itemEntry X}` ref targets
+
+        const itemsBasePath = path.join(this.dataDir, "items-base.json");
+        if (fs.existsSync(itemsBasePath)) {
+          const itemsBaseData = JSON.parse(
+            fs.readFileSync(itemsBasePath, "utf8"),
+          );
+          this.itemEntries = itemsBaseData.itemEntry || [];
+        }
       }
 
       // Load skills
@@ -122,6 +199,13 @@ class DataLoader {
       if (fs.existsSync(langPath)) {
         const langData = JSON.parse(fs.readFileSync(langPath, "utf8"));
         this.languages = langData.language || [];
+      }
+
+      // Load character creation options (cached for the lookup cache)
+      const ccPath = path.join(this.dataDir, "charcreationoptions.json");
+      if (fs.existsSync(ccPath)) {
+        const ccData = JSON.parse(fs.readFileSync(ccPath, "utf8"));
+        this.charoptions = ccData.charoption || [];
       }
 
       // Load classes, subclasses, and features
@@ -156,8 +240,13 @@ class DataLoader {
       }
 
       this.mapRelationships();
+      this._pPopulateCache();
+      this._dereferenceAll();
+      this._inspectLinks();
       this.isLoaded = true;
-      console.log("Data loaded and relationships mapped.");
+      console.log(
+        `Data loaded and relationships mapped. Dereferenced refs: ${this._derefStats.replaced}, unresolved: ${this._derefStats.failed}, itemEntry splices: ${this._derefStats.itemEntrySpliced}.`,
+      );
     } catch (error) {
       console.error("Error loading data:", error);
       throw error;
@@ -240,6 +329,509 @@ class DataLoader {
         });
       }
     });
+  }
+
+  /* ------------------------------------------------------------------
+   * 5etools DataLoader pattern (cf. js/utils-dataloader): cache layer
+   * ------------------------------------------------------------------ */
+
+  _getCacheKey(page, source, hash) {
+    return `${page}|${source || ""}|${hash || ""}`.toLowerCase();
+  }
+
+  _copyFast(obj) {
+    return obj !== null && typeof obj === "object"
+      ? JSON.parse(JSON.stringify(obj))
+      : obj;
+  }
+
+  /**
+   * Index every loaded collection into the page/source/hash cache.
+   */
+  _pPopulateCache() {
+    for (const [page, collectionName] of Object.entries(this._PAGE_TO_COLLECTION)) {
+      const collection = this[collectionName];
+      if (!Array.isArray(collection)) continue;
+      const builder = this._PAGE_TO_HASH_BUILDER[page];
+      for (const ent of collection) {
+        const hash = builder(ent);
+        this._CACHE.set(this._getCacheKey(page, ent.source, hash), ent);
+      }
+    }
+  }
+
+  /**
+   * Resolve a `ref*` uid against the loaded collections. Uid fields may be
+   * missing (e.g. `"Archery"`, `"Student of War|Fighter||Battle Master||3"`),
+   * in which case matching tolerates the absent parts.
+   */
+  _derefLookup(prop, uid) {
+    if (!uid) return null;
+    const parts = String(uid).split("|").map((p) => p.trim());
+    const name = (parts[0] || "").toLowerCase();
+    if (!name) return null;
+
+    const matchesName = (e) => (e.name || "").toLowerCase() === name;
+
+    switch (prop) {
+      case "classFeature": {
+        const [, className = "", classSource = "", level = ""] = parts;
+        return (
+          this.classFeatures.find(
+            (cf) =>
+              matchesName(cf) &&
+              (!className ||
+                (cf.className || "").toLowerCase() === className.toLowerCase()) &&
+              (!classSource ||
+                (cf.classSource || "").toLowerCase() === classSource.toLowerCase()) &&
+              (!level || String(cf.level) === String(level)),
+          ) || null
+        );
+      }
+      case "subclassFeature": {
+        const [, className = "", , subclassShortName = "", source = "", level = ""] = parts;
+        return (
+          this.subclassFeatures.find(
+            (sf) =>
+              matchesName(sf) &&
+              (!className ||
+                (sf.className || "").toLowerCase() === className.toLowerCase()) &&
+              (!subclassShortName ||
+                (sf.subclassShortName || sf.subclassName || "")
+                  .toLowerCase() === subclassShortName.toLowerCase()) &&
+              (!source ||
+                (sf.source || sf.subclassSource || "")
+                  .toLowerCase() === source.toLowerCase()) &&
+              (!level || String(sf.level) === String(level)),
+          ) || null
+        );
+      }
+      case "optionalfeature": {
+        const [, source = ""] = parts;
+        return (
+          this.optionalFeatures.find(
+            (of) =>
+              matchesName(of) &&
+              (!source ||
+                (of.source || "").toLowerCase() === source.toLowerCase()),
+          ) || null
+        );
+      }
+      case "feat": {
+        const [, source = ""] = parts;
+        return (
+          this.feats.find(
+            (f) =>
+              matchesName(f) &&
+              (!source ||
+                (f.source || "").toLowerCase() === source.toLowerCase()),
+          ) || null
+        );
+      }
+      case "itemEntry": {
+        const [, source = ""] = parts;
+        const inItems = this.items.find(
+          (i) =>
+            matchesName(i) &&
+            (!source || (i.source || "").toLowerCase() === source.toLowerCase()),
+        );
+        if (inItems) return inItems;
+        const inGroups =
+          this.itemGroups?.find(
+            (g) =>
+              matchesName(g) &&
+              (!source || (g.source || "").toLowerCase() === source.toLowerCase()),
+          ) || null;
+        if (inGroups) return inGroups;
+        return (
+          this.itemEntries?.find(
+            (e) =>
+              matchesName(e) &&
+              (!source || (e.source || "").toLowerCase() === source.toLowerCase()),
+          ) || null
+        );
+      }
+      default:
+        return null;
+    }
+  }
+
+  /**
+   * @param page e.g. "race", "spell", "classFeature", ...
+   * @param source e.g. "PHB"
+   * @param hash normalized entity hash (see _PAGE_TO_HASH_BUILDER)
+   */
+  getFromCache(page, source, hash, { isCopy = false, isRequired = false } = {}) {
+    const ent = this._CACHE.get(this._getCacheKey(page, source, hash));
+    if (ent === this._ENTITY_NULL || ent == null) {
+      if (isRequired) {
+        throw new Error(
+          `Could not find entity for page "${page}" with source "${source}" and hash "${hash}"`,
+        );
+      }
+      return null;
+    }
+    return isCopy ? this._copyFast(ent) : ent;
+  }
+
+  /**
+   * 5etools `pCacheAndGet` equivalent. Implemented synchronously: all data is
+   * preloaded at boot, so there is no async fetch step.
+   */
+  pCacheAndGet(page, source, hash, { isCopy = false, isRequired = false } = {}) {
+    const key = this._getCacheKey(page, source, hash);
+    const cached = this._CACHE.get(key);
+    if (cached === this._ENTITY_NULL) {
+      if (isRequired) {
+        throw new Error(
+          `Could not find entity for page "${page}" with source "${source}" and hash "${hash}"`,
+        );
+      }
+      return null;
+    }
+    if (cached != null) return isCopy ? this._copyFast(cached) : cached;
+
+    // Cache miss: resolve against the loaded collections, then insert
+    let ent = null;
+    const builder = this._PAGE_TO_HASH_BUILDER[page];
+    const collection = this[this._PAGE_TO_COLLECTION[page]];
+    if (builder && Array.isArray(collection)) {
+      ent =
+        collection.find(
+          (e) =>
+            builder(e) === hash.toLowerCase() &&
+            (!source || (e.source || "").toLowerCase() === source.toLowerCase()),
+        ) || null;
+    }
+    this._CACHE.set(key, ent === null ? this._ENTITY_NULL : ent);
+
+    if (ent == null && isRequired) {
+      throw new Error(
+        `Could not find entity for page "${page}" with source "${source}" and hash "${hash}"`,
+      );
+    }
+    return ent == null ? null : isCopy ? this._copyFast(ent) : ent;
+  }
+
+  /** Return every entity loaded for a page (5etools `pCacheAndGetAll`). */
+  pCacheAndGetAll(page) {
+    const collection = this[this._PAGE_TO_COLLECTION[page]];
+    if (!Array.isArray(collection)) return null;
+    return collection;
+  }
+
+  /* ------------------------------------------------------------------
+   * 5etools DataLoader dereferencer
+   * (cf. js/utils-dataloader/utils-dataloader-dereferencing.js)
+   * Replaces `ref*` objects and `{#...}` strings inside `entries` with deep
+   * copies of the entities they link to, so consumers see fully-resolved
+   * content (exactly as 5etools serves dereferenced data).
+   * ------------------------------------------------------------------ */
+
+  static _REF_TYPE_TO_PROP = {
+    refClassFeature: "classFeature",
+    refSubclassFeature: "subclassFeature",
+    refOptionalfeature: "optionalfeature",
+    refFeat: "feat",
+    refItemEntry: "itemEntry",
+  };
+
+  /** Recursively walk entry-bearing structures, invoking handlers. */
+  _walkEntries(node, handlers, seen = new Set()) {
+    if (typeof node === "string") {
+      if (handlers.string) handlers.string(node);
+      return;
+    }
+    if (node === null || typeof node !== "object") return;
+    if (seen.has(node)) return;
+    seen.add(node);
+
+    if (Array.isArray(node)) {
+      if (handlers.array) handlers.array(node);
+      for (const item of node) this._walkEntries(item, handlers, seen);
+      return;
+    }
+
+    for (const [key, value] of Object.entries(node)) {
+      if (NON_ENTRY_KEYS.has(key)) continue;
+      this._walkEntries(value, handlers, seen);
+    }
+  }
+
+  _dereferenceAll() {
+    const refPropByType = DataLoader._REF_TYPE_TO_PROP;
+
+    for (let i = 0; i < this._MAX_DEREFERENCE_LOOPS; ++i) {
+      let anyReplaced = false;
+
+      for (const page of Object.keys(this._PAGE_TO_COLLECTION)) {
+        const collection = this[this._PAGE_TO_COLLECTION[page]];
+        if (!Array.isArray(collection)) continue;
+
+        for (const ent of collection) {
+          const toReplaceMetas = [];
+          this._walkEntries(ent, {
+            array: (arr) => {
+              arr.forEach((it, ix) => {
+                if (it && typeof it === "object" && refPropByType[it.type]) {
+                  toReplaceMetas.push({ ...it, array: arr, ix });
+                  return;
+                }
+                if (
+                  typeof it === "string" &&
+                  it.startsWith("{#") &&
+                  it.endsWith("}")
+                ) {
+                  toReplaceMetas.push({ string: it, array: arr, ix });
+                }
+              });
+            },
+          });
+
+          if (!toReplaceMetas.length) continue;
+          anyReplaced = true;
+
+          let cntReplaces = 0;
+          for (let ixReplace = 0; ixReplace < toReplaceMetas.length; ++ixReplace) {
+            const derefMeta = this._dereferenceOne(toReplaceMetas[ixReplace]);
+            cntReplaces += derefMeta.cntReplaces;
+            if (derefMeta.offsetIx) {
+              toReplaceMetas
+                .slice(ixReplace + 1)
+                .forEach((it) => (it.ix += derefMeta.offsetIx));
+            }
+          }
+
+          if (cntReplaces < toReplaceMetas.length) {
+            this._derefStats.failed += toReplaceMetas.length - cntReplaces;
+          }
+        }
+      }
+
+      if (!anyReplaced) break;
+    }
+  }
+
+  /** Resolve a single ref object / `{#...}` string; returns {cntReplaces, offsetIx}. */
+  _dereferenceOne(meta) {
+    const refPropByType = DataLoader._REF_TYPE_TO_PROP;
+
+    // `{#itemEntry Absorbing Tattoo|TCE}` -> {type: "refItemEntry", itemEntry: "..."}
+    if (meta.string != null) {
+      const m = /^\{#([a-zA-Z]+)\s+([^}]+)\}$/.exec(meta.string);
+      if (!m) return { cntReplaces: 0 };
+      const type = `ref${m[1][0].toUpperCase()}${m[1].slice(1)}`;
+      if (!refPropByType[type]) return { cntReplaces: 0 };
+      meta.type = type;
+      meta[refPropByType[type]] = m[2];
+    }
+
+    const prop = refPropByType[meta.type];
+    if (!prop) return { cntReplaces: 0 };
+
+    const target = this._derefLookup(prop, meta[prop]);
+    if (!target) return { cntReplaces: 0 };
+
+    const cpy = this._copyFast(target);
+
+    switch (meta.type) {
+      case "refClassFeature":
+      case "refSubclassFeature":
+        delete cpy.header;
+        break;
+      case "refOptionalfeature":
+        if (!meta.preserve?.prerequisite) delete cpy.prerequisite;
+        delete cpy.featureType;
+        break;
+      case "refFeat":
+        if (!meta.preserve?.prerequisite) delete cpy.prerequisite;
+        break;
+      case "refItemEntry": {
+        const template = cpy.entriesTemplate || cpy.entries || [];
+        // Skip self-referential template elements (e.g. an itemGroup whose own
+        // entries begin with the `{#itemEntry X|S}` marker it is being spliced
+        // from), which would otherwise recurse indefinitely across loops.
+        const tagName = meta.type.slice(3);
+        const selfRef = `{#${tagName[0].toLowerCase()}${tagName.slice(1)} ${meta.itemEntry}}`;
+        const spliced = this._copyFast(
+          template.filter(
+            (it) => typeof it !== "string" || it !== selfRef,
+          ),
+        );
+        meta.array.splice(meta.ix, 1, ...spliced);
+        this._derefStats.itemEntrySpliced++;
+        return { cntReplaces: 1, offsetIx: spliced.length - 1 };
+      }
+      default:
+        return { cntReplaces: 0 };
+    }
+
+    if (meta.name) cpy.name = meta.name;
+    cpy.type ||= "entries";
+    meta.array[meta.ix] = cpy;
+    this._derefStats.replaced++;
+    return { cntReplaces: 1, offsetIx: 0 };
+  }
+
+  /* ------------------------------------------------------------------
+   * Link inspection: parse `{@tag ...}` link tags (and structured link
+   * fields) with the regex parser and attach resolved entity links.
+   * ------------------------------------------------------------------ */
+
+  _inspectLinks() {
+    for (const page of Object.keys(this._PAGE_TO_COLLECTION)) {
+      const collection = this[this._PAGE_TO_COLLECTION[page]];
+      if (!Array.isArray(collection)) continue;
+
+      for (const ent of collection) {
+        if (!ent || typeof ent !== "object") continue;
+
+        const links = {};
+        const addLink = (tag, resolved) => {
+          if (!resolved) return;
+          (links[tag] = links[tag] || []);
+          if (!links[tag].includes(resolved)) links[tag].push(resolved);
+        };
+
+        if (ent.entries) {
+          this._walkEntries(ent, {
+            string: (str) => {
+              if (!str.includes("{@")) return;
+              for (const m of str.matchAll(TAG_REGEX)) {
+                const tag = m[1].toLowerCase();
+                const parts = m[2].split("|").map((p) => p.trim());
+                addLink(tag, this._resolveLink(tag, parts));
+              }
+            },
+          });
+        }
+
+        this._collectStructuredLinks(ent, addLink);
+
+        if (Object.keys(links).length) {
+          // Non-enumerable: keeps JSON.stringify (safeStringify in controllers)
+          // from recursing into the link graph.
+          Object.defineProperty(ent, "_links", {
+            value: links,
+            enumerable: false,
+            configurable: true,
+            writable: true,
+          });
+        }
+      }
+    }
+  }
+
+  /** Structured link fields: `additionalSpells` uids, race/background `feats`, class/subclass feature lists. */
+  _collectStructuredLinks(ent, addLink) {
+    const addUid = (prop, uid, tag) => {
+      const [name = "", source = ""] = String(uid).split("|");
+      if (!name.trim()) return;
+      addLink(tag, this.pCacheAndGet(prop, source, `${name.trim()}|${source}`.toLowerCase()));
+    };
+
+    // class.classFeatures / subclass.subclassFeatures: feature uid lists
+    const featureListProp = Array.isArray(ent.classFeatures)
+      ? ent.classFeatures
+      : Array.isArray(ent.subclassFeatures)
+        ? ent.subclassFeatures
+        : null;
+    if (featureListProp) {
+      const prop = Array.isArray(ent.classFeatures) ? "classFeature" : "subclassFeature";
+      const tag = Array.isArray(ent.classFeatures) ? "classFeature" : "subclassFeature";
+      featureListProp.forEach((item) => {
+        const uid = typeof item === "string" ? item : item?.classFeature || item?.subclassFeature;
+        if (uid) addLink(tag, this._derefLookup(prop, uid));
+      });
+    }
+
+    if (Array.isArray(ent.additionalSpells)) {
+      ent.additionalSpells.forEach((block) => {
+        ["known", "prepared"].forEach((prop) => {
+          const lists = block?.[prop];
+          if (!lists) return;
+          Object.values(lists).forEach((list) => {
+            (Array.isArray(list) ? list : [list]).forEach((item) => {
+              if (typeof item === "string") addUid("spell", item, "spell");
+              else if (item?.choose && typeof item.choose === "string")
+                addUid("spell", item.choose, "spell");
+            });
+          });
+        });
+        const innate = block?.innate;
+        if (innate) {
+          Object.values(innate).forEach((daily) => {
+            if (!daily || typeof daily !== "object") return;
+            Object.values(daily).forEach((list) => {
+              (Array.isArray(list) ? list : [list]).forEach((item) => {
+                if (typeof item === "string") addUid("spell", item, "spell");
+              });
+            });
+          });
+        }
+      });
+    }
+
+    if (Array.isArray(ent.feats)) {
+      ent.feats.forEach((f) => {
+        const key = Object.keys(f || {})[0];
+        if (key) addUid("feat", key, "feat");
+      });
+    }
+  }
+
+  /** Resolve a `{@tag ...}` link to a loaded entity (5etools render-time resolution). */
+  _resolveLink(tag, parts) {
+    const name = parts[0] || "";
+    const source = parts[1] || "";
+    switch (tag) {
+      case "spell":
+        return this.getSpell(name, source);
+      case "feat":
+        return this.getFeat(name, source);
+      case "item":
+        return this.getItem(name, source);
+      case "race":
+        return this.getRace(name, source);
+      case "background":
+        return this.getBackground(name, source);
+      case "class":
+        return this.getClass(name, source);
+      case "subclass":
+        return this.getSubclass(parts[1] || "", name, parts[2] || "");
+      case "optfeature":
+      case "optionalfeature":
+        return this.getOptionalFeatures().find(
+          (of) =>
+            of.name.toLowerCase() === name.toLowerCase() &&
+            (!source || of.source.toLowerCase() === source.toLowerCase()),
+        ) || null;
+      case "skill":
+        return this.getSkill(name);
+      case "language":
+        return (
+          this.languages?.find(
+            (l) =>
+              l.name.toLowerCase() === name.toLowerCase() &&
+              (!source || l.source.toLowerCase() === source.toLowerCase()),
+          ) || null
+        );
+      default:
+        return null;
+    }
+  }
+
+  /** Linked-entity details for a loaded entity (resolved via the regex parser). */
+  getEntityLinks(entity) {
+    return entity && typeof entity === "object" ? entity._links || null : null;
+  }
+
+  /** Resolve an entity by page/name/source and return its linked details. */
+  getLinkedEntities(page, name, source = "") {
+    const builder = this._PAGE_TO_HASH_BUILDER[page];
+    if (!builder) return null;
+    const ent = this.pCacheAndGet(page, source, builder({ name, source }));
+    return this.getEntityLinks(ent);
   }
 
   getFeatOrigin(featName) {
@@ -399,12 +991,15 @@ class DataLoader {
   }
 
   getCharCreationOptions() {
+    if (this.charoptions) return this.charoptions;
     const ccPath = path.join(this.dataDir, "charcreationoptions.json");
     if (fs.existsSync(ccPath)) {
       const data = JSON.parse(fs.readFileSync(ccPath, "utf8"));
-      return data.charoption || [];
+      this.charoptions = data.charoption || [];
+      return this.charoptions;
     }
-    return [];
+    this.charoptions = [];
+    return this.charoptions;
   }
 
   getClassFeaturesUpToLevel(className, classSource, maxLevel) {

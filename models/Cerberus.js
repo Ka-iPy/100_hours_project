@@ -1,63 +1,28 @@
 import { isFeatureSelectable, extractAvailableOptions } from "../utils/featureSelectability.js";
 import { categorizeFeature, FEATURE_CATEGORIES } from "../utils/featureCategory.js";
+import { Tags } from "../utils/parser.js";
 
 /**
  * Cerberus Tag Parser & Regular Expression Engine for 5etools tags:
  * {@spell Fireball|PHB}, {@feat Sentinel|PHB}, {@filter ...}, {@item ...}, etc.
+ *
+ * Regex + parsing logic is consolidated in `utils/parser.js` (Tags).
  */
 export class CerberusTagParser {
-  static TAG_REGEX = /\{@([a-zA-Z0-9_:]+)\s+([^}]+)\}/g;
+  static TAG_REGEX = Tags.TAG_REGEX;
 
   /**
    * Parse 5etools markdown tags from text string
    */
   static parseTags(text) {
-    if (!text || typeof text !== "string") return [];
-    const tags = [];
-    let match;
-    this.TAG_REGEX.lastIndex = 0;
-
-    while ((match = this.TAG_REGEX.exec(text)) !== null) {
-      const [raw, tagName, rawContent] = match;
-      const parts = rawContent.split("|");
-      const name = parts[0] ? parts[0].trim() : "";
-      const source = parts[1] ? parts[1].trim() : "";
-      const extra = parts.slice(2).map((p) => p.trim());
-
-      tags.push({
-        raw,
-        tag: tagName.toLowerCase(),
-        name,
-        source,
-        extra,
-        rawContent,
-      });
-    }
-    return tags;
+    return Tags.parseTags(text);
   }
 
   /**
    * Replace tags in text with readable names or custom HTML/markup
    */
   static renderTags(text, replacer = null) {
-    if (!text || typeof text !== "string") return "";
-    return text.replace(this.TAG_REGEX, (raw, tagName, rawContent) => {
-      if (replacer) {
-        const result = replacer(tagName.toLowerCase(), rawContent, raw);
-        if (result !== null && result !== undefined) return result;
-      }
-      const tag = tagName.toLowerCase();
-      const parts = rawContent.split("|");
-      if (tag === "filter" || tag === "dice" || tag === "damage") {
-        return parts[0] ? parts[0].trim() : raw;
-      }
-      if (parts.length >= 3 && parts[2].trim() && !parts[2].includes("=")) {
-        return parts[2].trim();
-      }
-      if (tag === "dc") return `DC ${parts[0]}`;
-      if (tag === "chance") return `${parts[0]}%`;
-      return parts[0] ? parts[0].trim() : raw;
-    });
+    return Tags.renderTags(text, replacer);
   }
 
   /**

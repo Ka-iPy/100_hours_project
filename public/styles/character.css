@@ -1,81 +1,66 @@
-/* Dedicated Character Sheet Stylesheet */
-@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Inter:wght@300;400;500;600;700&display=swap');
+/* Dedicated Character Sheet Stylesheet - Obsidian Reader Theme */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:ital,wght@0,400;0,500;1,400&display=swap');
 
-:root, [data-theme="classic"] {
-  --sheet-bg: #0f172a;
-  --sheet-text: #f8fafc;
-  --sheet-text-muted: #94a3b8;
-  --panel-bg: rgba(30, 41, 59, 0.85);
-  --panel-border: rgba(234, 179, 8, 0.35);
-  --panel-border-solid: #eab308;
-  --accent-color: #eab308;
-  --accent-hover: #ca8a04;
-  --accent-glow: rgba(234, 179, 8, 0.25);
-  --tab-active-bg: #eab308;
-  --tab-active-text: #0f172a;
-  --font-heading: 'Cinzel', serif;
+:root, [data-theme="classic"], [data-theme="obsidian"] {
+  --sheet-bg: #18181b;
+  --sheet-text: #dcddde;
+  --sheet-text-muted: #8e8e98;
+  --panel-bg: #202025;
+  --panel-border: #363640;
+  --panel-border-solid: #484854;
+  --accent-color: #7f6df2;
+  --accent-hover: #9382ff;
+  --accent-glow: rgba(127, 109, 242, 0.2);
+  --tab-active-bg: rgba(127, 109, 242, 0.15);
+  --tab-active-text: #ffffff;
+  --font-heading: 'Inter', sans-serif;
   --font-body: 'Inter', sans-serif;
-  --card-bg: rgba(15, 23, 42, 0.6);
+  --card-bg: #27272d;
 }
 
 [data-theme="arcane"] {
-  --sheet-bg: #0b0f19;
-  --sheet-text: #f1f5f9;
-  --sheet-text-muted: #a7f3d0;
-  --panel-bg: rgba(17, 24, 39, 0.9);
-  --panel-border: rgba(168, 85, 247, 0.45);
-  --panel-border-solid: #c084fc;
+  --sheet-bg: #14121e;
+  --sheet-text: #e2e8f0;
+  --sheet-text-muted: #94a3b8;
+  --panel-bg: #1b1828;
+  --panel-border: #322d48;
+  --panel-border-solid: #4c446c;
   --accent-color: #c084fc;
-  --accent-hover: #a855f7;
-  --accent-glow: rgba(168, 85, 247, 0.35);
-  --tab-active-bg: #c084fc;
-  --tab-active-text: #0b0f19;
-  --card-bg: rgba(30, 27, 75, 0.5);
+  --accent-hover: #d8b4fe;
+  --accent-glow: rgba(192, 132, 252, 0.2);
+  --tab-active-bg: rgba(192, 132, 252, 0.15);
+  --tab-active-text: #ffffff;
+  --card-bg: #231f34;
 }
 
 [data-theme="emerald"] {
-  --sheet-bg: #064e3b;
-  --sheet-text: #ecfdf5;
-  --sheet-text-muted: #a7f3d0;
-  --panel-bg: rgba(4, 47, 38, 0.85);
-  --panel-border: rgba(52, 211, 153, 0.4);
-  --panel-border-solid: #34d399;
+  --sheet-bg: #111a16;
+  --sheet-text: #e2e8f0;
+  --sheet-text-muted: #94a3b8;
+  --panel-bg: #17241e;
+  --panel-border: #283e34;
+  --panel-border-solid: #3b5c4d;
   --accent-color: #34d399;
-  --accent-hover: #10b981;
-  --accent-glow: rgba(52, 211, 153, 0.3);
-  --tab-active-bg: #34d399;
-  --tab-active-text: #064e3b;
-  --card-bg: rgba(6, 78, 59, 0.6);
+  --accent-hover: #6ee7b7;
+  --accent-glow: rgba(52, 211, 153, 0.2);
+  --tab-active-bg: rgba(52, 211, 153, 0.15);
+  --tab-active-text: #ffffff;
+  --card-bg: #1e3028;
 }
 
 [data-theme="crimson"] {
-  --sheet-bg: #450a0a;
-  --sheet-text: #fef2f2;
-  --sheet-text-muted: #fca5a5;
-  --panel-bg: rgba(69, 10, 10, 0.85);
-  --panel-border: rgba(248, 113, 113, 0.4);
-  --panel-border-solid: #f87171;
+  --sheet-bg: #1a1213;
+  --sheet-text: #f1f5f9;
+  --sheet-text-muted: #94a3b8;
+  --panel-bg: #241819;
+  --panel-border: #422b2d;
+  --panel-border-solid: #613f42;
   --accent-color: #f87171;
-  --accent-hover: #ef4444;
-  --accent-glow: rgba(248, 113, 113, 0.3);
-  --tab-active-bg: #f87171;
-  --tab-active-text: #450a0a;
-  --card-bg: rgba(127, 29, 29, 0.5);
-}
-
-[data-theme="obsidian"] {
-  --sheet-bg: #030712;
-  --sheet-text: #f9fafb;
-  --sheet-text-muted: #9ca3af;
-  --panel-bg: rgba(17, 24, 39, 0.95);
-  --panel-border: rgba(156, 163, 175, 0.3);
-  --panel-border-solid: #d1d5db;
-  --accent-color: #38bdf8;
-  --accent-hover: #0284c7;
-  --accent-glow: rgba(56, 189, 248, 0.25);
-  --tab-active-bg: #38bdf8;
-  --tab-active-text: #030712;
-  --card-bg: rgba(31, 41, 55, 0.7);
+  --accent-hover: #fca5a5;
+  --accent-glow: rgba(248, 113, 113, 0.2);
+  --tab-active-bg: rgba(248, 113, 113, 0.15);
+  --tab-active-text: #ffffff;
+  --card-bg: #2f2022;
 }
 
 /* Base Container & Fonts */
@@ -83,27 +68,28 @@ body {
   background-color: var(--sheet-bg);
   color: var(--sheet-text);
   font-family: var(--font-body);
-  transition: background-color 0.3s ease, color 0.3s ease;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 .rpg-header-font {
   font-family: var(--font-heading);
+  font-weight: 600;
 }
 
 /* Panel Theme Overrides */
 .rpg-panel {
   background: var(--panel-bg);
   border: 1px solid var(--panel-border);
-  box-shadow: 0 4px 20px var(--accent-glow);
-  backdrop-filter: blur(8px);
-  border-radius: 0.75rem;
-  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  border-radius: 0.5rem;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .rpg-panel-header {
   border-bottom: 1px solid var(--panel-border);
-  color: var(--accent-color);
+  color: #ffffff;
   font-family: var(--font-heading);
+  font-weight: 600;
 }
 
 /* Moniker Subtitle */
@@ -111,8 +97,7 @@ body {
   font-style: italic;
   color: var(--accent-color);
   font-family: var(--font-heading);
-  font-size: 0.9rem;
-  letter-spacing: 0.05em;
+  font-size: 0.88rem;
   opacity: 0.9;
 }
 
@@ -120,10 +105,10 @@ body {
 .custom-section-card {
   background: var(--card-bg);
   border: 1px solid var(--panel-border);
-  border-radius: 0.75rem;
+  border-radius: 0.5rem;
   padding: 1.25rem;
   position: relative;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .custom-section-card:hover {
@@ -142,34 +127,33 @@ body {
 
 .custom-section-title {
   font-family: var(--font-heading);
-  font-size: 1.1rem;
-  font-weight: 700;
-  color: var(--accent-color);
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #ffffff;
 }
 
 /* Sticky Note Section Type */
 .section-sticky-note {
-  background: #fef9c3 !important;
-  color: #713f12 !important;
-  border: 1px solid #fde047 !important;
-  box-shadow: 3px 5px 12px rgba(0, 0, 0, 0.3) !important;
-  transform: rotate(-1deg);
+  background: #2a281e !important;
+  color: #fef08a !important;
+  border: 1px solid #713f12 !important;
+  box-shadow: 2px 4px 12px rgba(0, 0, 0, 0.4) !important;
 }
 
 .section-sticky-note .custom-section-title {
-  color: #854d0e !important;
-  border-bottom-color: #fde047 !important;
+  color: #fef08a !important;
+  border-bottom-color: #713f12 !important;
 }
 
 .section-sticky-note textarea, 
 .section-sticky-note input {
-  color: #451a03 !important;
+  color: #fef08a !important;
 }
 
 /* Highlight Callout Section Type */
 .section-highlight {
-  background: linear-gradient(135deg, rgba(234, 179, 8, 0.15), rgba(249, 115, 22, 0.15)) !important;
-  border-left: 5px solid var(--accent-color) !important;
+  background: var(--card-bg) !important;
+  border-left: 4px solid var(--accent-color) !important;
 }
 
 /* Dynamic Custom Table Styling */
@@ -181,17 +165,18 @@ body {
 }
 
 .custom-table th {
-  background: rgba(0, 0, 0, 0.3);
+  background: rgba(0, 0, 0, 0.2);
   color: var(--accent-color);
   font-family: var(--font-heading);
+  font-weight: 600;
   padding: 0.5rem 0.75rem;
   text-align: left;
-  border-bottom: 2px solid var(--panel-border);
+  border-bottom: 1px solid var(--panel-border);
 }
 
 .custom-table td {
   padding: 0.5rem 0.75rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
 }
 
 .custom-table input {
@@ -245,14 +230,14 @@ body {
 /* Text Stamp Stickers */
 .sticker-stamp {
   font-family: var(--font-heading);
-  font-weight: 900;
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.08em;
   padding: 0.4rem 0.8rem;
-  border: 3px double;
+  border: 2px solid;
   border-radius: 0.25rem;
   box-shadow: 2px 4px 10px rgba(0,0,0,0.4);
-  transform: rotate(-10deg);
+  transform: rotate(-5deg);
 }
 
 .stamp-wanted {
@@ -286,7 +271,7 @@ body {
   right: -10px;
   display: none;
   gap: 4px;
-  background: rgba(15, 23, 42, 0.95);
+  background: #202025;
   border: 1px solid var(--accent-color);
   border-radius: 0.375rem;
   padding: 2px 6px;
@@ -322,12 +307,12 @@ body {
   right: 1.5rem;
   z-index: 60;
   background: var(--accent-color);
-  color: var(--tab-active-text);
+  color: #ffffff;
   font-family: var(--font-heading);
-  font-weight: bold;
+  font-weight: 600;
   padding: 0.75rem 1.25rem;
   border-radius: 9999px;
-  box-shadow: 0 10px 25px var(--accent-glow);
+  box-shadow: 0 8px 20px var(--accent-glow);
   cursor: pointer;
   transition: transform 0.2s ease, background-color 0.2s ease;
   display: flex;
@@ -347,11 +332,10 @@ body {
   right: 1.5rem;
   width: 380px;
   max-height: 520px;
-  background: rgba(15, 23, 42, 0.95);
+  background: #202025;
   border: 1px solid var(--panel-border);
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(12px);
-  border-radius: 1rem;
+  border-radius: 0.75rem;
   z-index: 60;
   display: flex;
   flex-direction: column;
@@ -365,7 +349,7 @@ body {
 
 .customizer-drawer-header {
   padding: 1rem;
-  background: rgba(0, 0, 0, 0.4);
+  background: #27272d;
   border-bottom: 1px solid var(--panel-border);
   display: flex;
   justify-content: space-between;
@@ -375,7 +359,6 @@ body {
 .customizer-drawer-body {
   padding: 1rem;
   overflow-y: auto;
-  space-y: 1.25rem;
 }
 
 .sticker-grid {
@@ -385,8 +368,8 @@ body {
 }
 
 .sticker-option {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 0.5rem;
   padding: 0.5rem;
   display: flex;
@@ -397,9 +380,9 @@ body {
 }
 
 .sticker-option:hover {
-  transform: scale(1.1);
+  transform: scale(1.05);
   border-color: var(--accent-color);
-  background: rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.08);
 }
 
 .sticker-option img {

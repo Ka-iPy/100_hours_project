@@ -8,5 +8,10 @@
     "username": "Khalil",
     "password": "$2b$10$BlROBy771s3xYKD/7vlq..w6oSUgHvIl9zQW0zmHrP47aX662mZwe",
     "id": "ccf9731a-995b-4a45-a501-1ff08cd7afc3"
+  },
+  {
+    "id": "560c210d-6b7f-430b-95bd-52c97dcb3cfe",
+    "username": "testflash",
+    "password": "$2b$10$MV4q4IAzx74NyfNlMio5eup5XE5e1atVYRafsdouN4O2KFEe2dZsu"
   }
 ]

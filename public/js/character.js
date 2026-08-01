@@ -719,8 +719,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- REGEX PARSER AND TOOLTIPS ---
     function parseDndTags(text) {
         if (!text) return "";
+        let parsed = text;
         const tagRegex = /\{@([a-zA-Z]+) ([^}]+)\}/g;
-        return text.replace(tagRegex, (match, tag, content) => {
+        parsed = parsed.replace(tagRegex, (match, tag, content) => {
             const parts = content.split('|');
             const name = parts[0];
             const source = parts[1] || '';
@@ -730,6 +731,10 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             return name;
         });
+        if (typeof renderMarkdown === 'function') {
+            return renderMarkdown(parsed);
+        }
+        return parsed;
     }
 
     function updatePreviews() {
@@ -1051,11 +1056,18 @@ document.addEventListener('DOMContentLoaded', () => {
                     ` : ''}
                 `;
             } else if (sec.type === 'note' || sec.type === 'highlight' || sec.type === 'text') {
-                contentHTML = `
-                    <textarea class="w-full bg-transparent border-none p-0 text-sm focus:ring-0 resize-y" ${isEditing ? '' : 'readonly'}
-                        rows="3" placeholder="Enter content..."
-                        oninput="updateCustomSectionContent('${sec.id}', this.value)">${escapeHtml(sec.content || '')}</textarea>
-                `;
+                if (isEditing) {
+                    contentHTML = `
+                        <textarea class="w-full bg-transparent border-none p-0 text-sm focus:ring-0 resize-y"
+                            rows="3" placeholder="Enter content..."
+                            oninput="updateCustomSectionContent('${sec.id}', this.value)">${escapeHtml(sec.content || '')}</textarea>
+                    `;
+                } else {
+                    const rendered = typeof renderMarkdown === 'function' ? renderMarkdown(sec.content || '') : parseDndTags(sec.content || '');
+                    contentHTML = `
+                        <div class="custom-section-rendered text-sm leading-relaxed">${rendered}</div>
+                    `;
+                }
             }
 
             const targetTab = sec.targetTab || 'custom';
