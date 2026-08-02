@@ -122,6 +122,19 @@ select {
   transition: all 0.2s ease;
 }
 
+/* Hide number input spinners (up & down arrows) & center numbers */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type="number"] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+  text-align: center;
+}
+
 select option {
   background-color: #202025;
   color: #dcddde;
@@ -1120,6 +1133,365 @@ blockquote {
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: 10px;
 }
+
+.creator-pick-grid--spells {
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 10px;
+}
+
+/* ── Spell picker cards ───────────────────────────────────── */
+.spell-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 12px 10px 14px;
+  background: linear-gradient(160deg, rgba(20, 22, 26, 0.95), rgba(15, 16, 20, 0.95));
+  border: 1px solid #2b2f3a;
+  border-radius: 10px;
+  cursor: pointer;
+  user-select: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+}
+
+.spell-card::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 9px;
+  bottom: 9px;
+  width: 3px;
+  border-radius: 3px;
+  background: var(--spell-school-color, #8a8a8a);
+  opacity: 0.75;
+  transition: opacity 0.15s ease;
+}
+
+.spell-card:hover {
+  border-color: rgba(212, 175, 55, 0.55);
+  box-shadow: 0 0 0 1px rgba(212, 175, 55, 0.25), 0 6px 18px rgba(0, 0, 0, 0.45);
+  transform: translateY(-2px);
+}
+
+.spell-card.selected {
+  border-color: #d4af37;
+  background: linear-gradient(160deg, rgba(127, 109, 242, 0.14), rgba(15, 16, 20, 0.95));
+  box-shadow: 0 0 0 1px rgba(212, 175, 55, 0.4), 0 0 22px rgba(212, 175, 55, 0.18);
+}
+
+.spell-card.selected::before {
+  opacity: 1;
+}
+
+.spell-card-check {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 18px;
+  height: 18px;
+  border-radius: 9999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+  color: #0f0b25;
+  background: #d4af37;
+  box-shadow: 0 0 10px rgba(212, 175, 55, 0.5);
+  opacity: 0;
+  transform: scale(0.6);
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+.spell-card.selected .spell-card-check {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.spell-pips {
+  color: #d4af37;
+  font-size: 0.6rem;
+  letter-spacing: 3px;
+  line-height: 1;
+}
+
+.spell-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.spell-meta-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 7px;
+  border-radius: 9999px;
+  font-size: 0.65rem;
+  line-height: 1.4;
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  color: #94a3b8;
+  background: rgba(148, 163, 184, 0.06);
+}
+
+.spell-meta-chip--ritual {
+  border-color: rgba(250, 204, 21, 0.35);
+  color: #facc15;
+  background: rgba(250, 204, 21, 0.08);
+}
+
+.spell-meta-chip--concentration {
+  border-color: rgba(232, 121, 249, 0.35);
+  color: #e879f9;
+  background: rgba(232, 121, 249, 0.08);
+}
+
+.spell-school-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.4px;
+  color: var(--spell-school-color, #94a3b8);
+  border: 1px solid color-mix(in srgb, var(--spell-school-color, #94a3b8) 45%, transparent);
+  background: color-mix(in srgb, var(--spell-school-color, #94a3b8) 12%, transparent);
+}
+
+.spell-level-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(212, 175, 55, 0.25);
+  background: rgba(212, 175, 55, 0.05);
+}
+
+.spell-count-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 8px;
+  border-radius: 9999px;
+  font-size: 0.62rem;
+  font-weight: 600;
+  color: #0f0b25;
+  background: #d4af37;
+}
+
+.spell-search {
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid #2b2f3a;
+  background: rgba(10, 11, 15, 0.8);
+  color: #e5e7eb;
+  font-size: 0.8rem;
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.spell-search::placeholder {
+  color: #6b7280;
+  font-style: italic;
+}
+
+.spell-search:focus {
+  border-color: rgba(212, 175, 55, 0.6);
+  box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.12);
+}
+
+.spell-summary-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border-radius: 9999px;
+  font-size: 0.7rem;
+  color: #fde68a;
+  border: 1px solid rgba(212, 175, 55, 0.4);
+  background: rgba(212, 175, 55, 0.08);
+}
+
+.spell-summary-chip button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  border-radius: 9999px;
+  font-size: 0.65rem;
+  line-height: 1;
+  color: #0f0b25;
+  background: #d4af37;
+  cursor: pointer;
+  transition: transform 0.1s ease;
+}
+
+.spell-summary-chip button:hover {
+  transform: scale(1.2);
+}
+
+/* ── Equipment picker ──────────────────────────────────────── */
+.equip-group {
+  background: linear-gradient(160deg, rgba(20, 22, 26, 0.95), rgba(15, 16, 20, 0.95));
+  border: 1px solid #2b2f3a;
+  border-radius: 10px;
+  padding: 12px;
+}
+
+.equip-group-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.equip-group-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+  height: 24px;
+  padding: 0 6px;
+  border-radius: 6px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: #0f0b25;
+  background: #d4af37;
+  flex-shrink: 0;
+}
+
+.equip-group-text {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #e5e7eb;
+  line-height: 1.4;
+}
+
+.equip-option-card {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid #2b2f3a;
+  border-radius: 9px;
+  cursor: pointer;
+  user-select: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease, transform 0.15s ease;
+}
+
+.equip-option-card:hover {
+  border-color: rgba(212, 175, 55, 0.5);
+  background: rgba(212, 175, 55, 0.04);
+  transform: translateY(-1px);
+}
+
+.equip-option-card.selected {
+  border-color: #d4af37;
+  background: linear-gradient(160deg, rgba(127, 109, 242, 0.14), rgba(15, 16, 20, 0.95));
+  box-shadow: 0 0 0 1px rgba(212, 175, 55, 0.4), 0 0 22px rgba(212, 175, 55, 0.16);
+}
+
+.equip-letter-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 9999px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: #cbd5e1;
+  border: 1px solid rgba(148, 163, 184, 0.4);
+  background: rgba(148, 163, 184, 0.1);
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.equip-option-card.selected .equip-letter-badge {
+  color: #0f0b25;
+  background: #d4af37;
+  border-color: #d4af37;
+}
+
+.equip-option-body {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.equip-option-items {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #e5e7eb;
+}
+
+.equip-item-sep {
+  color: #64748b;
+  font-weight: 700;
+}
+
+.equip-qty {
+  color: #fde68a;
+  font-weight: 700;
+}
+
+.equip-granted-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid rgba(74, 222, 128, 0.3);
+  border-radius: 9px;
+  background: rgba(74, 222, 128, 0.05);
+}
+
+.equip-granted-icon {
+  font-size: 0.9rem;
+  margin-top: 1px;
+}
+
+.equip-granted-items {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #86efac;
+}
+
+.equip-item-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  border: 1px solid rgba(74, 222, 128, 0.3);
+  background: rgba(74, 222, 128, 0.08);
+}
+
+.equip-gold-alt {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border: 1px solid rgba(250, 204, 21, 0.4);
+  border-radius: 9px;
+  background: rgba(250, 204, 21, 0.06);
+  font-size: 0.8rem;
+  color: #fde68a;
+  font-weight: 600;
+}
+
+
 
 .creator-option-card {
   background-color: #141416;

@@ -178,13 +178,30 @@ class DataLoader {
         this.items = itemsData.item || [];
         this.itemGroups = itemsData.itemGroup || []; // `{#itemEntry X}` ref targets
 
-        const itemsBasePath = path.join(this.dataDir, "items-base.json");
-        if (fs.existsSync(itemsBasePath)) {
-          const itemsBaseData = JSON.parse(
-            fs.readFileSync(itemsBasePath, "utf8"),
+      const itemsBasePath = path.join(this.dataDir, "items-base.json");
+      if (fs.existsSync(itemsBasePath)) {
+        const itemsBaseData = JSON.parse(
+          fs.readFileSync(itemsBasePath, "utf8"),
+        );
+        this.itemEntries = itemsBaseData.itemEntry || [];
+
+        // Merge base items (weapons, armor, adventuring gear) into the items
+        // pool so getItemByName/getItem resolve starting equipment like
+        // "rapier|phb" even when items.json only carries the magic-item subset.
+        const baseItems = itemsBaseData.baseitem || [];
+        if (baseItems.length > 0) {
+          const knownKeys = new Set(
+            this.items.map((i) => `${i.name}|${i.source}`.toLowerCase()),
           );
-          this.itemEntries = itemsBaseData.itemEntry || [];
+          for (const baseItem of baseItems) {
+            const key = `${baseItem.name}|${baseItem.source}`.toLowerCase();
+            if (!knownKeys.has(key)) {
+              this.items.push(baseItem);
+              knownKeys.add(key);
+            }
+          }
         }
+      }
       }
 
       // Load skills

@@ -107,6 +107,11 @@
   </script>
   <script src="/js/jquery.min.js"></script>
   <script src="/js/turn.min.js"></script>
+  <script type="module">
+    import { Tags, Parser } from '/utils/parser.js';
+    window.Tags = Tags;
+    window.Parser = Parser;
+  </script>
   <script src="/js/spellbook.js"></script>
 
   <%- include('partials/footer.ejs') %>

@@ -734,6 +734,11 @@
     window.proficiencyBonus = parseInt("<%= character.pb || 2 %>") || 2;
     window.spellcastingAbilityKey = "<%= spellData ? (spellData.rawAbility || 'int') : 'int' %>".toLowerCase();
   </script>
+  <script type="module">
+    import { Tags, Parser } from '/utils/parser.js';
+    window.Tags = Tags;
+    window.Parser = Parser;
+  </script>
   <script src="/js/character.js"></script>
 
 </body>

@@ -73,6 +73,7 @@ export class CharacterBuilder {
       startingEquipment,
       raceData,
       classes,
+      equipmentChoices,
     );
     this.applyEquipmentChoices(character, equipmentChoices, classes);
     this.applySpellSelections(
@@ -526,14 +527,18 @@ export class CharacterBuilder {
     });
   }
 
-  applyStartingEquipment(character, equipment, raceData, classes) {
+  applyStartingEquipment(character, equipment, raceData, classes, equipmentChoices = []) {
     const mainClass = classes[0];
     const classData = mainClass
       ? this.loader.getClass(mainClass.name, mainClass.source)
       : null;
 
     if (classData?.startingEquipment) {
-      this.applyClassStartingEquipment(character, classData.startingEquipment);
+      this.applyClassStartingEquipment(
+        character,
+        classData.startingEquipment,
+        equipmentChoices,
+      );
     }
 
     character.backgrounds.forEach((bg) => {
@@ -568,7 +573,11 @@ export class CharacterBuilder {
     });
   }
 
-  applyClassStartingEquipment(character, startingEquipment) {
+  applyClassStartingEquipment(character, startingEquipment, equipmentChoices = []) {
+    // When the creator submitted explicit group choices, those are applied
+    // separately in applyEquipmentChoices — skip the default to avoid duplicates.
+    if (equipmentChoices.length > 0) return;
+
     const defaultChoice =
       startingEquipment.default?.[0] || startingEquipment.defaultData?.[0];
     if (defaultChoice) {

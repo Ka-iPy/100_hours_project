@@ -76,6 +76,19 @@ body {
   font-weight: 600;
 }
 
+/* Hide number input spinners (up & down arrows) & center numbers */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type="number"] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+  text-align: center;
+}
+
 /* Panel Theme Overrides */
 .rpg-panel {
   background: var(--panel-bg);

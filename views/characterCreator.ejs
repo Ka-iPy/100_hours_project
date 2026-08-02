@@ -212,6 +212,7 @@
 
           <!-- STEP 6: Equipment -->
           <div id="step-panel-6" class="wizard-step-panel hidden">
+            <div id="equipmentSummary" class="mb-3"></div>
             <div id="equipmentChoices"></div>
             <div id="equipmentGoldAlt" class="creator-gold-alt mt-4"></div>
           </div>
@@ -220,12 +221,20 @@
           <div id="step-panel-7" class="wizard-step-panel hidden">
             <div id="spellInfo" class="mb-4"></div>
             <div id="cantripSection" style="display: none;">
-              <h3 class="font-bold text-sm text-yellow-500 mb-2">Cantrips <span id="cantripCounter"></span></h3>
+              <div class="flex items-center justify-between mb-2">
+                <h3 class="font-bold text-sm text-yellow-500">Cantrips</h3>
+                <span id="cantripCounter" class="spell-count-badge"></span>
+              </div>
               <div id="cantripList" class="creator-pick-grid"></div>
             </div>
             <div id="spellPickSection" style="display: none;" class="mt-4">
-              <h3 class="font-bold text-sm text-yellow-500 mb-2">Level 1 Spells <span id="spellCounter"></span></h3>
-              <div id="spellList" class="creator-pick-grid"></div>
+              <div class="flex items-center justify-between mb-2">
+                <h3 class="font-bold text-sm text-yellow-500">Prepared / Known Spells</h3>
+                <span id="spellCounter" class="spell-count-badge"></span>
+              </div>
+              <input type="text" id="spellSearch" class="spell-search mb-3" placeholder="Search spells by name…">
+              <div id="spellSummary" class="flex flex-wrap gap-2 mb-3"></div>
+              <div id="spellList" class="space-y-4"></div>
             </div>
           </div>
 
@@ -279,8 +288,9 @@
 </main>
 
 <script type="module">
-  import { Tags } from '/utils/parser.js';
+  import { Tags, Parser } from '/utils/parser.js';
   window.Tags = Tags;
+  window.Parser = Parser;
 </script>
 
 <script>
@@ -312,6 +322,7 @@
   let selectedCantrips = [];
   let selectedSpells = [];
   let selectedEquipmentChoices = [];
+  const equipChoicesByGroup = {};
   let spellContextData = null;
 
   const ABILITIES = ['strength', 'dexterity', 'constitution', 'intelligence', 'wisdom', 'charisma'];
@@ -903,68 +914,123 @@
       if (!data.choices || data.choices.length === 0) {
         container.innerHTML = `<div class="p-4 bg-slate-900/60 rounded-xl border border-slate-800 text-sm text-gray-300">Standard starting equipment will be assigned for ${selectedClassObj.name}.</div>`;
         selectedEquipmentChoices = [];
+        Object.keys(equipChoicesByGroup).forEach(k => delete equipChoicesByGroup[k]);
         return;
       }
 
       let html = `<div class="font-bold text-yellow-500 mb-3 text-sm">Starting Equipment Options for ${selectedClassObj.name}</div>`;
-      html += '<div class="space-y-4">';
-
-      selectedEquipmentChoices = [];
-
-      data.choices.forEach((choiceGroup, groupIdx) => {
-        const cleanGroupText = choiceGroup.text ? cleanTags(choiceGroup.text) : `Choice ${groupIdx + 1}`;
-        html += `<div class="p-3 bg-slate-900/60 rounded-xl border border-slate-800 text-xs">`;
-        html += `<div class="font-bold text-gray-200 mb-2">${cleanGroupText}</div>`;
-
-        if (choiceGroup.isAutomatic && choiceGroup.options.length > 0) {
-          const itemNames = choiceGroup.options[0].items.map(it => cleanTags(it.name) + (it.quantity > 1 ? ` (x${it.quantity})` : '')).join(', ');
-          html += `<div class="text-emerald-400 font-semibold">Granted Automatically: ${itemNames}</div>`;
-          choiceGroup.options[0].items.forEach(it => selectedEquipmentChoices.push(cleanTags(it.name)));
-        } else {
-          html += `<div class="space-y-2">`;
-          choiceGroup.options.forEach((opt, optIdx) => {
-            const itemNames = opt.items.map(it => cleanTags(it.name) + (it.quantity > 1 ? ` (x${it.quantity})` : '')).join(', ');
-            const checked = optIdx === 0 ? 'checked' : '';
-            if (optIdx === 0) {
-              opt.items.forEach(it => selectedEquipmentChoices.push(cleanTags(it.name)));
-            }
-            const itemDataJson = JSON.stringify(opt.items.map(i => cleanTags(i.name)));
-            html += `
-              <label class="flex items-center gap-2 cursor-pointer p-2 rounded bg-slate-800/80 hover:bg-slate-800 border border-slate-700/60 text-gray-200">
-                <input type="radio" name="equip_group_${groupIdx}" value='${itemDataJson}' ${checked} onchange="onEquipmentChoiceChange(${groupIdx}, this.value)">
-                <span><strong>(${opt.key.toUpperCase()})</strong> ${itemNames}</span>
-              </label>
-            `;
-          });
-          html += `</div>`;
-        }
-        html += `</div>`;
-      });
-
-      if (data.goldAlternative) {
-        html += `
-          <div class="p-3 bg-slate-900/40 rounded-xl border border-slate-800 text-xs text-gray-400">
-            <strong>Gold Alternative:</strong> ${cleanTags(data.goldAlternative)}
-          </div>
-        `;
-      }
+      html += '<div id="equipmentGroups" class="space-y-4">';
+      html += renderEquipmentGroups(data);
       html += '</div>';
 
       container.innerHTML = html;
+      renderEquipmentSummary(data);
     } catch (err) {
       console.error(err);
       container.innerHTML = `<div class="p-4 bg-slate-900/60 rounded-xl border border-slate-800 text-sm text-gray-400">Standard starting equipment will be provided automatically.</div>`;
     }
   }
 
-  window.onEquipmentChoiceChange = function(groupIdx, itemDataJson) {
-    try {
-      const items = JSON.parse(itemDataJson);
-      if (Array.isArray(items)) {
-        selectedEquipmentChoices.push(...items);
+  let lastEquipmentData = null;
+
+  function equipItemName(it) {
+    return cleanTags(it.name).replace(/<\/?p[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+  }
+
+  function equipItemMetaChips(it) {
+    const P = window.Parser;
+    const chips = [];
+    if (P && it.data) {
+      if (it.data.weight) {
+        const w = P.itemWeightToFull({ weight: it.data.weight });
+        if (w) chips.push(`<span class="spell-meta-chip">⚖ ${w}</span>`);
       }
-    } catch (e) {
-      console.error(e);
+      if (it.data.value) {
+        const v = P.itemValueToFull({ value: it.data.value }, { isShortForm: true });
+        if (v) chips.push(`<span class="spell-meta-chip">◎ ${v}</span>`);
+      }
+    }
+    return chips.join('');
+  }
+
+  function renderEquipmentGroups(data) {
+    lastEquipmentData = data;
+    let html = '';
+
+    data.choices.forEach((choiceGroup, groupIdx) => {
+      const cleanGroupText = choiceGroup.text ? cleanTags(choiceGroup.text) : `Choose one of the following`;
+      html += `<div class="equip-group">`;
+      html += `<div class="equip-group-head"><span class="equip-group-num">${groupIdx + 1}</span><span class="equip-group-text">${cleanGroupText}</span></div>`;
+
+      if (choiceGroup.isAutomatic && choiceGroup.options.length > 0) {
+        const chips = choiceGroup.options[0].items.map(it =>
+          `<span class="equip-item-chip">${equipItemName(it)}${it.quantity > 1 ? ` <span class="equip-qty">×${it.quantity}</span>` : ''}</span>`
+        ).join('');
+        html += `<div class="equip-granted-card"><span class="equip-granted-icon">✔</span><span class="equip-granted-items">${chips}</span></div>`;
+        equipChoicesByGroup[groupIdx] = { groupIndex: groupIdx, choiceKey: '_' };
+      } else {
+        const selectedKey = equipChoicesByGroup[groupIdx]?.choiceKey;
+        html += `<div class="space-y-2">`;
+        choiceGroup.options.forEach((opt, optIdx) => {
+          const selected = selectedKey ? selectedKey === opt.key : optIdx === 0;
+          if (!selectedKey && optIdx === 0) {
+            equipChoicesByGroup[groupIdx] = { groupIndex: groupIdx, choiceKey: opt.key };
+          }
+          const itemNames = opt.items.map(it =>
+            `<span>${equipItemName(it)}${it.quantity > 1 ? `<span class="equip-qty"> ×${it.quantity}</span>` : ''}</span>`
+          ).join('<span class="equip-item-sep"> + </span>');
+          const meta = opt.items.map(equipItemMetaChips).join('');
+          html += `
+            <label class="equip-option-card ${selected ? 'selected' : ''}">
+              <input type="radio" name="equip_group_${groupIdx}" value='${opt.key}' ${selected ? 'checked' : ''} onchange="onEquipmentChoiceChange(${groupIdx}, this.value)" class="sr-only">
+              <span class="equip-letter-badge">${opt.key.toUpperCase()}</span>
+              <span class="equip-option-body">
+                <span class="equip-option-items">${itemNames}</span>
+                ${meta ? `<span class="spell-meta">${meta}</span>` : ''}
+              </span>
+              <span class="spell-card-check">✓</span>
+            </label>
+          `;
+        });
+        html += `</div>`;
+      }
+      html += `</div>`;
+    });
+
+    const goldAlt = document.getElementById('equipmentGoldAlt');
+    if (goldAlt) {
+      goldAlt.innerHTML = data.goldAlternative
+        ? `<div class="equip-gold-alt">🪙 Gold Alternative: ${cleanTags(data.goldAlternative)}</div>`
+        : '';
+    }
+
+    return html;
+  }
+
+  function renderEquipmentSummary(data) {
+    const summaryEl = document.getElementById('equipmentSummary');
+    if (!summaryEl) return;
+    const parts = [];
+    (data.choices || []).forEach((choiceGroup, groupIdx) => {
+      const choice = equipChoicesByGroup[groupIdx];
+      if (!choice) return;
+      const group = choiceGroup.options.find(o => o.key === choice.choiceKey);
+      if (!group) return;
+      group.items.forEach(it => parts.push(`${equipItemName(it)}${it.quantity > 1 ? ` ×${it.quantity}` : ''}`));
+    });
+    summaryEl.innerHTML = parts.length
+      ? `<span class="spell-level-head"><span class="spell-pips">◆</span> Selected Equipment: <span class="text-gray-300 font-medium">${parts.join(' + ')}</span></span>`
+      : '';
+  }
+
+  window.onEquipmentChoiceChange = function(groupIdx, choiceKey) {
+    if (!choiceKey) return;
+    equipChoicesByGroup[groupIdx] = { groupIndex: groupIdx, choiceKey };
+    selectedEquipmentChoices = Object.values(equipChoicesByGroup);
+    if (lastEquipmentData) {
+      const groupsEl = document.getElementById('equipmentGroups');
+      if (groupsEl) groupsEl.innerHTML = renderEquipmentGroups(lastEquipmentData);
+      renderEquipmentSummary(lastEquipmentData);
     }
   };
 
@@ -1020,9 +1086,16 @@
       const numSelectable = spellContextData.numSelectable || spellContextData.maxSpells || 0;
       const numPrepared = spellContextData.numPrepared || 0;
       const abilityLabel = (spellContextData.ability || 'INT').toUpperCase();
-      let acqDescription = '';
 
-      if (acqType === 'spellbook') {
+      // Half-casters (Paladin/Ranger) gain spellcasting at level 2
+      const totalAvailableSpells = Object.values(spellContextData.spellList || {}).reduce((sum, list) => sum + (Array.isArray(list) ? list.length : 0), 0);
+      const hasNoSlotsYet = Object.keys(spellContextData.slots || {}).length === 0;
+      const gainsSpellcastingLater = totalAvailableSpells === 0 && hasNoSlotsYet && (spellContextData.cantripList || []).length === 0;
+
+      let acqDescription = '';
+      if (gainsSpellcastingLater) {
+        acqDescription = `<div class="text-xs text-sky-300 mt-1">⏳ <strong>${selectedClassObj.name}</strong> gains spellcasting at <strong>level 2</strong> — you have no spells to prepare at this level.</div>`;
+      } else if (acqType === 'spellbook') {
         acqDescription = `<div class="text-xs text-amber-300 mt-1">📖 <strong>Spellbook:</strong> Choose <strong>${numSelectable}</strong> spells for your spellbook. You can prepare <strong>${numPrepared}</strong> daily (Level + ${abilityLabel} mod).</div>`;
       } else if (acqType === 'prepared_formula') {
         acqDescription = `<div class="text-xs text-sky-300 mt-1">📋 <strong>Prepared Caster:</strong> Choose <strong>${numSelectable}</strong> spells to prepare from all ${selectedClassObj.name} spells (Level + ${abilityLabel} mod).</div>`;
@@ -1048,11 +1121,23 @@
         if (cantripSec) cantripSec.style.display = 'none';
       }
 
-      // Render Level 1 Spells
-      const lvl1Spells = spellContextData.spellList ? (spellContextData.spellList['1'] || spellContextData.spellList[1] || []) : [];
-      if (lvl1Spells.length > 0) {
+      // Render spells grouped by level (1..maxSpellLevel)
+      const levelKeys = Object.keys(spellContextData.spellList || {})
+        .map(Number)
+        .filter(k => k > 0)
+        .sort((a, b) => a - b);
+      const totalSpells = levelKeys.reduce((sum, k) => sum + (spellContextData.spellList[k] || []).length, 0);
+
+      if (totalSpells > 0) {
         if (spellPickSec) spellPickSec.style.display = 'block';
-        renderSpellPickGrid(lvl1Spells, numSelectable);
+        renderSpellPickGrid(spellContextData.spellList, numSelectable);
+      } else if (gainsSpellcastingLater) {
+        if (spellPickSec) spellPickSec.style.display = 'block';
+        document.getElementById('spellList').innerHTML = `
+          <div class="p-3 bg-slate-900/60 rounded-xl border border-slate-800 text-xs text-sky-300">
+            <strong>${selectedClassObj.name}</strong> gains spellcasting at <strong>level 2</strong> — you have no spells to prepare at this level.
+          </div>
+        `;
       } else {
         if (spellPickSec) spellPickSec.style.display = 'none';
       }
@@ -1063,20 +1148,117 @@
     }
   }
 
+  // ── Spell picker helpers ──────────────────────────────────────
+  const SPELL_SCHOOLS = {
+    A: { full: 'Abjuration', color: '#5b8dd9' },
+    C: { full: 'Conjuration', color: '#5bbf8a' },
+    D: { full: 'Divination', color: '#d9b85b' },
+    E: { full: 'Enchantment', color: '#b06fd9' },
+    V: { full: 'Evocation', color: '#d97b5b' },
+    I: { full: 'Illusion', color: '#5bd4c4' },
+    N: { full: 'Necromancy', color: '#9aa3ad' },
+    T: { full: 'Transmutation', color: '#6fb3d9' },
+  };
+
+  function spellSchoolInfo(code) {
+    if (!code) return { full: 'Unknown', color: '#9aa3ad' };
+    const upper = String(code).toUpperCase();
+    if (window.Parser && typeof window.Parser.spSchoolAbvToFull === 'function') {
+      return { full: window.Parser.spSchoolAbvToFull(upper) || code, color: SPELL_SCHOOLS[upper]?.color || '#9aa3ad' };
+    }
+    return { full: SPELL_SCHOOLS[upper]?.full || code, color: SPELL_SCHOOLS[upper]?.color || '#9aa3ad' };
+  }
+
+  function spellTimeShort(s) {
+    if (window.Parser && s.time && s.time.length) {
+      return window.Parser.spTimeListToFull(s.time, s.meta, { styleHint: 'classic' });
+    }
+    if (s.time && s.time[0]) return `${s.time[0].number || 1} ${s.time[0].unit}`;
+    return '';
+  }
+
+  function spellComponentsShort(s) {
+    if (window.Parser && s.components) {
+      return window.Parser.spComponentsToFull(s.components, 0);
+    }
+    if (!s.components) return '';
+    const parts = [];
+    if (s.components.v) parts.push('V');
+    if (s.components.s) parts.push('S');
+    if (s.components.m) parts.push('M');
+    return parts.join(', ');
+  }
+
+  function buildSpellCard(spell, level, isSelected, onToggle) {
+    const school = spellSchoolInfo(spell.school);
+    const card = document.createElement('div');
+    card.className = `spell-card ${isSelected ? 'selected' : ''}`;
+    card.style.setProperty('--spell-school-color', school.color);
+    card.title = spell.source ? `Source: ${(window.Parser && window.Parser.sourceJsonToFull) ? window.Parser.sourceJsonToFull(spell.source) : spell.source}` : '';
+
+    const pips = level === 0
+      ? '<span class="spell-pips">✦</span>'
+      : `<span class="spell-pips">${'◆'.repeat(level)}</span>`;
+
+    const timeStr = spellTimeShort(spell);
+    const compStr = spellComponentsShort(spell);
+    const chips = [];
+    if (timeStr) chips.push(`<span class="spell-meta-chip">⚡ ${timeStr}</span>`);
+    if (compStr) chips.push(`<span class="spell-meta-chip">✦ ${compStr}</span>`);
+    if (spell.ritual) chips.push(`<span class="spell-meta-chip spell-meta-chip--ritual">Ritual</span>`);
+    if (spell.concentration) chips.push(`<span class="spell-meta-chip spell-meta-chip--concentration">Conc.</span>`);
+
+    card.innerHTML = `
+      <div class="flex items-start justify-between gap-2">
+        <div class="min-w-0">
+          <div class="font-bold text-gray-100 text-xs leading-snug pr-5">${spell.name}</div>
+          <div class="text-[10px] text-gray-500 mt-0.5">${school.full}</div>
+        </div>
+        ${pips}
+      </div>
+      ${chips.length ? `<div class="spell-meta">${chips.join('')}</div>` : ''}
+      <span class="spell-card-check">✓</span>
+    `;
+
+    card.onclick = onToggle;
+    return card;
+  }
+
+  let spellFilterQuery = '';
+
+  function renderSpellSummary(spellListByLevel, maxSpells) {
+    const container = document.getElementById('spellSummary');
+    if (!container) return;
+    container.innerHTML = '';
+
+    const counter = document.getElementById('spellCounter');
+    if (counter) counter.textContent = `${selectedSpells.length} / ${maxSpells || '∞'} selected`;
+
+    if (selectedSpells.length === 0) return;
+
+    selectedSpells.forEach((sp, idx) => {
+      const chip = document.createElement('span');
+      chip.className = 'spell-summary-chip';
+      chip.innerHTML = `${sp.name} (L${sp.level}) <button type="button" title="Remove">✕</button>`;
+      chip.querySelector('button').onclick = () => {
+        selectedSpells.splice(idx, 1);
+        renderSpellPickGrid(spellListByLevel, maxSpells);
+      };
+      container.appendChild(chip);
+    });
+  }
+
   function renderCantripPickGrid(cantrips, maxCantrips) {
     const container = document.getElementById('cantripList');
     const counter = document.getElementById('cantripCounter');
     if (!container) return;
 
-    if (counter) counter.textContent = `(${selectedCantrips.length} / ${maxCantrips || 'unlimited'} selected)`;
+    if (counter) counter.textContent = `${selectedCantrips.length} / ${maxCantrips || '∞'} selected`;
 
     container.innerHTML = '';
     cantrips.forEach(c => {
       const isSelected = selectedCantrips.some(sc => sc.name === c.name);
-      const card = document.createElement('div');
-      card.className = `p-2 rounded-lg border text-xs cursor-pointer flex justify-between items-center transition-all ${isSelected ? 'bg-indigo-900/50 border-indigo-500 text-white' : 'bg-slate-900/40 border-slate-800 text-gray-300 hover:border-slate-700'}`;
-
-      card.onclick = () => {
+      const card = buildSpellCard(c, 0, isSelected, () => {
         const idx = selectedCantrips.findIndex(sc => sc.name === c.name);
         if (idx >= 0) {
           selectedCantrips.splice(idx, 1);
@@ -1088,54 +1270,83 @@
           selectedCantrips.push({ name: c.name, source: c.source || 'PHB' });
         }
         renderCantripPickGrid(cantrips, maxCantrips);
-      };
-
-      card.innerHTML = `
-        <div>
-          <div class="font-bold text-gray-200">${c.name}</div>
-          <div class="text-[10px] text-gray-400">${c.school || 'Cantrip'}</div>
-        </div>
-        <span class="text-xs font-bold ${isSelected ? 'text-emerald-400' : 'text-gray-600'}">${isSelected ? '✓' : '+'}</span>
-      `;
+      });
       container.appendChild(card);
     });
   }
 
-  function renderSpellPickGrid(spells, maxSpells) {
+  function renderSpellPickGrid(spellListByLevel, maxSpells) {
     const container = document.getElementById('spellList');
-    const counter = document.getElementById('spellCounter');
     if (!container) return;
 
-    if (counter) counter.textContent = `(${selectedSpells.length} / ${maxSpells || 'unlimited'} selected)`;
+    const levelKeys = Object.keys(spellListByLevel || {})
+      .map(Number)
+      .filter(k => k > 0)
+      .sort((a, b) => a - b);
+
+    renderSpellSummary(spellListByLevel, maxSpells);
 
     container.innerHTML = '';
-    spells.forEach(s => {
-      const isSelected = selectedSpells.some(ss => ss.name === s.name);
-      const card = document.createElement('div');
-      card.className = `p-2 rounded-lg border text-xs cursor-pointer flex justify-between items-center transition-all ${isSelected ? 'bg-indigo-900/50 border-indigo-500 text-white' : 'bg-slate-900/40 border-slate-800 text-gray-300 hover:border-slate-700'}`;
+    const query = spellFilterQuery.trim().toLowerCase();
 
-      card.onclick = () => {
-        const idx = selectedSpells.findIndex(ss => ss.name === s.name);
-        if (idx >= 0) {
-          selectedSpells.splice(idx, 1);
-        } else {
-          if (maxSpells > 0 && selectedSpells.length >= maxSpells) {
-            alert(`You can only select up to ${maxSpells} 1st-level spells.`);
-            return;
-          }
-          selectedSpells.push({ name: s.name, source: s.source || 'PHB', level: 1 });
-        }
-        renderSpellPickGrid(spells, maxSpells);
-      };
+    levelKeys.forEach(lvl => {
+      const allSpells = spellListByLevel[lvl] || [];
+      if (allSpells.length === 0) return;
+      const spells = query ? allSpells.filter(s => s.name.toLowerCase().includes(query)) : allSpells;
+      if (spells.length === 0) return;
 
-      card.innerHTML = `
-        <div>
-          <div class="font-bold text-gray-200">${s.name}</div>
-          <div class="text-[10px] text-gray-400">${s.school || 'Level 1'}</div>
-        </div>
-        <span class="text-xs font-bold ${isSelected ? 'text-emerald-400' : 'text-gray-600'}">${isSelected ? '✓' : '+'}</span>
+      const section = document.createElement('div');
+      const head = document.createElement('div');
+      head.className = 'spell-level-head mb-2';
+      head.innerHTML = `
+        <span class="spell-pips">${'◆'.repeat(lvl)}</span>
+        <span class="font-bold text-yellow-500 text-sm">Level ${lvl} Spells</span>
+        <span class="spell-count-badge">${spells.length}${query ? ` / ${allSpells.length}` : ''}</span>
       `;
-      container.appendChild(card);
+      section.appendChild(head);
+
+      const grid = document.createElement('div');
+      grid.className = 'creator-pick-grid creator-pick-grid--spells';
+
+      spells.forEach(s => {
+        const isSelected = selectedSpells.some(ss => ss.name === s.name && ss.level === lvl);
+        const card = buildSpellCard(s, lvl, isSelected, () => {
+          const idx = selectedSpells.findIndex(ss => ss.name === s.name && ss.level === lvl);
+          if (idx >= 0) {
+            selectedSpells.splice(idx, 1);
+          } else {
+            if (maxSpells > 0 && selectedSpells.length >= maxSpells) {
+              alert(`You can only select up to ${maxSpells} spells.`);
+              return;
+            }
+            selectedSpells.push({ name: s.name, source: s.source || 'PHB', level: lvl });
+          }
+          renderSpellPickGrid(spellListByLevel, maxSpells);
+        });
+        grid.appendChild(card);
+      });
+
+      section.appendChild(grid);
+      container.appendChild(section);
+    });
+
+    if (container.childElementCount === 0) {
+      container.innerHTML = `
+        <div class="p-3 bg-slate-900/60 rounded-xl border border-slate-800 text-xs text-gray-400">
+          No spells match “${spellFilterQuery}”.
+        </div>
+      `;
+    }
+  }
+
+  const spellSearchEl = document.getElementById('spellSearch');
+  if (spellSearchEl) {
+    spellSearchEl.addEventListener('input', () => {
+      spellFilterQuery = spellSearchEl.value;
+      if (spellContextData && spellContextData.spellList) {
+        const maxSpells = spellContextData.numSelectable || spellContextData.maxSpells || 0;
+        renderSpellPickGrid(spellContextData.spellList, maxSpells);
+      }
     });
   }
 

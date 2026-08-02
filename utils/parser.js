@@ -83,10 +83,13 @@ const Renderer = {
 		getRenderableDurationEntriesMeta: (durations, opts) => {
 			const parts = (durations || []).map(d => {
 				if (d.type === "instant") return "Instantaneous";
-				if (d.type === "permanent") return "Permanent";
+				if (d.type === "permanent") return `Permanent${d.ends ? ` (${Renderer._renderPlain(d.ends)})` : ""}`;
 				const dur = d.duration || {};
 				if (dur.amount == null || dur.type == null) return "Special";
-				return `${dur.amount} ${dur.type}${dur.amount > 1 ? "s" : ""}`;
+				const amountStr = `${dur.amount} ${dur.type}${dur.amount > 1 ? "s" : ""}`;
+				if (d.concentration) return `Concentration, up to ${amountStr}`;
+				if (dur.upTo) return `Up to ${amountStr}`;
+				return amountStr;
 			});
 			return {entryDuration: parts.join(", ")};
 		},

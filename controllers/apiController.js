@@ -1,6 +1,7 @@
 import loader from "../data/loader.js";
 import SpellListResolver from "../models/SpellListResolver.js";
 import { CerberusTagParser } from "../models/Cerberus.js";
+import { Parser } from "../utils/parser.js";
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -45,16 +46,7 @@ export function getCollection(req, res) {
   res.json(data);
 }
 
-const SCHOOL_NAMES = {
-  A: "Abjuration",
-  C: "Conjuration",
-  D: "Divination",
-  E: "Enchantment",
-  V: "Evocation",
-  I: "Illusion",
-  N: "Necromancy",
-  T: "Transmutation",
-};
+const PARSER_STYLE = { styleHint: "classic" };
 
 /**
  * Helper to flatten complex spell entries into a string
@@ -112,7 +104,7 @@ export function getSpellbook(req, res) {
 
     // Build a clean spell entry
     const schoolCode = raw.school || "";
-    const schoolName = SCHOOL_NAMES[schoolCode] || schoolCode;
+    const schoolName = Parser.spSchoolAbvToFull(schoolCode) || schoolCode;
     const lvl = raw.level ?? (filtered ? (filtered.level === "cantrip" ? 0 : parseInt(filtered.level)) : 0);
     const classes = filtered ? filtered.classes : [];
 
@@ -140,8 +132,7 @@ export function getSpellbook(req, res) {
     if (filtered && filtered.casting_time) {
       castingTime = filtered.casting_time;
     } else if (raw.time && raw.time.length > 0) {
-      const t = raw.time[0];
-      castingTime = `${t.number} ${t.unit}`;
+      castingTime = Parser.spTimeListToFull(raw.time, raw.meta, PARSER_STYLE);
     }
 
     // Build range
@@ -149,11 +140,7 @@ export function getSpellbook(req, res) {
     if (filtered && filtered.range) {
       range = filtered.range;
     } else if (raw.range) {
-      if (raw.range.distance) {
-        if (raw.range.distance.type === "self") range = "Self";
-        else if (raw.range.distance.type === "touch") range = "Touch";
-        else range = `${raw.range.distance.amount} ${raw.range.distance.type}`;
-      }
+      range = Parser.spRangeToFull(raw.range);
     }
 
     // Build duration
@@ -161,12 +148,7 @@ export function getSpellbook(req, res) {
     if (filtered && filtered.duration) {
       duration = filtered.duration;
     } else if (raw.duration && raw.duration.length > 0) {
-      const d = raw.duration[0];
-      if (d.type === "instant") duration = "Instantaneous";
-      else if (d.type === "permanent") duration = "Until dispelled";
-      else if (d.duration) {
-        duration = `${d.concentration ? "Concentration, up to " : ""}${d.duration.amount} ${d.duration.type}${d.duration.amount > 1 ? "s" : ""}`;
-      }
+      duration = Parser.spDurationToFull(raw.duration, { isPlainText: true, ...PARSER_STYLE });
     }
 
     // Build components
@@ -174,22 +156,18 @@ export function getSpellbook(req, res) {
     if (filtered && filtered.components && filtered.components.raw) {
       components = filtered.components.raw;
     } else if (raw.components) {
-      const parts = [];
-      if (raw.components.v) parts.push("V");
-      if (raw.components.s) parts.push("S");
-      if (raw.components.m) {
-        const mat = typeof raw.components.m === "string" ? raw.components.m : raw.components.m.text || "";
-        parts.push(mat ? `M (${mat})` : "M");
-      }
-      components = parts.join(", ");
+      components = Parser.spComponentsToFull(raw.components, 0);
     }
 
-    const isRitual = filtered ? filtered.ritual : (raw.meta && raw.meta.ritual) || false;
+    // Ritual is only indicated by raw.meta.ritual in 5etools data (Filtered_spells.json is unreliable here)
+    const isRitual = !!(raw.meta && raw.meta.ritual);
     const isConcentration = raw.duration ? raw.duration.some((d) => d.concentration) : false;
+    const hasRawMeta = raw.level !== undefined && raw.school;
 
     spells.push({
       name: raw.name,
       source: raw.source || "Unknown",
+      sourceFull: Parser.sourceJsonToFull(raw.source || "Unknown"),
       level: lvl,
       school: schoolName,
       classes,
@@ -201,7 +179,9 @@ export function getSpellbook(req, res) {
       higherLevels,
       ritual: isRitual,
       concentration: isConcentration,
-      type: filtered ? filtered.type : `${lvl === 0 ? schoolName + " cantrip" : `${ordinal(lvl)}-level ${schoolName.toLowerCase()}`}`,
+      type: hasRawMeta
+        ? Parser.spLevelSchoolMetaToFull(lvl, schoolCode, raw.meta, undefined, PARSER_STYLE)
+        : (filtered ? filtered.type : ""),
     });
   }
 
@@ -241,12 +221,6 @@ export function getSpellbook(req, res) {
     spells,
     meta: { sources: allSources, schools: allSchools, classes: allClasses, levels: allLevels },
   });
-}
-
-function ordinal(n) {
-  const suffixes = ["th", "st", "nd", "rd"];
-  const v = n % 100;
-  return n + (suffixes[(v - 20) % 10] || suffixes[v] || suffixes[0]);
 }
 
 export function getFeatOrigin(req, res) {
@@ -570,5 +544,21 @@ export function lookupEntity(req, res) {
     return res.status(404).json({ error: `${type} not found` });
   }
 
-  res.json(data);
+  const response = {
+    ...data,
+    sourceFull: data.source ? Parser.sourceJsonToFull(data.source) : "",
+  };
+
+  const links = loader.getEntityLinks(data);
+  if (links && typeof links === "object") {
+    const linkList = Object.entries(links).map(([linkType, entries]) => ({
+      type: linkType,
+      refs: (Array.isArray(entries) ? entries : [entries])
+        .filter((e) => e && typeof e === "object" && e.name)
+        .map((e) => ({ name: e.name, source: e.source || null })),
+    })).filter((l) => l.refs.length > 0);
+    if (linkList.length > 0) response.links = linkList;
+  }
+
+  res.json(response);
 }

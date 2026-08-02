@@ -247,15 +247,16 @@
     `;
         flipbookEl.appendChild(backCover);
 
-        // Initialize turn.js
+        // Initialize turn.js with hardware acceleration enabled for Gecko/Firefox
         $(flipbookEl).turn({
             width: 1000,
             height: 600,
             autoCenter: true,
-            elevation: 0,
+            acceleration: true,
+            elevation: 50,
             gradients: false,
             turnCorners: "",
-            duration: 1000,
+            duration: 600,
         });
 
         bookBuilt = true;
@@ -361,7 +362,7 @@
             <dt>Range</dt><dd>${spell.range || "—"}</dd>
             <dt>Components</dt><dd>${spell.components || "—"}</dd>
             <dt>Duration</dt><dd>${spell.duration || "—"}${spell.concentration ? " (Concentration)" : ""}</dd>
-            <dt>Source</dt><dd>${spell.source || "—"}</dd>
+            <dt>Source</dt><dd>${spell.sourceFull || spell.source || "—"}</dd>
             ${classStr ? `<dt>Classes</dt><dd>${classStr}</dd>` : ""}
           </dl>
           <hr class="sb-detail-divider">
@@ -583,7 +584,7 @@
     function truncate(str, maxLen) {
         if (!str) return "";
         // Strip {@...} tags from 5e data format
-        const clean = str.replace(/{@\w+\s+([^}|]+)[^}]*}/g, "$1");
+        const clean = window.Tags ? window.Tags.cleanTags(str) : str.replace(/{@\w+\s+([^}|]+)[^}]*}/g, "$1");
         if (clean.length <= maxLen) return clean;
         return clean.substring(0, maxLen) + "…";
     }
@@ -594,15 +595,27 @@
     }
 
     // --- REGEX PARSER AND TOOLTIPS ---
+    const TOOLTIP_TAG_TYPES = ['spell', 'item', 'feat', 'condition', 'class', 'race', 'action', 'sense', 'skill'];
     function parseDndTags(text) {
         if (!text) return "";
-        const tagRegex = /\{@([a-zA-Z]+) ([^}]+)\}/g;
+        if (window.Tags && typeof window.Tags.renderTags === 'function') {
+            return window.Tags.renderTags(text, (tag, rawContent) => {
+                const parts = rawContent.split('|');
+                const name = parts[0];
+                const source = parts[1] || '';
+                if (TOOLTIP_TAG_TYPES.includes(tag)) {
+                    return `<span class="rpg-tooltip-trigger" data-type="${tag}" data-name="${name}" data-source="${source}">${name}</span>`;
+                }
+                return name;
+            });
+        }
+        // Legacy fallback (module shim not loaded)
+        const tagRegex = /\{@([a-zA-Z0-9_:]+)\s+([^}]+)\}/g;
         return text.replace(tagRegex, (match, tag, content) => {
             const parts = content.split('|');
             const name = parts[0];
             const source = parts[1] || '';
-            const validTags = ['spell', 'item', 'feat', 'condition', 'class', 'race', 'action', 'sense', 'skill'];
-            if (validTags.includes(tag.toLowerCase())) {
+            if (TOOLTIP_TAG_TYPES.includes(tag.toLowerCase())) {
                 return `<span class="rpg-tooltip-trigger" data-type="${tag.toLowerCase()}" data-name="${name}" data-source="${source}">${name}</span>`;
             }
             return name;

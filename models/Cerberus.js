@@ -1,6 +1,6 @@
 import { isFeatureSelectable, extractAvailableOptions } from "../utils/featureSelectability.js";
 import { categorizeFeature, FEATURE_CATEGORIES } from "../utils/featureCategory.js";
-import { Tags } from "../utils/parser.js";
+import { Tags, Parser } from "../utils/parser.js";
 
 /**
  * Cerberus Tag Parser & Regular Expression Engine for 5etools tags:
@@ -91,6 +91,7 @@ export class Cerberus {
       entityName,
       entityType,
       source: entity.source || null,
+      sourceFull: entity.source ? Parser.sourceJsonToFull(entity.source) : null,
       descriptionText,
       tagsParsed: CerberusTagParser.parseTags(descriptionText),
       autoGrants: {
@@ -314,6 +315,7 @@ export class Cerberus {
             if (stat !== "choose" && typeof val === "number") {
               grants.abilityScores.push({
                 stat: stat.toLowerCase(),
+                statFull: Parser.attAbvToFull(stat),
                 bonus: val,
                 source: entity.name,
               });
@@ -434,8 +436,10 @@ export class Cerberus {
       return {
         name: dbSpell ? dbSpell.name : spellInfo.name,
         source: dbSpell ? dbSpell.source : spellInfo.source,
+        sourceFull: Parser.sourceJsonToFull(dbSpell ? dbSpell.source : spellInfo.source),
         level: dbSpell ? dbSpell.level : 0,
         school: dbSpell ? dbSpell.school : "",
+        schoolFull: dbSpell ? Parser.spSchoolAbvToFull(dbSpell.school) : "",
         autoGranted: true,
       };
     };

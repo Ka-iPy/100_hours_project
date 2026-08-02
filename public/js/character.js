@@ -717,20 +717,27 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // --- REGEX PARSER AND TOOLTIPS ---
+    const TOOLTIP_TAG_TYPES = ['spell', 'item', 'feat', 'condition', 'class', 'race', 'action', 'sense', 'skill'];
+    const tooltipTrigger = (tag, rawContent) => {
+        const parts = rawContent.split('|');
+        const name = parts[0];
+        const source = parts[1] || '';
+        if (TOOLTIP_TAG_TYPES.includes(tag)) {
+            return `<span class="rpg-tooltip-trigger" data-type="${tag}" data-name="${name}" data-source="${source}">${name}</span>`;
+        }
+        return name;
+    };
+
     function parseDndTags(text) {
         if (!text) return "";
-        let parsed = text;
-        const tagRegex = /\{@([a-zA-Z]+) ([^}]+)\}/g;
-        parsed = parsed.replace(tagRegex, (match, tag, content) => {
-            const parts = content.split('|');
-            const name = parts[0];
-            const source = parts[1] || '';
-            const validTags = ['spell', 'item', 'feat', 'condition', 'class', 'race', 'action', 'sense', 'skill'];
-            if (validTags.includes(tag.toLowerCase())) {
-                return `<span class="rpg-tooltip-trigger" data-type="${tag.toLowerCase()}" data-name="${name}" data-source="${source}">${name}</span>`;
-            }
-            return name;
-        });
+        let parsed;
+        if (window.Tags && typeof window.Tags.renderTags === 'function') {
+            parsed = window.Tags.renderTags(text, tooltipTrigger);
+        } else {
+            // Legacy fallback (module shim not loaded)
+            const tagRegex = /\{@([a-zA-Z0-9_:]+)\s+([^}]+)\}/g;
+            parsed = text.replace(tagRegex, (match, tag, content) => tooltipTrigger(tag.toLowerCase(), content));
+        }
         if (typeof renderMarkdown === 'function') {
             return renderMarkdown(parsed);
         }
@@ -888,17 +895,33 @@ document.addEventListener('DOMContentLoaded', () => {
             let title = data.name || name;
             let meta = '';
             let desc = '';
+            const P = window.Parser;
+            const style = { styleHint: 'classic' };
 
             if (type === 'spell') {
-                const levelStr = data.level === 0 ? 'Cantrip' : `Level ${data.level}`;
-                const schoolStr = data.school ? ` (${data.school})` : '';
-                meta = `${levelStr}${schoolStr} | Cast: ${formatSpellTime(data.time)} | Range: ${formatSpellRange(data.range)} | Dur: ${formatSpellDuration(data.duration)}`;
+                if (P) {
+                    const levelSchool = P.spLevelSchoolMetaToFull(data.level, data.school, data.meta, undefined, style);
+                    meta = `${levelSchool} | Cast: ${P.spTimeListToFull(data.time, data.meta, style)} | Range: ${P.spRangeToFull(data.range)} | Dur: ${P.spDurationToFull(data.duration, { isPlainText: true, ...style })}${data.components ? ` | Components: ${P.spComponentsToFull(data.components, 0)}` : ''}`;
+                } else {
+                    const levelStr = data.level === 0 ? 'Cantrip' : `Level ${data.level}`;
+                    const schoolStr = data.school ? ` (${data.school})` : '';
+                    meta = `${levelStr}${schoolStr} | Cast: ${formatSpellTime(data.time)} | Range: ${formatSpellRange(data.range)} | Dur: ${formatSpellDuration(data.duration)}`;
+                }
                 desc = flattenSpellEntries(data.entries);
             } else if (type === 'item') {
-                meta = `Item | Value: ${data.value || '—'} | Weight: ${data.weight || '—'}`;
+                if (P) {
+                    const valueStr = P.itemValueToFull(data.value, { isShortForm: true });
+                    const weightStr = P.itemWeightToFull(data.weight);
+                    meta = `Item | Value: ${valueStr || '—'} | Weight: ${weightStr || '—'}`;
+                } else {
+                    meta = `Item | Value: ${data.value || '—'} | Weight: ${data.weight || '—'}`;
+                }
                 desc = flattenSpellEntries(data.entries || [data.detail || '']);
             } else if (type === 'feat') {
-                meta = `Feat | Source: ${data.source || '—'}`;
+                meta = `Feat | Source: ${data.sourceFull || data.source || '—'}`;
+                desc = flattenSpellEntries(data.entries);
+            } else if (type === 'race' || type === 'background' || type === 'class' || type === 'skill') {
+                meta = `${type.charAt(0).toUpperCase() + type.slice(1)} | Source: ${data.sourceFull || data.source || '—'}`;
                 desc = flattenSpellEntries(data.entries);
             } else if (type === 'condition') {
                 meta = `Condition`;
@@ -914,9 +937,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 desc = data.description || flattenSpellEntries(data.entries) || '';
             }
 
+            const linksHtml = (data.links && data.links.length)
+                ? `<div class="rpg-tooltip-links">See also: ${data.links.map(l => l.refs.map(r => `<span class="rpg-tooltip-trigger" data-type="${l.type}" data-name="${r.name}" data-source="${r.source || ''}">${r.name}</span>`).join(', ')).join(', ')}</div>`
+                : '';
+
             tooltip.innerHTML = `
         <div class="rpg-tooltip-title">${title}</div>
         ${meta ? `<div class="rpg-tooltip-meta">${meta}</div>` : ''}
+        ${linksHtml}
         <div class="rpg-tooltip-desc">${parseDndTags(desc)}</div>
       `;
             updatePosition();
@@ -963,7 +991,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const parts = [];
         for (const e of entries) {
             if (typeof e === "string") {
-                parts.push(e.replace(/\{@[a-zA-Z]+ ([^|}]+)[^}]*\}/g, "$1"));
+                parts.push(window.Tags ? window.Tags.cleanTags(e) : e.replace(/\{@[a-zA-Z0-9_:]+ ([^|}]+)[^}]*\}/g, "$1"));
             } else if (e.entries) {
                 parts.push(flattenSpellEntries(e.entries));
             } else if (e.items) {
