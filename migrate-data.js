@@ -13,7 +13,7 @@ users.forEach((u) => {
 });
 fs.writeFileSync(usersPath, JSON.stringify(users, null, 2));
 console.log('Users migrated:', JSON.stringify(userIdMap, null, 2));
-
+//@ts-check
 // Migrate existing character files — set player field
 const charDir = '/run/media/kai/HDD 500GB/Projects/100_hours_project/data/generated/characters';
 if (fs.existsSync(charDir)) {
